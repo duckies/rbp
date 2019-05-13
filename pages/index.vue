@@ -50,7 +50,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" flat nuxt to="/inspire">Continue</v-btn>
+          <v-btn color="primary" text nuxt to="/inspire">Continue</v-btn>
         </v-card-actions>
       </v-card>
     </v-flex>

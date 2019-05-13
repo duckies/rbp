@@ -1,8 +1,7 @@
 import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
-// import Sass from 'node-sass'
-// import Fiber from 'fibers'
+import NuxtConfiguration from '@nuxt/config'
 
-export default {
+const config: NuxtConfiguration = {
   mode: 'universal',
 
   devModules: ['@nuxtjs/vuetify'],
@@ -68,7 +67,7 @@ export default {
      */
     extend(config, ctx) {
       // Run ESLint on save
-      if (ctx.isDev && ctx.isClient) {
+      if (config && config.module && ctx.isDev && ctx.isClient) {
         config.module.rules.push({
           enforce: 'pre',
           test: /\.(js|vue)$/,
@@ -79,3 +78,5 @@ export default {
     }
   }
 }
+
+export default config
