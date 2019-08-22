@@ -20,6 +20,7 @@ import {
 import { User } from '../../user/user.entity';
 import { ConfigService } from '../../config/config.service';
 import * as moment from 'moment';
+import { CharacterResponse } from '../../../interfaces/character';
 
 export interface PurgeResult {
   flagged: number;
@@ -69,53 +70,31 @@ export class CharacterService {
     rank?: number,
     user?: User,
   ): Promise<Character> {
-    let [character, data] = await Promise.all([
+    const { name, region, realm } = characterLookupDto;
+    let [character, data]: [Character, CharacterResponse] = await Promise.all([
       this.characterRepository.findOne(characterLookupDto),
       this.blizzardService.getCharacter(characterLookupDto, characterFieldsDto),
     ]);
 
-    /**
-     * Character retrieval failed.
-     *
-     */
-    if (data instanceof Error) {
-      // The character is in the database, so we need to update
-      // that the character could not be retrieved.
-      // console.log(data);
-      if (character) {
-        console.info('CHARACTER: ');
-        console.log(character);
-        character.missingSince = new Date();
-        await character.save();
-      }
-
-      throw data;
-    }
-
-    // We do not support including characters below level 110.
-    // Investigate if I should change this, not sure how I feel about it.
+    // We do not support including young characters or alts.
     if (data.level < this.minimumCharacterLevel) {
       throw new BadRequestException('Character level is below minimum.');
     }
 
-    /***
-     * If the character does not exist, they are new or were corrupted and deleted.
-     * A new character is made and the fields which cannot be merged are added.
-     */
-    if (!character) {
-      character = new Character(
-        characterLookupDto.name,
-        characterLookupDto.realm,
-        characterLookupDto.region,
-      );
-    }
+    if (character) {
+      character.missingSince = null;
+      character.isDeleted = false;
 
-    character.missingSince = null;
-    character.isDeleted = false;
-
-    if (!forceUpdate && character.lastModified >= new Date(data.lastModified)) {
-      character.notUpdated = true;
-      return character;
+      // If the lastModified field has not changed, there is no work to do.
+      if (
+        !forceUpdate &&
+        character.lastModified >= new Date(data.lastModified)
+      ) {
+        character.notUpdated = true;
+        return character;
+      }
+    } else {
+      character = new Character(name, region, realm);
     }
 
     // The guild master has a rank of 0, which is falsy.
@@ -131,9 +110,7 @@ export class CharacterService {
       character.guild = 'Really Bad Players';
     }
 
-    character.mergeWith(data);
-
-    return character.save();
+    return character.mergeWith(data).save();
   }
 
   /**
@@ -152,6 +129,12 @@ export class CharacterService {
         'character.name': 'ASC',
       })
       .getMany();
+  }
+
+  findAllInGuild(): Promise<Character[]> {
+    return this.characterRepository.find({
+      where: { guild: 'Really Bad Players' },
+    });
   }
 
   /**

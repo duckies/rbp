@@ -5,10 +5,10 @@ import {
   Column,
   Unique,
   ManyToOne,
-  OneToOne,
-  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/user.entity';
+import { CharacterResponse } from '../../../interfaces/character';
+import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
 
 @Entity('character')
 @Unique('UNIQUE_CHARACTER', ['name', 'realm', 'region'])
@@ -133,8 +133,46 @@ export class Character extends BaseEntity {
     }?alt=/wow/static/images/2d/avatar-${this.race}-${this.gender}.jpg`;
   }
 
-  mergeWith(data: ICharacter.Root): Character {
-    this.class = data.class;
+  /**
+   * Removes the guild a character is in and their rank and saves.
+   */
+  removeGuild(): Character {
+    this.guild = null;
+    this.guildRank = null;
+
+    return this;
+  }
+
+  doesNotMatch(data: CharacterResponse): boolean {
+    // Character classes are immutable.
+    if (this.class && data.class && this.class != data.class) {
+      return true;
+    }
+
+    // Character level cannot go down. Note: This may delete everything on a level squish.
+    if (this.level && data.level && this.level > data.level) {
+      return true;
+    }
+
+    // Character honorable kills cannot go down.
+    if (
+      this.honorableKills &&
+      data.totalHonorableKills &&
+      this.honorableKills > data.totalHonorableKills
+    ) {
+      return true;
+    }
+
+    // TODO: Use more rigid collision detection using achievement dates.
+
+    return false;
+  }
+
+  mergeWith(data: CharacterResponse): Character {
+    if (this.doesNotMatch(data)) {
+      throw new CharacterConflictException(this.name, this.realm);
+    }
+
     this.race = data.race;
     this.gender = data.gender;
     this.level = data.level;
