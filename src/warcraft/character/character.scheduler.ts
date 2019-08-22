@@ -24,7 +24,7 @@ export class CharacterScheduler extends NestSchedule {
     this.queue.add('purgeGuildRoster', null);
   }
 
-  @Cron('* * * * *')
+  @Cron('0 * * * *')
   async removeNonGuildMembers() {
     this.queue.add('removeNonGuildMembers');
   }
