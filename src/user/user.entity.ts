@@ -48,6 +48,9 @@ export class User extends BaseEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column({ nullable: true })
+  lastLogin: Date;
+
   // Not persisted to database.
   // Instructs frontend that the user is new.
   justCreated: boolean;
@@ -62,6 +65,8 @@ export class User extends BaseEntity {
   @JoinColumn()
   mainCharacter: Character;
 
-  @OneToMany(type => Character, character => character.account, { cascade: true })
+  @OneToMany(type => Character, character => character.account, {
+    cascade: true,
+  })
   characters: Promise<Character[]>;
 }
