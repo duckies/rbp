@@ -69,21 +69,14 @@ export class CharacterService {
     rank?: number,
     user?: User,
   ): Promise<Character> {
-    // I honestly don't think this should include failure logic.
-    // How do I move failure logic out of the promise properly?
-    let [character, data] = await Promise.all(
-      [
-        this.characterRepository.findOne(characterLookupDto),
-        this.blizzardService.getCharacter(
-          characterLookupDto,
-          characterFieldsDto,
-        ),
-      ].map(p => p.catch(e => e)),
-    );
+    let [character, data] = await Promise.all([
+      this.characterRepository.findOne(characterLookupDto),
+      this.blizzardService.getCharacter(characterLookupDto, characterFieldsDto),
+    ]);
 
     /**
      * Character retrieval failed.
-     * 
+     *
      */
     if (data instanceof Error) {
       // The character is in the database, so we need to update
@@ -126,11 +119,17 @@ export class CharacterService {
     }
 
     // The guild master has a rank of 0, which is falsy.
-    if (rank || rank === 0) { character.guildRank = rank; }
+    if (rank || rank === 0) {
+      character.guildRank = rank;
+    }
 
-    if (user) { character.account = user; }
+    if (user) {
+      character.account = user;
+    }
 
-    if (inOurGuild) { character.guild = 'Really Bad Players'; }
+    if (inOurGuild) {
+      character.guild = 'Really Bad Players';
+    }
 
     character.mergeWith(data);
 
@@ -157,10 +156,11 @@ export class CharacterService {
 
   /**
    * Finds a character given the id, name, realm, and/or region.
-   * @param findCharacterDto
+   * This is a case-sensitive lookup!
+   * @param characterLookupDto
    */
-  findOne(findCharacterDto: FindCharacterDto): Promise<Character> {
-    return this.characterRepository.findOne(findCharacterDto);
+  findOne(characterLookupDto: CharacterLookupDto): Promise<Character> {
+    return this.characterRepository.findOne(characterLookupDto);
   }
 
   async getCharacter(
