@@ -1,4 +1,9 @@
-import { Injectable, HttpService, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpService,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TokenService } from './token.service';
 import {
   CharacterLookupDto,
@@ -7,6 +12,7 @@ import {
 import { GuildLookupDto } from './dto/guild-lookup.dto';
 import { GuildFieldsDto } from './dto/guild-fields.dto';
 import { CharacterNotFoundException } from './exceptions/character-not-found.exception';
+import GuildResponse from '../../../interfaces/guild';
 
 @Injectable()
 export class BlizzardService {
@@ -43,8 +49,11 @@ export class BlizzardService {
 
           // Character not found; possibly bugged.
           case 404:
-            throw new CharacterNotFoundException(characterLookupDto.name, characterLookupDto.realm);
-        
+            throw new CharacterNotFoundException(
+              characterLookupDto.name,
+              characterLookupDto.realm,
+            );
+
           default:
             break;
         }
@@ -58,7 +67,7 @@ export class BlizzardService {
   async getGuild(
     guildLookupDto: GuildLookupDto,
     guildFieldsDto: GuildFieldsDto,
-  ): Promise<any> {
+  ): Promise<GuildResponse> {
     // This would eventually be replaced by an automatically updating process.
     await this.tokenService.getToken();
 
@@ -67,7 +76,7 @@ export class BlizzardService {
     }/${guildLookupDto.name}${
       guildFieldsDto.fields != null ? '?fields=' + guildFieldsDto.fields : ''
     }`;
-    
+
     try {
       const resp = await this.http.get(api).toPromise();
 
@@ -82,8 +91,12 @@ export class BlizzardService {
 
           // Character not found; possibly bugged.
           case 404:
-            throw new NotFoundException(`${guildLookupDto.name} on ${guildLookupDto.realm} was not found.`);
-        
+            throw new NotFoundException(
+              `${guildLookupDto.name} on ${
+                guildLookupDto.realm
+              } was not found.`,
+            );
+
           default:
             break;
         }

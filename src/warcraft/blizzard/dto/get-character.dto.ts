@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { Character } from '../../character/character.entity';
 
 export enum CharacterFields {
   Achievements = 'achievements',
