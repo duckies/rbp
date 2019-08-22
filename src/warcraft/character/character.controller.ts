@@ -15,6 +15,11 @@ export class CharacterController {
     return this.characterService.findRoster();
   }
 
+  @Get('/:region/:realm/:name')
+  findOne(@Param() characterLookupDto: CharacterLookupDto): Promise<Character> {
+    return this.characterService.findOne(characterLookupDto);
+  }
+
   @Put('main/:region/:realm/:name')
   @UseGuards(ComposeGuard)
   setMain(
