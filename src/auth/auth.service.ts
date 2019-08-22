@@ -18,8 +18,12 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  verify(payload: any) {
-    return this.userService.findOneByJwtPayload(payload);
+  async verify(payload: any) {
+    const user = await this.userService.findOneByJwtPayload(payload);
+
+    user.lastLogin = new Date();
+
+    return user.save();
   }
 
   signToken(user: User) {
@@ -31,11 +35,14 @@ export class AuthService {
     accessToken: string,
     refreshToken: string,
     data: any,
-    provider: Provider
+    provider: Provider,
   ): Promise<User> {
     try {
-      const user = await this.userService.findOneByProviderId(thirdPartyId, provider);
-      
+      const user = await this.userService.findOneByProviderId(
+        thirdPartyId,
+        provider,
+      );
+
       if (provider == Provider.BLIZZARD) {
         user.battletag = data.battletag;
         user.blizzardtoken = accessToken;
@@ -43,14 +50,20 @@ export class AuthService {
         return await user.save();
       }
     } catch (error) {
-      if (error.name === "EntityNotFound") {
-        const user = await this.userService.create(thirdPartyId, data.battletag, accessToken);
+      if (error.name === 'EntityNotFound') {
+        const user = await this.userService.create(
+          thirdPartyId,
+          data.battletag,
+          accessToken,
+        );
         user.justCreated = true;
 
         return user;
       }
 
-      this.logger.error('User was not found or errored out. ' + JSON.stringify(error));
+      this.logger.error(
+        'User was not found or errored out. ' + JSON.stringify(error),
+      );
       return Promise.reject();
     }
   }
