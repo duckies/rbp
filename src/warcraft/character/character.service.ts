@@ -91,7 +91,7 @@ export class CharacterService {
         return character;
       }
     } else {
-      // character = new Character(name, RealmSlugToName.get(realm), region);
+      character = new Character(name, data.realm, region);
     }
 
     // The guild master has a rank of 0, which is falsy.
@@ -141,9 +141,6 @@ export class CharacterService {
    */
   findOne(characterLookupDto: CharacterLookupDto): Promise<Character> {
     const { name, region, realm } = characterLookupDto;
-
-    console.log('Inside FindOne!')
-    console.log(characterLookupDto)
 
     return this.characterRepository
       .createQueryBuilder()
