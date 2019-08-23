@@ -18,7 +18,8 @@ import {
 } from '../blizzard/dto/get-character.dto';
 import { TokenService } from '../blizzard/token.service';
 import { Character } from './character.entity';
-import { RealmSlug, RealmName } from '../interfaces/realm.interface';
+import { RealmSlug, RealmName } from '../interfaces/realm.enum';
+import { RealmSlugDictionary } from '../blizzard/realm.map';
 
 export interface PurgeResult {
   flagged: number;
@@ -139,12 +140,15 @@ export class CharacterService {
    * @param characterLookupDto
    */
   findOne(characterLookupDto: CharacterLookupDto): Promise<Character> {
-    const { name, region, realm } = characterLookupDto.toRealmName();
+    const { name, region, realm } = characterLookupDto;
+
+    console.log('Inside FindOne!')
+    console.log(characterLookupDto)
 
     return this.characterRepository
       .createQueryBuilder()
       .where('LOWER(name) = LOWER(:name)', { name })
-      .andWhere('realm = :realm', { realm })
+      .andWhere('realm = :realm', { realm: RealmSlugDictionary[realm] })
       .andWhere('region = :region', { region })
       .getOne();
   }
@@ -168,7 +172,7 @@ export class CharacterService {
     characterLookupDto: CharacterLookupDto,
   ): Promise<User> {
     const character = await this.upsert(
-      characterLookupDto.toRealmName(),
+      characterLookupDto,
       this.setMainFields,
       true,
       null,

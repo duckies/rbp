@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { RealmSlug } from '../../interfaces/realm.interface';
+import { RealmSlug } from '../../interfaces/realm.enum';
 
 export enum CharacterFields {
   Achievements = 'achievements',

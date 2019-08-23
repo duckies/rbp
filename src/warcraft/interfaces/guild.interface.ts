@@ -1,4 +1,4 @@
-import { RealmName } from './realm.interface';
+import { RealmName } from './realm.enum';
 import { CharacterResponse } from './character-response.interface';
 
 export interface Member {

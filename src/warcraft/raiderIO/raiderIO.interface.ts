@@ -1,4 +1,4 @@
-import { RealmName } from '../interfaces/realm.interface';
+import { RealmName } from '../interfaces/realm.enum';
 
 export interface RaiderIOGuild {
   name: string;
