@@ -11,7 +11,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   create(blizzardid: number, battletag: string, blizzardtoken: string) {
     return this.userRepository.save({ blizzardid, battletag, blizzardtoken });
@@ -45,6 +45,15 @@ export class UserService {
 
     return Promise.reject();
   }
+
+  findAllWithGuildCharacters() {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .innerJoinAndSelect('user.characters', 'character')
+      .where('character.guild = :guild', { guild: 'Really Bad Players'})
+      .andWhere('character.guildRank is not null')
+      .getMany();
+    }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.findOneOrFail(id);

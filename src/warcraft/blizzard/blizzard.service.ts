@@ -1,18 +1,18 @@
 import {
-  Injectable,
   HttpService,
+  Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TokenService } from './token.service';
+import GuildResponse from '../interfaces/guild.interface';
 import {
-  CharacterLookupDto,
   CharacterFieldsDto,
+  CharacterLookupDto,
 } from './dto/get-character.dto';
-import { GuildLookupDto } from './dto/guild-lookup.dto';
 import { GuildFieldsDto } from './dto/guild-fields.dto';
+import { GuildLookupDto } from './dto/guild-lookup.dto';
 import { CharacterNotFoundException } from './exceptions/character-not-found.exception';
-import GuildResponse from '../../../interfaces/guild';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class BlizzardService {

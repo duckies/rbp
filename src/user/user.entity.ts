@@ -68,5 +68,5 @@ export class User extends BaseEntity {
   @OneToMany(type => Character, character => character.account, {
     cascade: true,
   })
-  characters: Promise<Character[]>;
+  characters: Character[];
 }

@@ -5,15 +5,18 @@ import {
   Column,
   Unique,
   ManyToOne,
+  Index,
 } from 'typeorm';
 import { User } from '../../user/user.entity';
-import { CharacterResponse } from '../../../interfaces/character';
+import { CharacterResponse } from '../interfaces/character-response.interface';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
+import { RealmName } from '../interfaces/realm.interface';
 
 @Entity('character')
 @Unique('UNIQUE_CHARACTER', ['name', 'realm', 'region'])
+@Index('LOWER_CHAR_LOOKUP', { synchronize: false })
 export class Character extends BaseEntity {
-  constructor(name?: string, realm?: string, region?: string) {
+  constructor(name?: string, realm?: RealmName, region?: string) {
     super();
 
     this.name = name;
@@ -27,28 +30,28 @@ export class Character extends BaseEntity {
   @Column()
   region: string;
 
-  @Column()
-  realm: string;
+  @Column({ type: 'enum' })
+  realm: RealmName;
 
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'smallint' })
   class: number;
 
-  @Column()
+  @Column({ type: 'smallint' })
   race: number;
 
-  @Column()
+  @Column({ type: 'smallint' })
   gender: number;
 
-  @Column()
+  @Column({ type: 'smallint' })
   level: number;
 
   @Column()
   thumbnail: string;
 
-  @Column()
+  @Column({ type: 'smallint' })
   faction: number;
 
   @Column()
@@ -78,16 +81,16 @@ export class Character extends BaseEntity {
   @Column({ type: 'jsonb', nullable: true, select: false })
   talents: any;
 
-  @Column({ nullable: true, select: false })
+  @Column({ type: 'smallint', nullable: true, select: false })
   mountsCollected: number;
 
-  @Column({ nullable: true, select: false })
+  @Column({ type: 'smallint', nullable: true, select: false })
   mountsNotCollected: number;
 
-  @Column({ nullable: true, select: false })
+  @Column({ type: 'smallint', nullable: true, select: false })
   petsCollected: number;
 
-  @Column({ nullable: true, select: false })
+  @Column({ type: 'smallint', nullable: true, select: false })
   petsNotCollected: number;
 
   @Column({ type: 'jsonb', nullable: true, select: false })
@@ -168,11 +171,16 @@ export class Character extends BaseEntity {
     return false;
   }
 
+  isModifiedSince(lastUpdated: number): boolean {
+    return this.lastModified < new Date(lastUpdated);
+  }
+
   mergeWith(data: CharacterResponse): Character {
     if (this.doesNotMatch(data)) {
       throw new CharacterConflictException(this.name, this.realm);
     }
 
+    this.class = data.class;
     this.race = data.race;
     this.gender = data.gender;
     this.level = data.level;

@@ -7,5 +7,8 @@
   "database": "rbpbackend",
   "ssl": false,
   "entities": ["dist/**/*.entity.js"],
-  "synchronize": true
+  "migrations": ["migrations/*.js"],
+  "cli": {
+    "migrationsDir": "migrations"
+  }
 }

@@ -29,7 +29,7 @@ export class QueryFailedExceptionFilter implements ExceptionFilter {
     switch (exception.code) {
       // Unique Constraint Violation
       case '23505':
-        response.status(400).send({ message: 'Duplicate entry.', error: exception.message })
+        response.status(400).send({ message: 'Duplicate entry.', error: exception.message, detail: exception.detail })
         break;
       // Foreign Key Violation
       case '23503':

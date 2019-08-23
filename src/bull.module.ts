@@ -11,6 +11,7 @@ import { DynamicModule, Module, Global } from '@nestjs/common';
 const QueueModule: DynamicModule = BullModule.forRoot([
   { name: 'character' },
   { name: 'raiderIO' },
+  { name: 'user' }
 ]);
 
 @Global()

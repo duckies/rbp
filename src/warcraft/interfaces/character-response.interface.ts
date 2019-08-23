@@ -1,3 +1,5 @@
+import { RealmName } from './realm.interface';
+
 export interface TooltipParams {
   gem0?: number;
   enchant?: number;
@@ -109,7 +111,7 @@ export interface Emblem {
 
 export interface Guild {
   name: string;
-  realm: string;
+  realm: RealmName;
   battlegroup: string;
   members: number;
   achievementPoints: number;
@@ -333,7 +335,7 @@ export interface Title {
 export interface CharacterResponse {
   lastModified: number;
   name: string;
-  realm: string;
+  realm: RealmName;
   battlegroup: string;
   class: number;
   race: number;

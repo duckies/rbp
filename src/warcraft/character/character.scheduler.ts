@@ -5,8 +5,6 @@ import { Queue } from 'bull';
 
 @Injectable()
 export class CharacterScheduler extends NestSchedule {
-  private readonly logger: Logger = new Logger(CharacterScheduler.name);
-
   constructor(
     @InjectQueue('character')
     private readonly queue: Queue,
