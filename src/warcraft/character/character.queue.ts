@@ -17,9 +17,10 @@ import {
 import { GuildFields, GuildFieldsDto } from '../blizzard/dto/guild-fields.dto';
 import { GuildLookupDto } from '../blizzard/dto/guild-lookup.dto';
 import GuildResponse from '../interfaces/guild.interface';
-import { RealmSlug } from '../interfaces/realm.interface';
+import { RealmSlug } from '../interfaces/realm.enum';
 import { Character } from './character.entity';
 import { CharacterService } from './character.service';
+import { RealmNameDictionary } from '../blizzard/realm.map';
 
 @Queue({ name: 'character' })
 export class CharacterQueue {
@@ -74,7 +75,7 @@ export class CharacterQueue {
 
     const promises = guild.members.map(async member => {
       const { character, rank } = member;
-      const lookup = new CharacterLookupDto(character.name, character.realm);
+      const lookup = new CharacterLookupDto(character.name, RealmNameDictionary[character.realm]);
 
       try {
         const character = await this.characterService.upsert(

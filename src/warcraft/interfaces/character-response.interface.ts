@@ -1,4 +1,4 @@
-import { RealmName } from './realm.interface';
+import { RealmName } from './realm.enum';
 
 export interface TooltipParams {
   gem0?: number;

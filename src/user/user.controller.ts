@@ -7,7 +7,7 @@ import { ComposeGuard } from '../auth/guards/compose.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
-// @UseGuards(ComposeGuard)
+@UseGuards(ComposeGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

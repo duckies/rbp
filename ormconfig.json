@@ -4,10 +4,10 @@
   "port": 5432,
   "username": "local",
   "password": "local",
-  "database": "rbpbackend",
+  "database": "backend",
   "ssl": false,
   "entities": ["dist/**/*.entity.js"],
-  "migrations": ["migrations/*.js"],
+  "migrations": ["dist/migrations/*.js"],
   "cli": {
     "migrationsDir": "migrations"
   }

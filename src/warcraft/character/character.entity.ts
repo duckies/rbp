@@ -10,11 +10,12 @@ import {
 import { User } from '../../user/user.entity';
 import { CharacterResponse } from '../interfaces/character-response.interface';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
-import { RealmName } from '../interfaces/realm.interface';
+import { RealmName } from '../interfaces/realm.enum';
 
 @Entity('character')
 @Unique('UNIQUE_CHARACTER', ['name', 'realm', 'region'])
-@Index('LOWER_CHAR_LOOKUP', { synchronize: false })
+@Index('lower_char_index', { synchronize: false })
+@Index('character_realm_enum', { synchronize: false })
 export class Character extends BaseEntity {
   constructor(name?: string, realm?: RealmName, region?: string) {
     super();
@@ -30,7 +31,7 @@ export class Character extends BaseEntity {
   @Column()
   region: string;
 
-  @Column({ type: 'enum' })
+  @Column({ type: 'enum', enum: RealmName })
   realm: RealmName;
 
   @Column()

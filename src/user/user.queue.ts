@@ -2,7 +2,7 @@ import { Queue, QueueProcess } from 'nest-bull';
 import { Logger } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Job } from 'bull';
-import { Roles, NumRanks, Ranks } from '../app.roles';
+import { NumRanks, Ranks } from '../app.roles';
 
 @Queue({ name: 'user' })
 export class UserQueue {
@@ -23,7 +23,9 @@ export class UserQueue {
         NumRanks - 1,
       );
 
-      user.roles = Ranks[rank];
+      console.log(rank, [Ranks[rank]]);
+
+      // user.roles = [Ranks[rank]];
       promises.push(user.save());
     }
 
