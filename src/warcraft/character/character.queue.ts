@@ -91,7 +91,10 @@ export class CharacterQueue {
 
         return character;
       } catch (error) {
-        this.logger.error(error.message.error);
+        if (error.message && error.message.error)
+          this.logger.error(error.message.error);
+        else
+          this.logger.error(error);
         failed++;
       } finally {
         job.progress(++progress / promises.length);
