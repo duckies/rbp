@@ -14,12 +14,12 @@ export class CharacterScheduler extends NestSchedule {
 
   @Cron('*/15 * * * *')
   async updateGuildRoster() {
-    this.queue.add('updateGuildRoster', null);
+    this.queue.add('updateGuildRoster');
   }
 
   @Cron('0 * * * *')
   async purgeRoster() {
-    this.queue.add('purgeGuildRoster', null);
+    this.queue.add('purgeGuildRoster');
   }
 
   @Cron('0 * * * *')
