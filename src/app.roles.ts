@@ -2,13 +2,29 @@ import { RolesBuilder } from "nest-access-control";
 
 export enum Roles {
   GuildMaster = 'Guild Master',
-  Technician = 'Technician',
   Officer = 'Officer',
+  OfficerAlt = 'Officer Alt',
+  RaiderBank = 'Raider (Bank)',
   Raider = 'Raider',
-  Trial = 'Trial',
+  Recruit = 'Recruit',
   Fan = 'Fan',
-  Guest = 'Guest',
+  PlayerAlt = 'Player Alt',
+  Guest = 'Guest'
 }
+
+export const NumRanks = 9;
+
+export const Ranks = {
+  [0]: Roles.GuildMaster,
+  [1]: Roles.Officer,
+  [2]: Roles.OfficerAlt,
+  [3]: Roles.RaiderBank,
+  [4]: Roles.Raider,
+  [5]: Roles.Recruit,
+  [6]: Roles.Fan,
+  [7]: Roles.PlayerAlt,
+  [8]: Roles.Guest
+};
 
 export const roleBuilder: RolesBuilder = new RolesBuilder();
 
@@ -18,10 +34,12 @@ roleBuilder
     .deleteOwn('user')
   .grant(Roles.Fan)
     .extend(Roles.Guest)
-  .grant(Roles.Trial)
+  .grant(Roles.Recruit)
     .extend(Roles.Fan)
   .grant(Roles.Raider)
-    .extend(Roles.Trial)
+    .extend(Roles.Recruit)
+  .grant(Roles.RaiderBank)
+    .extend(Roles.Raider)
   .grant(Roles.Officer)
     .extend(Roles.Raider)
     .readAny('user')
@@ -31,11 +49,11 @@ roleBuilder
     .createAny('article')
     .updateAny('article')
     .deleteAny('article')
-  .grant(Roles.Technician)
+  .grant(Roles.OfficerAlt)
     .extend(Roles.Officer)
-    .createAny('raid')
   .grant(Roles.GuildMaster)
     .extend(Roles.Officer)
+    .createAny('raid')
     .updateAny('user')
     .deleteAny('user')
     .updateAny('raid')

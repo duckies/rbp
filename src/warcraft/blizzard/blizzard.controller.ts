@@ -1,6 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { BlizzardService } from './blizzard.service';
-import { GetCharacterDto } from '../character/dto/get-character.dto';
 import { CharacterLookupDto, CharacterFieldsDto } from './dto/get-character.dto';
 import { GuildLookupDto } from './dto/guild-lookup.dto';
 import { GuildFieldsDto } from './dto/guild-fields.dto';

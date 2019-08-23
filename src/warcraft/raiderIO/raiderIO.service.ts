@@ -1,4 +1,5 @@
-import { Injectable, HttpService } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
+import { RaiderIOGuild } from './raiderIO.interface';
 
 export enum GuildRaiderIOFields {
   RAID_PROGRESSION = 'raid_progression',

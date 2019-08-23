@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
+import { RealmSlug } from '../../interfaces/realm.interface';
 
 export enum CharacterFields {
   Achievements = 'achievements',
@@ -27,7 +28,7 @@ export class UpdateCharacterDto {
   name: string;
 
   @IsNotEmpty()
-  realm: string;
+  realm: RealmSlug;
 
   @IsNotEmpty()
   region: string;

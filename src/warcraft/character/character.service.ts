@@ -1,26 +1,24 @@
-import { Injectable, HttpService, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Character } from './character.entity';
 import {
-  Repository,
-  LessThan,
-  MoreThan,
-  UpdateResult,
-  DeleteResult,
-} from 'typeorm';
-import { FindCharacterDto } from './dto/find-character.dto';
-import { TokenService } from '../blizzard/token.service';
-import { UpdateCharacterDto } from './dto/update-character.dto';
+  BadRequestException,
+  HttpService,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as moment from 'moment';
+import { LessThan, Repository } from 'typeorm';
+import { CharacterResponse } from '../interfaces/character-response.interface';
+import { ConfigService } from '../../config/config.service';
+import { User } from '../../user/user.entity';
 import { BlizzardService } from '../blizzard/blizzard.service';
 import {
-  CharacterLookupDto,
-  CharacterFieldsDto,
   CharacterFields,
+  CharacterFieldsDto,
+  CharacterLookupDto,
 } from '../blizzard/dto/get-character.dto';
-import { User } from '../../user/user.entity';
-import { ConfigService } from '../../config/config.service';
-import * as moment from 'moment';
-import { CharacterResponse } from '../../../interfaces/character';
+import { TokenService } from '../blizzard/token.service';
+import { Character } from './character.entity';
+import { RealmSlug, RealmName } from '../interfaces/realm.interface';
 
 export interface PurgeResult {
   flagged: number;
@@ -71,8 +69,9 @@ export class CharacterService {
     user?: User,
   ): Promise<Character> {
     const { name, region, realm } = characterLookupDto;
+
     let [character, data]: [Character, CharacterResponse] = await Promise.all([
-      this.characterRepository.findOne(characterLookupDto),
+      this.findOne(characterLookupDto),
       this.blizzardService.getCharacter(characterLookupDto, characterFieldsDto),
     ]);
 
@@ -86,15 +85,12 @@ export class CharacterService {
       character.isDeleted = false;
 
       // If the lastModified field has not changed, there is no work to do.
-      if (
-        !forceUpdate &&
-        character.lastModified >= new Date(data.lastModified)
-      ) {
+      if (!forceUpdate && !character.isModifiedSince(data.lastModified)) {
         character.notUpdated = true;
         return character;
       }
     } else {
-      character = new Character(name, region, realm);
+      // character = new Character(name, RealmSlugToName.get(realm), region);
     }
 
     // The guild master has a rank of 0, which is falsy.
@@ -143,12 +139,19 @@ export class CharacterService {
    * @param characterLookupDto
    */
   findOne(characterLookupDto: CharacterLookupDto): Promise<Character> {
-    return this.characterRepository.findOne(characterLookupDto);
+    const { name, region, realm } = characterLookupDto.toRealmName();
+
+    return this.characterRepository
+      .createQueryBuilder()
+      .where('LOWER(name) = LOWER(:name)', { name })
+      .andWhere('realm = :realm', { realm })
+      .andWhere('region = :region', { region })
+      .getOne();
   }
 
   async getCharacter(
     region: string,
-    realm: string,
+    realm: RealmSlug,
     name: string,
     fields: string[],
   ): Promise<any> {
@@ -165,7 +168,7 @@ export class CharacterService {
     characterLookupDto: CharacterLookupDto,
   ): Promise<User> {
     const character = await this.upsert(
-      characterLookupDto,
+      characterLookupDto.toRealmName(),
       this.setMainFields,
       true,
       null,
@@ -188,9 +191,9 @@ export class CharacterService {
   }
 
   async delete(characterLookupDto: CharacterLookupDto): Promise<Character> {
-    const character = await this.characterRepository.findOneOrFail(
-      characterLookupDto,
-    );
+    const character = await this.findOne(characterLookupDto);
+
+    if (!character) throw new NotFoundException();
 
     return this.characterRepository.remove(character);
   }

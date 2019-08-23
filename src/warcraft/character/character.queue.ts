@@ -1,24 +1,25 @@
+import { Logger } from '@nestjs/common';
+import { Job } from 'bull';
 import {
+  OnQueueCompleted,
+  OnQueueError,
+  OnQueueFailed,
   Queue,
   QueueProcess,
-  OnQueueError,
-  OnQueueCompleted,
-  OnQueueFailed,
 } from 'nest-bull';
-import { Logger } from '@nestjs/common';
-import { CharacterService } from './character.service';
-import { Job } from 'bull';
-import { BlizzardService } from '../blizzard/blizzard.service';
-import { GuildLookupDto } from '../blizzard/dto/guild-lookup.dto';
-import { GuildFieldsDto, GuildFields } from '../blizzard/dto/guild-fields.dto';
 import { ConfigService } from '../../config/config.service';
-import { Character } from './character.entity';
+import { BlizzardService } from '../blizzard/blizzard.service';
 import {
-  CharacterLookupDto,
-  CharacterFieldsDto,
   CharacterFields,
+  CharacterFieldsDto,
+  CharacterLookupDto,
 } from '../blizzard/dto/get-character.dto';
-import Guild from '../../../interfaces/guild';
+import { GuildFields, GuildFieldsDto } from '../blizzard/dto/guild-fields.dto';
+import { GuildLookupDto } from '../blizzard/dto/guild-lookup.dto';
+import GuildResponse from '../interfaces/guild.interface';
+import { RealmSlug } from '../interfaces/realm.interface';
+import { Character } from './character.entity';
+import { CharacterService } from './character.service';
 
 @Queue({ name: 'character' })
 export class CharacterQueue {
@@ -43,7 +44,7 @@ export class CharacterQueue {
     private readonly configService: ConfigService,
   ) {
     this.guildLookup.name = 'Really Bad Players';
-    this.guildLookup.realm = 'Blackrock';
+    this.guildLookup.realm = RealmSlug.Blackrock;
     this.guildLookup.region = 'us';
     this.guildFields.fields = [GuildFields.Members];
     this.minimumCharacterLevel = parseInt(
@@ -67,6 +68,9 @@ export class CharacterQueue {
     // Do not include characters not meeting threshold.
     // Undecided if I want to do this, as the roster could include them later.
     // guild.members.filter(a => a.level >= this.minimumCharacterLevel)
+
+    // Characters below level 10 do not work on the API.
+    guild.members = guild.members.filter(c => c.character.level > 10);
 
     const promises = guild.members.map(async member => {
       const { character, rank } = member;
@@ -100,7 +104,7 @@ export class CharacterQueue {
 
   @QueueProcess({ name: 'removeNonGuildMembers', concurrency: 1 })
   private async removeNonGuildMembers(job: Job<Number>) {
-    const [blizzard, local]: [Guild, Character[]] = await Promise.all([
+    const [blizzard, local]: [GuildResponse, Character[]] = await Promise.all([
       this.blizzardService.getGuild(this.guildLookup, this.guildFields),
       this.characterService.findAllInGuild(),
     ]);
@@ -147,11 +151,6 @@ export class CharacterQueue {
       );
     }
   }
-
-  // @OnQueueProgress()
-  // private onProgress(job: Job<Number>, progress: number) {
-  //   this.logger.log(`Guild progress: ${progress}`);
-  // }
 
   @OnQueueFailed()
   private onFailed(job: Job<Number>, error: Error) {
