@@ -75,7 +75,10 @@ export class CharacterQueue {
 
     const promises = guild.members.map(async member => {
       const { character, rank } = member;
-      const lookup = new CharacterLookupDto(character.name, RealmNameDictionary[character.realm]);
+      const lookup = new CharacterLookupDto(
+        character.name,
+        RealmNameDictionary[character.realm],
+      );
 
       try {
         const character = await this.characterService.upsert(
@@ -93,8 +96,7 @@ export class CharacterQueue {
       } catch (error) {
         if (error.message && error.message.error)
           this.logger.error(error.message.error);
-        else
-          this.logger.error(error);
+        else this.logger.error(error);
         failed++;
       } finally {
         job.progress(++progress / promises.length);
