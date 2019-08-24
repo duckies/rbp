@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { UserFactory } from '../../test/factories/User';
 import { User } from './user.entity';
+import { Provider } from '../auth/auth.service';
 
 jest.mock('./user.service');
 
@@ -38,5 +39,13 @@ describe('UserService', () => {
     jest.spyOn(service, 'findOneByJwtPayload').mockReturnValue(Promise.resolve(user) as Promise<User>);
 
     expect(await service.findOneByJwtPayload({ id: 1 })).toEqual(user);
+  });
+
+  it('should return a single user from a provider id', async () => {
+    const user = UserFactory.build();
+
+    jest.spyOn(service, 'findOneByProviderId').mockReturnValue(Promise.resolve(user) as Promise<User>);
+
+    expect(await service.findOneByProviderId(1, Provider.BLIZZARD)).toEqual(user);
   });
 });
