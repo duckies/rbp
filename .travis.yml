@@ -1,7 +1,7 @@
 language: node_js
 
-node_js
-  - 'node'
+node_js:
+  - node
 
 install:
   - npm install
@@ -9,7 +9,7 @@ install:
 sudo: false
 
 before_install:
-  - 'npm install -g codecov'
+  - npm install -g codecov
 
 script:
   - npm test
