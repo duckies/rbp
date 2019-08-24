@@ -6,6 +6,7 @@
   "password": "local",
   "database": "backend",
   "ssl": false,
+  "synchronize": true,
   "entities": ["dist/**/*.entity.js"],
   "migrations": ["dist/migrations/*.js"],
   "cli": {

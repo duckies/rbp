@@ -12,7 +12,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  // @UseRoles({ resource: 'user', action: 'read', possession: 'any' })
+  @UseRoles({ resource: 'user', action: 'read', possession: 'any' })
   findAll(
     @Query('take') take?: number,
     @Query('skip') skip?: number,

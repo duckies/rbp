@@ -12,8 +12,9 @@ export class UserQueue {
 
   @QueueProcess({ name: 'updateUserRoles', concurrency: 1 })
   private async updateUserRoles(job: Job<Number>) {
-    this.logger.log('Updating user roles...');
     const users = await this.userService.findAllWithGuildCharacters();
+
+    console.log(users);
 
     const promises = [];
     for (const user of users) {
@@ -23,9 +24,7 @@ export class UserQueue {
         NumRanks - 1,
       );
 
-      console.log(rank, [Ranks[rank]]);
-
-      // user.roles = [Ranks[rank]];
+      user.roles = [Ranks[rank]];
       promises.push(user.save());
     }
 
