@@ -1,10 +1,19 @@
-import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
-import NuxtConfiguration from '@nuxt/config'
+import { Configuration } from '@nuxt/types'
 
-const config: NuxtConfiguration = {
+const config: Configuration = {
   mode: 'universal',
 
-  devModules: ['@nuxtjs/vuetify'],
+  buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
+
+  /**
+   * Server Settings
+   */
+  router: {
+    // middleware: 'auth'
+  },
+
+  // Why is this required?
+  dir: {},
 
   /*
    ** Headers of the page
@@ -20,8 +29,7 @@ const config: NuxtConfiguration = {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
       {
         rel: 'stylesheet',
-        href:
-          'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons'
+        href: 'https://fonts.googleapis.com/css?family=Khand:700&display=swap'
       }
     ]
   },
@@ -29,30 +37,60 @@ const config: NuxtConfiguration = {
   /*
    ** Customize the progress-bar color
    */
-  loading: { color: '#fff' },
+  loading: { color: '#854feb' },
 
   /*
    ** Global CSS
    */
-  // css: [{ src: '~/assets/style/vuetify.scss', lang: 'scss' }],
+  css: ['~assets/style/global.scss'],
 
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: ['@/plugins/vuetify'],
+  plugins: [{ src: '~/plugins/flickity', ssr: false }],
 
   /*
    ** Nuxt.js modules
    */
-  modules: [
-    // Doc: https://axios.nuxtjs.org/usage
-    '@nuxtjs/axios'
-  ],
+  modules: ['@nuxtjs/axios', 'nuxt-webfontloader'],
   /*
    ** Axios module configuration
    */
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
+    host: 'localhost',
+    port: 3000,
+    https: false
+  },
+
+  webfontloader: {
+    google: {
+      families: [
+        'Roboto:300,400,500,700',
+        'Material+Icons',
+        'Khand:300,400,500,700',
+        'Roboto+Mono:400'
+      ]
+    }
+  },
+
+  vue: {
+    config: {
+      productionTip: false
+    }
+  },
+
+  vuetify: {
+    customVariables: ['~/assets/style/variables.scss'],
+    treeShake: true,
+    theme: {
+      dark: true,
+      themes: {
+        dark: {
+          primary: '#854feb'
+        }
+      }
+    }
   },
 
   /*
@@ -60,12 +98,11 @@ const config: NuxtConfiguration = {
    */
   build: {
     transpile: ['vuetify/lib'],
-    // plugins: [new VuetifyLoaderPlugin()],
 
     /*
      ** You can extend webpack config here
      */
-    extend(config, ctx) {
+    extend(config, ctx): void {
       // Run ESLint on save
       if (config && config.module && ctx.isDev && ctx.isClient) {
         config.module.rules.push({

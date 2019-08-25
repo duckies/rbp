@@ -1,0 +1,32 @@
+@import './blizzard/classes.scss';
+@import './blizzard/items.scss';
+
+.justify-end-image-content {
+  .v-responsive__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+}
+
+.parallax-gradient {
+  overflow: hidden;
+
+  .v-parallax__image-container::after {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 400px;
+    background: repeat-x url('~assets/images/gradient.png');
+    content: '';
+    z-index: 5;
+  }
+}
+
+// AppBar Items
+.v-btn__content {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+}
