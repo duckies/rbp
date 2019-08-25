@@ -1,0 +1,18 @@
+@import '~vuetify/src/styles/styles.sass';
+@import '~vuetify/src/components/VGrid/_mixins';
+
+$font-size-root: 20px;
+$material-dark: map-merge(
+  $material-dark,
+  (
+    bg-color: #141517,
+    'background': #141517,
+  )
+);
+
+.v-toolbar__content,
+.v-toolbar__extension {
+  @include make-container-max-widths;
+  padding: 0;
+  margin: 0 auto;
+}

@@ -1,55 +1,180 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer v-model="drawer" :mini-variant="miniVariant" :clipped="clipped" fixed app>
+    <v-navigation-drawer v-model="drawer" fixed app>
       <v-list>
-        <v-list-tile v-for="(item, i) in items" :key="i" :to="item.to" router exact>
-          <v-list-tile-action>
+        <v-list-item
+          v-for="(item, i) in links"
+          :key="i"
+          :to="item.to"
+          router
+          exact
+        >
+          <v-list-item-action>
             <v-icon>{{ item.icon }}</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title v-text="item.title"/>
-          </v-list-tile-content>
-        </v-list-tile>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title :v-text="item.title" />
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
-    <v-app-bar fixed app>
-      <v-container fill-height py-0>
-        <v-app-bar-nav-icon class="hidden-md-and-up" @click="drawer = !drawer"/>
+    <v-app-bar class="dark-bar" hide-on-scroll app>
+      <template v-if="submenu" v-slot:extension>
+        <v-tabs align-with-title background-color="transparent">
+          <v-tab v-for="(item, i) in submenu" :key="i" :to="item.to" nuxt>
+            {{ item.title }}
+          </v-tab>
+        </v-tabs>
+      </template>
 
-        <v-toolbar-title v-text="title"/>
+      <v-app-bar-nav-icon class="hidden-md-and-up" @click="drawer = !drawer" />
 
-        <v-spacer/>
+      <v-toolbar-title class="title" v-text="title" />
 
-        <v-toolbar-items class="hidden-sm-and-down">
-          <v-btn v-for="item in items" :key="item.title" :to="item.to" text>{{ item.title }}</v-btn>
-        </v-toolbar-items>
-      </v-container>
+      <v-spacer />
+
+      <v-toolbar-items>
+        <v-btn
+          v-for="(item, i) in links"
+          :key="i"
+          :to="item.to"
+          nuxt
+          exact
+          text
+        >
+          {{ item.title }}
+        </v-btn>
+        <template v-if="isAuthenticated && user">
+          <v-menu offset-y dark transition="slide-y-transition">
+            <template v-slot:activator="{ on }">
+              <v-btn text v-on="on">
+                <v-avatar>
+                  <img
+                    :src="
+                      user.avatar
+                        ? user.avatar
+                        : 'https://render-us.worldofwarcraft.com/shadow/avatar/10-1.jpg'
+                    "
+                    height="48"
+                    width="48"
+                  />
+                </v-avatar>
+              </v-btn>
+            </template>
+
+            <v-list>
+              <v-list-item to="/dashboard">
+                <v-list-item-title>Profile</v-list-item-title>
+              </v-list-item>
+
+              <v-divider />
+
+              <v-list-item @click="logout">
+                <v-list-item-title>Logout</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
+        <v-btn v-else @click="login">
+          Login
+        </v-btn>
+      </v-toolbar-items>
     </v-app-bar>
 
     <v-content>
-      <v-container>
-        <nuxt/>
-      </v-container>
+      <nuxt />
     </v-content>
 
-    <v-footer :fixed="fixed" app>
-      <span>&copy; 2019</span>
-    </v-footer>
+    <Footer />
   </v-app>
 </template>
 
-<script>
-import { Vue, Component } from 'vue-property-decorator';
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import { User } from '../store/auth'
+import Footer from '@/components/Footer.vue'
 
-@Component
+export interface Link {
+  icon?: string
+  title: string
+  to: string
+  lower?: string
+  submenu?: Link[]
+}
+
+@Component({
+  components: {
+    Footer
+  }
+})
 export default class DefaultLayout extends Vue {
-  drawer = false;
-  title = 'Really Bad Players';
-  items = [
+  drawer = false
+  title = 'Really Bad Players'
+  shortTitle = 'RBP'
+  links: Link[] = [
     { icon: 'apps', title: 'Home', to: '/' },
-    { icon: 'bubble_chart', title: 'About', to: '/about' },
-    { icon: 'blank', title: 'apply', to: '/apply' }
+    {
+      icon: 'bubble_chart',
+      title: 'About',
+      lower: 'about',
+      to: '/about',
+      submenu: [
+        { title: 'Ranks', to: '/about/ranks' },
+        { title: 'Loot Distribution', to: '/about/loot' },
+        { title: 'Required Addons', to: '/about/addons' }
+      ]
+    },
+    { icon: 'apps', title: 'Apply', to: '/apply' },
+    { icon: 'bubble_chart', title: 'Roster', to: '/roster' }
   ]
+
+  get submenu(): Link[] | undefined {
+    if (!this.$route.name) {
+      return undefined
+    }
+
+    const path = this.$route.name.split('-')[0]
+    const link = this.links.find(l => l.lower === path)
+
+    return link && link.submenu ? link.submenu : undefined
+  }
+
+  get isAuthenticated(): boolean {
+    return this.$store.getters['auth/isAuthenticated']
+  }
+
+  get user(): User {
+    return this.$store.getters['auth/user']
+  }
+
+  login(): void {
+    window.location.href = 'http://localhost:3000/auth/blizzard/login'
+  }
+
+  logout(): Promise<void> {
+    return this.$store.dispatch('auth/logout')
+  }
 }
 </script>
+
+<style lang="scss" scoped>
+.dark-bar {
+  background-color: #202124 !important;
+
+  // .v-toolbar__content {
+  //   padding: 0;
+  // }
+}
+
+.title {
+  margin-top: 5px;
+  text-transform: uppercase;
+  color: #fff;
+  font-weight: 900;
+  font-family: Khand, sans-serif !important;
+  font-size: 40px !important;
+  line-height: 1.1;
+}
+</style>

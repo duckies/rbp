@@ -1,70 +1,60 @@
 <template>
-  <v-layout column justify-center align-center>
-    <v-flex xs12 sm8 md6>
-      <div class="text-xs-center">
-        <logo />
-        <vuetify-logo />
-      </div>
-      <v-card>
-        <v-card-title class="headline"
-          >Welcome to the Vuetify + Nuxt.js template</v-card-title
-        >
-        <v-card-text>
-          <p>
-            Vuetify is a progressive Material Design component framework for
-            Vue.js. It was designed to empower developers to create amazing
-            applications.
-          </p>
-          <p>
-            For more information on Vuetify, check out the
-            <a href="https://vuetifyjs.com" target="_blank">documentation</a>.
-          </p>
-          <p>
-            If you have questions, please join the official
-            <a href="https://chat.vuetifyjs.com/" target="_blank" title="chat"
-              >discord</a
-            >.
-          </p>
-          <p>
-            Find a bug? Report it on the github
-            <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              title="contribute"
-              >issue board</a
-            >.
-          </p>
-          <p>
-            Thank you for developing with Vuetify and I look forward to bringing
-            more exciting features in the future.
-          </p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3" />
-          <a href="https://nuxtjs.org/" target="_blank">Nuxt Documentation</a>
-          <br />
-          <a href="https://github.com/nuxt/nuxt.js" target="_blank"
-            >Nuxt GitHub</a
-          >
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="primary" flat nuxt to="/inspire">Continue</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-flex>
-  </v-layout>
+  <div>
+    <carousel />
+
+    <v-container grid-list-lg class="hero-nudge--home">
+      <v-layout row wrap>
+        <v-flex sm8>
+          <blog-post
+            v-for="article in articles"
+            :key="article.id"
+            :post="article"
+          />
+        </v-flex>
+        <v-flex sm4>
+          <sidebar />
+        </v-flex>
+      </v-layout>
+    </v-container>
+  </div>
 </template>
 
-<script>
-import Logo from '~/components/Logo.vue'
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import { Article } from '@/store/blog'
+import Carousel from '@/components/home/Carousel.vue'
+import Sidebar from '@/components/Sidebar.vue'
+import BlogPost from '@/components/BlogPost.vue'
 
-export default {
+@Component({
   components: {
-    Logo,
-    VuetifyLogo
+    Carousel,
+    Sidebar,
+    BlogPost
+  },
+  async fetch({ store }): Promise<void> {
+    await Promise.all([
+      store.dispatch('slide/getSlides'),
+      store.dispatch('raid/getFeaturedRaids'),
+      store.dispatch('blog/getArticles'),
+      store.dispatch('discord/getDiscord')
+    ]).catch(e => e)
+  }
+})
+export default class Index extends Vue {
+  get articles(): Article[] {
+    return this.$store.getters['blog/articles']
   }
 }
 </script>
+
+<style lang="scss">
+.hero-nudge {
+  margin-top: -500px;
+
+  &--home {
+    transform: translateY(-120px);
+  }
+}
+</style>

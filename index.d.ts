@@ -1,0 +1,1 @@
+import '@nuxtjs/axios'

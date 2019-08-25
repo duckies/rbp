@@ -1,0 +1,37 @@
+$class-death-knight: #c41f3b;
+$class-demon-hunter: #a330c9;
+$class-druid: #ff7d0a;
+$class-hunter: #abd473;
+$class-mage: #69ccf0;
+$class-monk: #00ff96;
+$class-paladin: #f58cba;
+$class-priest: #fff;
+$class-rogue: #fff569;
+$class-shaman: #0070de;
+$class-warlock: #9482c9;
+$class-warrior: #c79c6e;
+
+$class-colors: (
+  1: $class-warrior,
+  2: $class-paladin,
+  3: $class-hunter,
+  4: $class-rogue,
+  5: $class-priest,
+  6: $class-death-knight,
+  7: $class-shaman,
+  8: $class-mage,
+  9: $class-warlock,
+  10: $class-monk,
+  11: $class-druid,
+  12: $class-demon-hunter
+);
+
+@each $classId, $color in $class-colors {
+  .class-border-#{$classId} {
+    border-color: $color;
+  }
+
+  .class-color-#{$classId} {
+    color: $color;
+  }
+}
