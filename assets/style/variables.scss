@@ -16,3 +16,12 @@ $material-dark: map-merge(
   padding: 0;
   margin: 0 auto;
 }
+
+
+.v-card {
+  &__title {
+    font-family: Khand, sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+  }
+}

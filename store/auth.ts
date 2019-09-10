@@ -1,5 +1,4 @@
 import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
-import { resetAuthToken } from '../utils/auth'
 import { Article } from './blog'
 
 export enum Roles {
@@ -31,6 +30,7 @@ export interface User {
   battletag: string
   blizzardid?: number
   blizzardtoken?: string
+  blizzardTokenExpiration?: Date
   roles: Roles[]
   createdAt: Date
   updatedAt: Date
@@ -44,12 +44,14 @@ export interface User {
 export interface AuthState {
   status: string
   errors: Error[]
+  token: string
   user?: User
 }
 
 export const state = (): AuthState => ({
   status: 'unloaded',
   errors: [],
+  token: '',
   user: undefined
 })
 
@@ -59,6 +61,13 @@ export const getters: GetterTree<AuthState, AuthState> = {
   },
   isAuthenticated(state: AuthState): boolean {
     return !!state.user
+  },
+  isTokenInvalid(state: AuthState): boolean {
+    return (
+      (typeof state.user === 'undefined' ||
+      typeof state.user.blizzardTokenExpiration === 'undefined') ||
+      new Date(state.user.blizzardTokenExpiration) < new Date()
+    )
   }
 }
 
@@ -75,8 +84,11 @@ export const mutations: MutationTree<AuthState> = {
   setUser(state: AuthState, user: User): void {
     state.user = user
   },
+  setToken(state: AuthState, token: string): void {
+    state.token = token
+  },
   clearUser(state: AuthState): void {
-    resetAuthToken()
+    state.token = ''
     state.user = undefined
   }
 }
@@ -93,6 +105,7 @@ export const actions: ActionTree<AuthState, AuthState> = {
     } catch (error) {
       commit('setStatus', 'error')
       commit('addError', error)
+      console.error(error)
     }
   },
   logout({ commit }): void {

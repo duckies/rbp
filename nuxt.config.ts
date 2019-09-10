@@ -47,7 +47,10 @@ const config: Configuration = {
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: [{ src: '~/plugins/flickity', ssr: false }],
+  plugins: [
+    { src: '~/plugins/flickity', ssr: false },
+    { src: '~/plugins/axios' }
+  ],
 
   /*
    ** Nuxt.js modules
@@ -58,9 +61,8 @@ const config: Configuration = {
    */
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
-    host: 'localhost',
-    port: 3000,
-    https: false
+    baseURL: 'http://localhost:3000/',
+    credentials: true
   },
 
   webfontloader: {
