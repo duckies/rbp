@@ -1,5 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import { RealmSlug } from '../../interfaces/realm.enum';
+import { RealmSlug } from '../interfaces/realm.enum';
 
 export class GuildLookupDto {
   @IsNotEmpty()

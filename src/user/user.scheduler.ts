@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NestSchedule, Timeout } from 'nest-schedule';
+import { NestSchedule, Timeout, Cron } from 'nest-schedule';
 import { InjectQueue } from 'nest-bull';
 import { Queue } from 'bull';
 
@@ -12,7 +12,7 @@ export class UserScheduler extends NestSchedule {
     super();
   }
 
-  @Timeout(15000)
+  @Cron('0 * * * *')
   async updateUserRoles() {
     this.queue.add('updateUserRoles');
   }

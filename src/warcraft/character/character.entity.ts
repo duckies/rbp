@@ -134,7 +134,7 @@ export class Character extends BaseEntity {
   avatar(): string {
     return `http://render-${this.region}.worldofwarcraft.com/character/${
       this.thumbnail
-    }?alt=/wow/static/images/2d/avatar-${this.race}-${this.gender}.jpg`;
+    }?alt=/wow/static/images/2d/avatar/${this.race}-${this.gender}.jpg`;
   }
 
   /**

@@ -62,7 +62,7 @@ export class TokenService {
     };
   }
 
-  clearToken(): void {
+  public clearToken(): void {
     this.token = null;
   }
 }

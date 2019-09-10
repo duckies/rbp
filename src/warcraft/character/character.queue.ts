@@ -1,26 +1,17 @@
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import {
-  OnQueueCompleted,
-  OnQueueError,
-  OnQueueFailed,
-  Queue,
-  QueueProcess,
-} from 'nest-bull';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Queue, QueueProcess } from 'nest-bull';
 import { ConfigService } from '../../config/config.service';
 import { BlizzardService } from '../blizzard/blizzard.service';
-import {
-  CharacterFields,
-  CharacterFieldsDto,
-  CharacterLookupDto,
-} from '../blizzard/dto/get-character.dto';
-import { GuildFields, GuildFieldsDto } from '../blizzard/dto/guild-fields.dto';
-import { GuildLookupDto } from '../blizzard/dto/guild-lookup.dto';
+import { CharacterFieldsDto, CharacterLookupDto } from '../dto/get-character.dto';
+import { GuildFields, GuildFieldsDto } from '../dto/guild-fields.dto';
+import { GuildLookupDto } from '../dto/guild-lookup.dto';
+import { RealmNameDictionary } from '../blizzard/realm.map';
+import { CharacterFields } from '../interfaces/character.interface';
 import GuildResponse from '../interfaces/guild.interface';
 import { RealmSlug } from '../interfaces/realm.enum';
 import { Character } from './character.entity';
 import { CharacterService } from './character.service';
-import { RealmNameDictionary } from '../blizzard/realm.map';
 
 @Queue({ name: 'character' })
 export class CharacterQueue {
@@ -48,10 +39,7 @@ export class CharacterQueue {
     this.guildLookup.realm = RealmSlug.Blackrock;
     this.guildLookup.region = 'us';
     this.guildFields.fields = [GuildFields.Members];
-    this.minimumCharacterLevel = parseInt(
-      this.configService.get('MINIMUM_CHARACTER_LEVEL'),
-      10,
-    );
+    this.minimumCharacterLevel = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
   }
 
   @QueueProcess({ name: 'updateGuildRoster', concurrency: 1 })
@@ -61,10 +49,7 @@ export class CharacterQueue {
       failed = 0,
       ignored = 0;
 
-    const guild = await this.blizzardService.getGuild(
-      this.guildLookup,
-      this.guildFields,
-    );
+    const guild = await this.blizzardService.getGuild(this.guildLookup, this.guildFields);
 
     // Do not include characters not meeting threshold.
     // Undecided if I want to do this, as the roster could include them later.
@@ -75,10 +60,7 @@ export class CharacterQueue {
 
     const promises = guild.members.map(async member => {
       const { character, rank } = member;
-      const lookup = new CharacterLookupDto(
-        character.name,
-        RealmNameDictionary[character.realm],
-      );
+      const lookup = new CharacterLookupDto(character.name, RealmNameDictionary[character.realm]);
 
       try {
         const character = await this.characterService.upsert(
@@ -94,8 +76,7 @@ export class CharacterQueue {
 
         return character;
       } catch (error) {
-        if (error.message && error.message.error)
-          this.logger.error(error.message.error);
+        if (error.message && error.message.error) this.logger.error(error.message.error);
         else this.logger.error(error);
         failed++;
       } finally {
@@ -145,9 +126,9 @@ export class CharacterQueue {
   private onCompleted(job: Job<Number>, result: any) {
     if (job.name === 'updateGuildRoster') {
       this.logger.log(
-        `Roster update completed with ${result.success} updated ${
-          result.failed
-        } failed and ${result.ignored} ignored.`,
+        `Roster update completed with ${result.success} updated ${result.failed} failed and ${
+          result.ignored
+        } ignored.`,
       );
     } else if (job.name === 'purgeGuildRoster') {
       this.logger.log(

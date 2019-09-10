@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  HttpService,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, HttpService, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { LessThan, Repository } from 'typeorm';
@@ -11,15 +6,12 @@ import { CharacterResponse } from '../interfaces/character-response.interface';
 import { ConfigService } from '../../config/config.service';
 import { User } from '../../user/user.entity';
 import { BlizzardService } from '../blizzard/blizzard.service';
-import {
-  CharacterFields,
-  CharacterFieldsDto,
-  CharacterLookupDto,
-} from '../blizzard/dto/get-character.dto';
+import { CharacterFieldsDto, CharacterLookupDto } from '../dto/get-character.dto';
 import { TokenService } from '../blizzard/token.service';
 import { Character } from './character.entity';
-import { RealmSlug, RealmName } from '../interfaces/realm.enum';
+import { RealmSlug } from '../interfaces/realm.enum';
 import { RealmSlugDictionary } from '../blizzard/realm.map';
+import { CharacterFields } from '../interfaces/character.interface';
 
 export interface PurgeResult {
   flagged: number;
@@ -44,7 +36,7 @@ export class CharacterService {
 
   constructor(
     @InjectRepository(Character)
-    private readonly characterRepository: Repository<Character>,
+    private readonly repository: Repository<Character>,
     private readonly blizzardService: BlizzardService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
@@ -116,7 +108,7 @@ export class CharacterService {
    * @param ranks
    */
   findRoster(ranks: number[] = [0, 1, 3, 4, 5]): Promise<Character[]> {
-    return this.characterRepository
+    return this.repository
       .createQueryBuilder('character')
       .where('character.guildRank IN (:...ranks)', {
         ranks,
@@ -129,7 +121,7 @@ export class CharacterService {
   }
 
   findAllInGuild(): Promise<Character[]> {
-    return this.characterRepository.find({
+    return this.repository.find({
       where: { guild: 'Really Bad Players' },
     });
   }
@@ -142,7 +134,7 @@ export class CharacterService {
   findOne(characterLookupDto: CharacterLookupDto): Promise<Character> {
     const { name, region, realm } = characterLookupDto;
 
-    return this.characterRepository
+    return this.repository
       .createQueryBuilder()
       .where('LOWER(name) = LOWER(:name)', { name })
       .andWhere('realm = :realm', { realm: RealmSlugDictionary[realm] })
@@ -164,10 +156,7 @@ export class CharacterService {
     return resp.data;
   }
 
-  async setMain(
-    user: User,
-    characterLookupDto: CharacterLookupDto,
-  ): Promise<User> {
+  async setMain(user: User, characterLookupDto: CharacterLookupDto): Promise<User> {
     const character = await this.upsert(
       characterLookupDto,
       this.setMainFields,
@@ -196,7 +185,7 @@ export class CharacterService {
 
     if (!character) throw new NotFoundException();
 
-    return this.characterRepository.remove(character);
+    return this.repository.remove(character);
   }
 
   /**
@@ -215,7 +204,7 @@ export class CharacterService {
       .subtract(7, 'days')
       .toDate();
 
-    const deleteResults = await this.characterRepository
+    const deleteResults = await this.repository
       .createQueryBuilder()
       .delete()
       .from(Character)
@@ -223,7 +212,7 @@ export class CharacterService {
       .returning('id')
       .execute();
 
-    const updateResults = await this.characterRepository
+    const updateResults = await this.repository
       .createQueryBuilder()
       .update(Character)
       .set({ isDeleted: true })

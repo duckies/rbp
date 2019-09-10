@@ -1,27 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { Provider } from '../auth/auth.service';
 import { JWTPayload } from '../auth/dto/jwt.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { KnownCharacter } from './interfaces/known-character.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly repository: Repository<User>,
   ) {}
 
   create(blizzardid: number, battletag: string, blizzardtoken: string) {
-    return this.userRepository.save({ blizzardid, battletag, blizzardtoken });
+    return this.repository.save({
+      blizzardid,
+      battletag,
+      blizzardtoken,
+    });
   }
 
-  async findAll(
-    take: number = 100,
-    skip: number = 0,
-  ): Promise<{ result: User[]; total: number }> {
-    const [result, total] = await this.userRepository.findAndCount({
+  async findAll(take: number = 100, skip: number = 0): Promise<{ result: User[]; total: number }> {
+    const [result, total] = await this.repository.findAndCount({
       order: { id: 'DESC' },
       take,
       skip,
@@ -31,35 +33,43 @@ export class UserService {
   }
 
   findOne(id: number): Promise<User> {
-    return this.userRepository.findOneOrFail(id);
+    return this.repository.findOneOrFail(id);
   }
 
   findOneByJwtPayload(payload: JWTPayload): Promise<User> {
-    return this.userRepository.findOneOrFail(payload.id);
+    console.info('Searching for user with payload ' + JSON.stringify(payload))
+    return this.repository.findOneOrFail(payload.id);
   }
 
   findOneByProviderId(thirdPartyId: number, provider: Provider) {
     if (provider === Provider.BLIZZARD) {
-      return this.userRepository.findOneOrFail({ blizzardid: thirdPartyId });
+      return this.repository.findOneOrFail({ blizzardid: thirdPartyId });
     }
 
-    return Promise.reject();
+    throw new BadRequestException();
   }
 
   findAllWithGuildCharacters() {
-    return this.userRepository
+    return this.repository
       .createQueryBuilder('user')
       .innerJoinAndSelect('user.characters', 'character')
-      .where('character.guild = :guild', { guild: 'Really Bad Players'})
+      .where('character.guild = :guild', { guild: 'Really Bad Players' })
       .andWhere('character.guildRank is not null')
       .getMany();
-    }
+  }
+
+  async findKnownCharacters(user: User): Promise<User> {
+    return this.repository.findOne({
+      select: ['knownCharacters', 'knownCharactersLastUpdated'],
+      where: { id: user.id },
+    });
+  }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.userRepository.findOneOrFail(id);
+    const user = await this.repository.findOneOrFail(id);
 
-    const result = await this.userRepository.merge(user, updateUserDto);
+    const result = await this.repository.merge(user, updateUserDto);
 
-    return await this.userRepository.save(result);
+    return await this.repository.save(result);
   }
 }

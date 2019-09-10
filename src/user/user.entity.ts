@@ -8,11 +8,16 @@ import {
   OneToMany,
   OneToOne,
   JoinColumn,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
 import { Comment } from '../application/comment/comment.entity';
 import { Character } from '../warcraft/character/character.entity';
+import { Form } from '../application/form/form.entity';
+import { KnownCharacter } from './interfaces/known-character.interface';
+import moment = require('moment');
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -37,6 +42,9 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   blizzardtoken: string;
 
+  @Column({ nullable: true })
+  blizzardTokenExpiration: Date;
+
   @Column({ type: 'enum', enum: Roles, default: [Roles.Guest], array: true })
   roles: Roles[];
 
@@ -55,6 +63,9 @@ export class User extends BaseEntity {
   // Instructs frontend that the user is new.
   justCreated: boolean;
 
+  @OneToMany(type => Form, form => form.author)
+  forms: Form[];
+
   @OneToMany(type => Article, article => article.author)
   articles: Article[];
 
@@ -69,4 +80,26 @@ export class User extends BaseEntity {
     cascade: true,
   })
   characters: Character[];
+
+  @Column({ type: 'jsonb', nullable: true, array: true })
+  knownCharacters: KnownCharacter[];
+
+  @Column({ nullable: true })
+  knownCharactersLastUpdated: Date;
+
+  @BeforeInsert()
+  setToken() {
+    if (this.blizzardtoken) {
+      this.blizzardTokenExpiration = moment().add(24, 'hours').toDate();
+    }
+  }
+
+  @BeforeUpdate()
+  updateToken() {
+    if (this.blizzardtoken === null) {
+      this.blizzardTokenExpiration = null;
+    } else {
+      this.blizzardTokenExpiration = moment().add(24, 'hours').toDate();
+    }
+  }
 }
