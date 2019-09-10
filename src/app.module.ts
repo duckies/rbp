@@ -12,6 +12,7 @@ import { PassportModule } from '@nestjs/passport';
 import { RaidModule } from './warcraft/raid/raid.module';
 import { WarcraftModule } from './warcraft/warcraft.module';
 import { SharedBullModule } from './bull.module';
+import { FormModule } from './application/form/form.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { SharedBullModule } from './bull.module';
     ArticleModule,
     RaidModule,
     WarcraftModule,
-    SharedBullModule
+    SharedBullModule,
+    FormModule,
   ],
 })
 export class AppModule {

@@ -5,6 +5,7 @@ import { UseRoles } from 'nest-access-control';
 import { Usr } from './user.decorator';
 import { ComposeGuard } from '../auth/guards/compose.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { KnownCharacter } from './interfaces/known-character.interface';
 
 @Controller('user')
 @UseGuards(ComposeGuard)
@@ -21,9 +22,13 @@ export class UserController {
   }
 
   @Get('/me')
-  @UseRoles({ resource: 'user', action: 'read', possession: 'own' })
   findMe(@Usr() user: User): Promise<User> {
     return this.userService.findOne(user.id);
+  }
+
+  @Get('/known_characters')
+  findKnownCharacters(@Usr() user: User): Promise<User> {
+    return this.userService.findKnownCharacters(user);
   }
 
   @Get(':id')

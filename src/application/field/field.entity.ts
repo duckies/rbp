@@ -8,7 +8,7 @@ export enum FieldType {
   UPLOAD = 'Upload'
 }
 
-@Entity('Field')
+@Entity('field')
 export class Field extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

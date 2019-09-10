@@ -10,7 +10,7 @@ export class JWTGuard extends AuthGuard('JWT') {
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     try {
       return await super.canActivate(ctx) as boolean;
-    } catch(e) {
+    } catch(error) {
       throw new UnauthorizedException();
     }
   }

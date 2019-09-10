@@ -4,7 +4,7 @@ import { Character } from './character.entity';
 import { ComposeGuard } from '../../auth/guards/compose.guard';
 import { Usr } from '../../user/user.decorator';
 import { User } from '../../user/user.entity';
-import { CharacterLookupDto } from '../blizzard/dto/get-character.dto';
+import { CharacterLookupDto } from '../dto/get-character.dto';
 
 @Controller('character')
 export class CharacterController {

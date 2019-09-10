@@ -24,7 +24,7 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   // Blizzard does not provide refresh tokens.
   async validate(req, accessToken, refreshToken, profile) {
     if (!req.user) {
-      this.logger.log('Logging in or creating user ' + JSON.stringify(profile));
+      this.logger.log('Logging in or creating ' + profile.battletag);
 
       return await this.authService.validateOAuthLogin(
         profile.id,

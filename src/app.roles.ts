@@ -57,6 +57,4 @@ roleBuilder
     .updateAny('user')
     .deleteAny('user')
     .updateAny('raid')
-
-// console.log(roleBuilder.getGrants())
   

@@ -1,27 +1,8 @@
-import { IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
-import { RealmSlug } from '../../interfaces/realm.enum';
-
-export enum CharacterFields {
-  Achievements = 'achievements',
-  Appearance = 'appearance',
-  Feed = 'feed',
-  Guild = 'guild',
-  HunterPets = 'hunterPets',
-  Items = 'items',
-  Mounts = 'mounts',
-  Pets = 'pets',
-  PetSlots = 'petSlots',
-  Professions = 'professions',
-  Progression = 'progression',
-  PVP = 'pvp',
-  Quests = 'quests',
-  Reputation = 'reputation',
-  Statistics = 'statistics',
-  Stats = 'stats',
-  Talents = 'talents',
-  Titles = 'titles',
-  Audit = 'audit',
-}
+import { IsNotEmpty, IsOptional } from 'class-validator';
+import { RealmSlug, RealmName } from '../interfaces/realm.enum';
+import { IsInEnums } from '../validators/blizzard-realm.validator';
+import { Region } from '../interfaces/region.enum';
+import { CharacterFields } from '../interfaces/character.interface';
 
 export class CharacterFieldsDto {
   constructor(fields?: CharacterFields[]) {
@@ -55,19 +36,19 @@ export class CharacterFieldsDto {
 }
 
 export class CharacterLookupDto {
-  constructor(name: string, realm?: RealmSlug, region?: string) {
+  constructor(name: string, realm?: RealmSlug, region?: Region) {
     this.name = name;
     this.realm = realm ? realm : RealmSlug.Blackrock;
-    this.region = region ? region : 'us';
+    this.region = region ? region : Region.US;
   }
 
   @IsNotEmpty()
-  name: string;
+  readonly name: string;
 
   @IsNotEmpty()
-  @IsEnum(RealmSlug)
-  realm: RealmSlug;
+  @IsInEnums([RealmName, RealmSlug], { message: '$value is not a valid realm name or realm slug.' })
+  readonly realm: RealmName | RealmSlug;
 
   @IsNotEmpty()
-  region: string;
+  readonly region: Region;
 }
