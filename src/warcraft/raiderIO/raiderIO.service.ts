@@ -1,5 +1,7 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { RaiderIOGuild } from './raiderIO.interface';
+import { CharacterLookupDto } from '../dto/get-character.dto';
+import { RaiderIOCharacterFields, RaiderIOCharacterFieldsDto } from './dto/char-fields.dto';
 
 export enum GuildRaiderIOFields {
   RAID_PROGRESSION = 'raid_progression',
@@ -8,24 +10,35 @@ export enum GuildRaiderIOFields {
 
 @Injectable()
 export class RaiderIOService {
- constructor(private readonly http: HttpService) {}
+  guildFields = [GuildRaiderIOFields.RAID_PROGRESSION, GuildRaiderIOFields.RAID_RANKINGS];
+  constructor(private readonly http: HttpService) {}
 
   /**
-   * Obtains guild data from Raider.IO about the guild.
+   * Obtains guild data from Raider.IO.
    * @param fields
    */
-  async getGuildRaiderIO(
-    fields: GuildRaiderIOFields[] = [
-      GuildRaiderIOFields.RAID_PROGRESSION,
-      GuildRaiderIOFields.RAID_RANKINGS,
-    ],
-  ): Promise<RaiderIOGuild> {
+  async getGuildRaiderIO(fields: GuildRaiderIOFields[] = this.guildFields): Promise<RaiderIOGuild> {
     const api = `https://raider.io/api/v1/guilds/profile?region=us&realm=blackrock&name=really bad players${
       fields.length ? '&fields=' + fields : ''
     }`;
 
-    const resp = await this.http.get(api).toPromise();
+    return (await this.http.get(api).toPromise()).data;
+  }
 
-    return resp.data;
+  /**
+   * Obtains character data from Raider.IO
+   * @param characterLookupDto
+   * @param raiderIOCharacterFieldsDto
+   */
+  async getCharacterRaiderIO(
+    characterLookupDto: CharacterLookupDto,
+    raiderIOCharacterFieldsDto: RaiderIOCharacterFieldsDto,
+  ): Promise<any> {
+    const { region, realm, name } = characterLookupDto;
+    const api = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${name}${
+      raiderIOCharacterFieldsDto.fields.length ? '&fields=' + raiderIOCharacterFieldsDto.fields : ''
+    }`;
+
+    return (await this.http.get(api).toPromise()).data;
   }
 }

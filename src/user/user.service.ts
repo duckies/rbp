@@ -37,7 +37,6 @@ export class UserService {
   }
 
   findOneByJwtPayload(payload: JWTPayload): Promise<User> {
-    console.info('Searching for user with payload ' + JSON.stringify(payload))
     return this.repository.findOneOrFail(payload.id);
   }
 
