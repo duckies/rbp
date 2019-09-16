@@ -10,7 +10,7 @@ export const actions = {
 
       await dispatch('auth/getMe')
     } else {
-      dispatch('auth/clearUser')
+      dispatch('auth/logout')
     }
   }
 }
