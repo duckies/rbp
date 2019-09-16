@@ -30,7 +30,7 @@
 
       <v-app-bar-nav-icon class="hidden-md-and-up" @click="drawer = !drawer" />
 
-      <v-toolbar-title class="title" v-text="title" />
+      <v-toolbar-title class="page-title" v-text="title" />
 
       <v-spacer />
 
@@ -166,15 +166,5 @@ export default class DefaultLayout extends Vue {
   // .v-toolbar__content {
   //   padding: 0;
   // }
-}
-
-.title {
-  margin-top: 5px;
-  text-transform: uppercase;
-  color: #fff;
-  font-weight: 900;
-  font-family: Khand, sans-serif !important;
-  font-size: 40px !important;
-  line-height: 1.1;
 }
 </style>

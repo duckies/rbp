@@ -1,5 +1,4 @@
 import { ActionTree, GetterTree, MutationTree } from 'vuex/types/index'
-import { AxiosResponse } from 'axios'
 import { User } from './auth'
 
 export interface Article {
@@ -61,6 +60,8 @@ export const actions: ActionTree<BlogState, BlogState> = {
 
     try {
       const resp = await this.$axios.$get('/article')
+      console.log('Response:', resp)
+
       commit('setStatus', 'success')
       commit('setTotal', resp.total)
       commit('setArticles', resp.result)

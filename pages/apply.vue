@@ -34,7 +34,7 @@
           </v-card>
 
           <template v-else>
-            <v-card :loading="characterStatus === 'loading'">
+            <v-card :loading="characterStatus === 'loading'" class="my-4">
               <v-card-title>Select your Characters</v-card-title>
 
               <v-card-text>
@@ -45,9 +45,9 @@
                 }}</v-alert>
 
                 <v-row>
-                  <v-col sm="12" :md="isMainSelected ? '6' : '12'">
+                  <v-col sm="12" md="6">
                     <v-select
-                      v-model="appMainCharacter"
+                      v-model="mainCharacter"
                       label="Main Character"
                       hint="Pick your current main character or character you wish to use."
                       persistent-hint
@@ -56,7 +56,6 @@
                       return-object
                       filled
                       chips
-                      @change="selectMain"
                     >
                       <template v-slot:item="{ item, index }">
                         <v-avatar class="mr-3 mb-2">
@@ -71,10 +70,10 @@
                     </v-select>
                   </v-col>
 
-                  <v-col v-if="isMainSelected">
+                  <v-col>
                     <v-row>
                       <v-select
-                        v-model="appAltCharacters"
+                        v-model="altCharacters"
                         label="Optional Alts"
                         hint="Optionally select any alts you wish for us to see."
                         persistent-hint
@@ -83,6 +82,7 @@
                         return-object
                         multiple
                         filled
+                        :disabled="!isMainSelected"
                         chips
                       >
                         <template v-slot:item="{ item, index }">
@@ -131,9 +131,18 @@
               </v-card-actions>
             </v-card>
 
+            <character-panel
+              v-if="isCharacterDataAvailable"
+              :name="mainCharacterFilled.name"
+              :realm="mainCharacterFilled.realm"
+              :region="mainCharacterFilled.region"
+              :blizzard="mainCharacterFilled.blizzard"
+              :raiderio="mainCharacterFilled.raiderIO"
+            />
+
             <v-card v-for="field in fields" :key="field.id" class="my-4">
               <v-card-title>{{ field.question }}</v-card-title>
-              <v-card-text><v-textarea></v-textarea></v-card-text>
+              <v-card-text><v-textarea filled></v-textarea></v-card-text>
             </v-card>
           </template>
         </v-col>
@@ -148,12 +157,16 @@ import Component from 'vue-class-component'
 import { AxiosError } from 'axios'
 import { mapGetters } from 'vuex'
 import { formatRelative } from 'date-fns'
+import { Watch } from 'vue-property-decorator'
 import { Character, KnownCharacter } from '../store/character'
 import { User } from '../store/auth'
+import { RaiderIOCharacter } from '../store/raiderIO'
+import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
 import Hero from '@/components/Hero.vue'
 
 @Component({
   components: {
+    CharacterPanel,
     Hero
   },
   computed: {
@@ -223,9 +236,10 @@ export default class Apply extends Vue {
     }
   ]
   // Non-Static Data
-  appMainCharacter: KnownCharacter | {} = {}
-  appAltCharacters = []
-  appMainCharacterDownload?: Character
+  mainCharacter: null | KnownCharacter = null
+  mainCharacterFilled: null | KnownCharacter = null
+  altCharacters: KnownCharacter[] = []
+  altCharactersFilled: KnownCharacter[] = []
   // Auth Store
   user!: User
   isAuthenticated!: boolean
@@ -238,13 +252,66 @@ export default class Apply extends Vue {
   knownCharactersLastUpdated?: Date
   knownCharacterDataStale?: boolean
 
+  // If we can potentially download characters, and not too quickly since
+  // the last time, download them once mounted. This is a VERY slow API call.
   async mounted(): Promise<void> {
-    // If we can potentially download characters, and not too quickly since
-    // the last time, download them once mounted. This is a slow API call.
     if (this.isTokenInvalid || !this.knownCharacterDataStale) return
 
-    console.info('Token isnt expired, downloading new characters.')
     await this.$store.dispatch('character/getUserCharactersFromBlizzard')
+  }
+
+  @Watch('mainCharacter')
+  async onMainChanged(character: KnownCharacter): Promise<void> {
+    const [blizzard, raiderIO] = await this.getCharacterData(
+      character.name,
+      character.realm,
+      character.region
+    )
+
+    this.mainCharacterFilled = Object.assign({}, this.mainCharacter, {
+      blizzard,
+      raiderIO
+    })
+  }
+
+  // Warning, this may need to be set to watch deep changes!
+  @Watch('altCharacters')
+  async onAltChanged(
+    alts: KnownCharacter[],
+    oldAlts: KnownCharacter[]
+  ): Promise<void> {
+    let chars: KnownCharacter[] = this.altCharactersFilled
+    let added: KnownCharacter[] = []
+    let removed: KnownCharacter[] = []
+
+    added = oldAlts === null ? alts : alts.filter(a => oldAlts.includes(a))
+
+    removed = oldAlts
+      .filter(o => alts.includes(o))
+      .concat(alts.filter(a => oldAlts.includes(a)))
+
+    console.log('Added ', added)
+    console.log('Removed ', removed)
+
+    for (const character of removed) {
+      chars = chars.filter(
+        char =>
+          char.name !== character.name &&
+          char.realm !== character.realm &&
+          char.region !== character.region
+      )
+    }
+
+    for (const character of added) {
+      const [blizzard, raiderIO] = await this.getCharacterData(
+        character.name,
+        character.realm,
+        character.region
+      )
+      chars.push(Object.assign({}, character, { blizzard, raiderIO }))
+    }
+
+    this.altCharactersFilled = chars
   }
 
   get isSubmitted(): boolean {
@@ -261,23 +328,33 @@ export default class Apply extends Vue {
   }
 
   get selectedMainIndex(): number {
-    return this.appMainCharacter &&
-      Object.entries(this.appMainCharacter).length &&
+    return this.mainCharacter &&
+      Object.entries(this.mainCharacter).length &&
       this.knownCharacters
-      ? this.knownCharacters.indexOf(this.appMainCharacter as KnownCharacter)
+      ? this.knownCharacters.indexOf(this.mainCharacter as KnownCharacter)
       : 0
   }
 
   get isMainSelected(): boolean {
-    if (!this.appMainCharacter) return false
+    if (!this.mainCharacter) return false
 
-    return Object.entries(this.appMainCharacter).length !== 0
+    return Object.entries(this.mainCharacter).length !== 0
+  }
+
+  get isCharacterDataAvailable(): boolean {
+    console.info('Recalculating')
+    if (this.mainCharacter === null || this.mainCharacterFilled === null)
+      return false
+    if (!this.mainCharacterFilled.hasOwnProperty('blizzard')) return false
+    if (typeof this.mainCharacterFilled.blizzard === 'undefined') return false
+
+    return Object.entries(this.mainCharacterFilled.blizzard).length !== 0
   }
 
   get potentialAlts(): KnownCharacter[] {
-    if (!this.appMainCharacter || !this.knownCharacters) return []
+    if (!this.mainCharacter || !this.knownCharacters) return []
 
-    return this.knownCharacters.filter(c => c !== this.appMainCharacter)
+    return this.knownCharacters.filter(c => c !== this.mainCharacter)
   }
 
   get relativeCharacterLastUpdated(): string {
@@ -298,17 +375,23 @@ export default class Apply extends Vue {
     return `http://render-us.worldofwarcraft.com/character/${character.thumbnail}?alt=/wow/static/images/2d/avatar/${character.race}-${character.gender}.jpg`
   }
 
-  async selectMain(selected: KnownCharacter): Promise<void> {
-    console.log(selected)
-    const character = await this.$store.dispatch('character/getAppCharacter', {
-      name: selected.name,
-      realm: selected.realm,
-      region: selected.region
-    })
-
-    if (typeof character === 'undefined') return
-
-    this.appMainCharacterDownload = character
+  getCharacterData(
+    name: string,
+    realm: string,
+    region: string
+  ): Promise<[Character, RaiderIOCharacter]> {
+    return Promise.all([
+      this.$store.dispatch('character/getAppCharacter', {
+        name,
+        realm,
+        region
+      }) as Promise<Character>,
+      this.$store.dispatch('raiderIO/getCharacterRaiderIO', {
+        name,
+        realm,
+        region
+      }) as Promise<RaiderIOCharacter>
+    ])
   }
 }
 </script>

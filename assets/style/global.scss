@@ -1,6 +1,15 @@
 @import './blizzard/classes.scss';
 @import './blizzard/items.scss';
 
+.page-title {
+  margin-top: 5px;
+  text-transform: uppercase;
+  color: #fff;
+  font-weight: 900;
+  font-family: Khand, sans-serif !important;
+  font-size: 40px !important;
+}
+
 .justify-end-image-content {
   .v-responsive__content {
     display: flex;

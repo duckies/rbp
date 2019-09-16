@@ -1,5 +1,4 @@
 import { ActionTree, MutationTree, GetterTree } from 'vuex/types/index'
-import { AxiosResponse } from 'axios'
 
 export interface Channel {
   position: number

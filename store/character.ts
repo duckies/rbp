@@ -1,5 +1,6 @@
 import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
 import { User } from './auth'
+import { RaiderIOCharacter } from './raiderIO'
 
 const FIFTEEN_MINUTES = 1000 * 60 * 16
 
@@ -13,6 +14,8 @@ export interface KnownCharacter {
   level: number
   thumbnail: string
   lastModified: number
+  blizzard?: Character
+  raiderIO?: RaiderIOCharacter
 }
 
 export interface Character {
@@ -92,7 +95,7 @@ export const getters: GetterTree<CharacterState, CharacterState> = {
   knownCharactersLastUpdated(state: CharacterState): Date | undefined {
     return state.knownCharactersLastUpdated
   },
-  status(state: CharacterState): String {
+  status(state: CharacterState): string {
     return state.status
   },
   error(state: CharacterState): Error | undefined {

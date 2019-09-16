@@ -64,8 +64,8 @@ export const getters: GetterTree<AuthState, AuthState> = {
   },
   isTokenInvalid(state: AuthState): boolean {
     return (
-      (typeof state.user === 'undefined' ||
-      typeof state.user.blizzardTokenExpiration === 'undefined') ||
+      typeof state.user === 'undefined' ||
+      typeof state.user.blizzardTokenExpiration === 'undefined' ||
       new Date(state.user.blizzardTokenExpiration) < new Date()
     )
   }
@@ -108,6 +108,7 @@ export const actions: ActionTree<AuthState, AuthState> = {
       console.error(error)
     }
   },
+
   logout({ commit }): void {
     commit('clearUser')
   }

@@ -35,3 +35,9 @@ $class-colors: (
     color: $color;
   }
 }
+
+@each $classId, $color in $class-colors {
+  .class-light-bg-#{$classId} {
+    background-color: rgba($color, 0.2);
+  }
+}

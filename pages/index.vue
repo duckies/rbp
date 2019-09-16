@@ -34,6 +34,7 @@ import BlogPost from '@/components/BlogPost.vue'
     BlogPost
   },
   async fetch({ store }): Promise<void> {
+    await store.dispatch('slide/getSlides')
     await Promise.all([
       store.dispatch('slide/getSlides'),
       store.dispatch('raid/getFeaturedRaids'),

@@ -1,23 +1,10 @@
 import { Configuration } from '@nuxt/types'
 
-const config: Configuration = {
+const config: Partial<Configuration> = {
   mode: 'universal',
 
   buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
 
-  /**
-   * Server Settings
-   */
-  router: {
-    // middleware: 'auth'
-  },
-
-  // Why is this required?
-  dir: {},
-
-  /*
-   ** Headers of the page
-   */
   head: {
     title: 'Really Bad Players',
     meta: [
@@ -34,33 +21,24 @@ const config: Configuration = {
     ]
   },
 
-  /*
-   ** Customize the progress-bar color
-   */
   loading: { color: '#854feb' },
 
-  /*
-   ** Global CSS
-   */
   css: ['~assets/style/global.scss'],
 
-  /*
-   ** Plugins to load before mounting the App
-   */
   plugins: [
     { src: '~/plugins/flickity', ssr: false },
     { src: '~/plugins/axios' }
   ],
 
-  /*
-   ** Nuxt.js modules
-   */
   modules: ['@nuxtjs/axios', 'nuxt-webfontloader'],
-  /*
-   ** Axios module configuration
-   */
+
+  vuetify: {
+    customVariables: ['~/assets/styles/vuetify.scss'],
+    treeShake: true,
+    optionsPath: './vuetify.options.ts'
+  },
+
   axios: {
-    // See https://github.com/nuxt-community/axios-module#options
     baseURL: 'http://localhost:3000/',
     credentials: true
   },
@@ -82,28 +60,7 @@ const config: Configuration = {
     }
   },
 
-  vuetify: {
-    customVariables: ['~/assets/style/variables.scss'],
-    treeShake: true,
-    theme: {
-      dark: true,
-      themes: {
-        dark: {
-          primary: '#854feb'
-        }
-      }
-    }
-  },
-
-  /*
-   ** Build configuration
-   */
   build: {
-    transpile: ['vuetify/lib'],
-
-    /*
-     ** You can extend webpack config here
-     */
     extend(config, ctx): void {
       // Run ESLint on save
       if (config && config.module && ctx.isDev && ctx.isClient) {

@@ -2,11 +2,13 @@
 @import '~vuetify/src/components/VGrid/_mixins';
 
 $font-size-root: 20px;
+
 $material-dark: map-merge(
   $material-dark,
   (
     bg-color: #141517,
-    'background': #141517,
+    background: #141517,
+    cards: #202124
   )
 );
 
@@ -16,7 +18,6 @@ $material-dark: map-merge(
   padding: 0;
   margin: 0 auto;
 }
-
 
 .v-card {
   &__title {
