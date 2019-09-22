@@ -1,11 +1,11 @@
-import { Queue, QueueProcess, OnQueueProgress, OnQueueCompleted, OnQueueFailed } from 'nest-bull';
+import { OnQueueCompleted, OnQueueFailed, Processor, Process } from 'nest-bull';
 import { Logger } from '@nestjs/common';
 import { RaiderIOService } from './raiderIO.service';
 import { Job } from 'bull';
 import { RaidService } from '../raid/raid.service';
 import { Raid } from '../raid/raid.entity';
 
-@Queue({ name: 'raiderIO' })
+@Processor({ name: 'raiderIO' })
 export class RaiderIOQueue {
   private readonly logger: Logger = new Logger(RaiderIOQueue.name);
 
@@ -14,24 +14,27 @@ export class RaiderIOQueue {
     private readonly raidService: RaidService,
   ) {}
 
-  @QueueProcess({ name: 'updateGuildRaiderIO' })
+  @Process({ name: 'updateGuildRaiderIO' })
   private async updateGuildRaiderIO(job: Job<Number>): Promise<Raid[]> {
     const guild = await this.raiderIOService.getGuildRaiderIO();
 
     // It's not worthwhile to commit to the update without all of the information.
-    if (!guild.raid_progression || !guild.raid_rankings)
+    if (!guild.raid_progression || !guild.raid_rankings) {
       return Promise.reject({
         message: 'Missing data needed to complete guild update.',
         data: guild,
       });
-    
-    const promises: Promise<Raid>[] = [];
+    }
+
+    const promises: Array<Promise<Raid>> = [];
     let progress = 1;
 
     for (const slug in guild.raid_progression) {
       const raid = await this.raidService.findOneBySlug(slug);
 
-      if (!raid) continue;
+      if (!raid) {
+        continue;
+      }
 
       const progress = guild.raid_progression[slug];
       const rankings = guild.raid_rankings[slug];
@@ -86,8 +89,8 @@ export class RaiderIOQueue {
 
   @OnQueueCompleted()
   private onCompleted(job: Job<Number>, result): void {
-    if (job.name === "updateGuildRaiderIO") {
-      this.logger.log(`Raid Progression updated for ${result.length} raids.`)
+    if (job.name === 'updateGuildRaiderIO') {
+      this.logger.log(`Raid Progression updated for ${result.length} raids.`);
     }
   }
 }

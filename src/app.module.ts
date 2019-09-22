@@ -11,8 +11,9 @@ import { ArticleModule } from './article/article.module';
 import { PassportModule } from '@nestjs/passport';
 import { RaidModule } from './warcraft/raid/raid.module';
 import { WarcraftModule } from './warcraft/warcraft.module';
-import { SharedBullModule } from './bull.module';
 import { FormModule } from './application/form/form.module';
+import { BullSharedModule } from './bull.module';
+import { BullModule } from 'nest-bull';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { FormModule } from './application/form/form.module';
     }),
     TypeOrmModule.forRoot(),
     AccessControlModule.forRoles(roleBuilder),
+    BullSharedModule,
     ConfigModule,
     UserModule,
     AuthModule,
@@ -28,7 +30,6 @@ import { FormModule } from './application/form/form.module';
     ArticleModule,
     RaidModule,
     WarcraftModule,
-    SharedBullModule,
     FormModule,
   ],
 })
