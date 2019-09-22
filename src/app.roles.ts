@@ -1,4 +1,4 @@
-import { RolesBuilder } from "nest-access-control";
+import { RolesBuilder } from 'nest-access-control';
 
 export enum Roles {
   GuildMaster = 'GUILD_MASTER',
@@ -9,7 +9,7 @@ export enum Roles {
   Recruit = 'RECRUIT',
   Fan = 'FAN',
   PlayerAlt = 'PLAYER_ALT',
-  Guest = 'GUEST'
+  Guest = 'GUEST',
 }
 
 export const NumRanks = 9;
@@ -23,38 +23,40 @@ export const Ranks = {
   [5]: Roles.Recruit,
   [6]: Roles.Fan,
   [7]: Roles.PlayerAlt,
-  [8]: Roles.Guest
+  [8]: Roles.Guest,
 };
 
 export const roleBuilder: RolesBuilder = new RolesBuilder();
 
 roleBuilder
   .grant(Roles.Guest)
-    .updateOwn('user', ['displayname', 'avatar'])
-    .deleteOwn('user')
+  .updateOwn('user', ['displayname', 'avatar'])
+  .deleteOwn('user')
   .grant(Roles.Fan)
-    .extend(Roles.Guest)
+  .extend(Roles.Guest)
   .grant(Roles.Recruit)
-    .extend(Roles.Fan)
+  .extend(Roles.Fan)
   .grant(Roles.Raider)
-    .extend(Roles.Recruit)
+  .extend(Roles.Recruit)
   .grant(Roles.RaiderBank)
-    .extend(Roles.Raider)
+  .extend(Roles.Raider)
   .grant(Roles.Officer)
-    .extend(Roles.Raider)
-    .readAny('user')
-    .createAny('slide')
-    .updateAny('slide')
-    .deleteAny('slide')
-    .createAny('article')
-    .updateAny('article')
-    .deleteAny('article')
+  .extend(Roles.Raider)
+  .readAny('user')
+  .createAny('slide')
+  .updateAny('slide')
+  .deleteAny('slide')
+  .createAny('article')
+  .updateAny('article')
+  .deleteAny('article')
+  .createAny('field')
+  .updateAny('field')
+  .deleteAny('field')
   .grant(Roles.OfficerAlt)
-    .extend(Roles.Officer)
+  .extend(Roles.Officer)
   .grant(Roles.GuildMaster)
-    .extend(Roles.Officer)
-    .createAny('raid')
-    .updateAny('user')
-    .deleteAny('user')
-    .updateAny('raid')
-  
+  .extend(Roles.Officer)
+  .createAny('raid')
+  .updateAny('user')
+  .deleteAny('user')
+  .updateAny('raid');

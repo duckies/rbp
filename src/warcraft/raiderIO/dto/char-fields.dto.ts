@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
 export enum RaiderIOCharacterFields {
   GEAR = 'gear',
