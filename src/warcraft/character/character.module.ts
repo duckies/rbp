@@ -8,21 +8,10 @@ import { AuthModule } from '../../auth/auth.module';
 import { CharacterController } from './character.controller';
 import { TokenService } from '../blizzard/token.service';
 import { BlizzardModule } from '../blizzard/blizzard.module';
-import { BullModule } from 'nest-bull';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Character]),
-    AuthModule,
-    HttpModule,
-    BlizzardModule,
-  ],
-  providers: [
-    CharacterService,
-    CharacterQueue,
-    CharacterScheduler,
-    TokenService,
-  ],
+  imports: [TypeOrmModule.forFeature([Character]), AuthModule, HttpModule, BlizzardModule],
+  providers: [CharacterService, CharacterQueue, CharacterScheduler, TokenService],
   exports: [CharacterService, CharacterQueue],
   controllers: [CharacterController],
 })

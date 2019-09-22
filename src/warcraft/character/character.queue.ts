@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Queue, QueueProcess } from 'nest-bull';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from 'nest-bull';
 import { ConfigService } from '../../config/config.service';
 import { BlizzardService } from '../blizzard/blizzard.service';
 import { CharacterFieldsDto, CharacterLookupDto } from '../dto/get-character.dto';
@@ -13,7 +13,7 @@ import { RealmSlug } from '../interfaces/realm.enum';
 import { Character } from './character.entity';
 import { CharacterService } from './character.service';
 
-@Queue({ name: 'character' })
+@Processor({ name: 'character' })
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
   private guildLookup: GuildLookupDto = new GuildLookupDto();
@@ -42,7 +42,7 @@ export class CharacterQueue {
     this.minimumCharacterLevel = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
   }
 
-  @QueueProcess({ name: 'updateGuildRoster', concurrency: 1 })
+  @Process({ name: 'updateGuildRoster', concurrency: 1 })
   private async updateGuildRoster(job: Job<Number>) {
     let progress = 0,
       success = 0,
@@ -71,13 +71,13 @@ export class CharacterQueue {
           rank,
         );
 
-        if (character.notUpdated) ignored++;
-        else success++;
+        if (character.notUpdated) { ignored++; }
+        else { success++; }
 
         return character;
       } catch (error) {
-        if (error.message && error.message.error) this.logger.error(error.message.error);
-        else this.logger.error(error);
+        if (error.message && error.message.error) { this.logger.error(error.message.error); }
+        else { this.logger.error(error); }
         failed++;
       } finally {
         job.progress(++progress / promises.length);
@@ -89,7 +89,7 @@ export class CharacterQueue {
     return Promise.resolve({ success, failed, ignored });
   }
 
-  @QueueProcess({ name: 'removeNonGuildMembers', concurrency: 1 })
+  @Process({ name: 'removeNonGuildMembers', concurrency: 1 })
   private async removeNonGuildMembers(job: Job<Number>) {
     const [blizzard, local]: [GuildResponse, Character[]] = await Promise.all([
       this.blizzardService.getGuild(this.guildLookup, this.guildFields),
@@ -112,7 +112,7 @@ export class CharacterQueue {
     return Promise.all(promises);
   }
 
-  @QueueProcess({ name: 'purgeGuildRoster', concurrency: 1 })
+  @Process({ name: 'purgeGuildRoster', concurrency: 1 })
   private async purgeGuildRoster(job: Job<Number>) {
     return await this.characterService.purgeRoster();
   }

@@ -11,6 +11,6 @@ import { UserScheduler } from './user.scheduler';
   imports: [TypeOrmModule.forFeature([User]), forwardRef(() => AuthModule)],
   controllers: [UserController],
   providers: [UserService, UserQueue, UserScheduler],
-  exports: [UserService]
+  exports: [UserService],
 })
 export class UserModule {}
