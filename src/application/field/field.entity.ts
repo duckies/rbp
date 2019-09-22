@@ -5,7 +5,7 @@ export enum FieldType {
   TEXTAREA = 'TextArea',
   CHECKBOX = 'Checkbox',
   DIALOG = 'Dialog',
-  UPLOAD = 'Upload'
+  UPLOAD = 'Upload',
 }
 
 @Entity('field')

@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Post,
-  UseGuards,
-  Body,
-  Get,
-  Param,
-  Put,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, Param, Put, Delete } from '@nestjs/common';
 import { FieldService } from './field.service';
 import { UseRoles } from 'nest-access-control';
 import { CreateFieldDto } from './dto/create-field.dto';
@@ -39,10 +30,7 @@ export class FieldController {
   @Put(':id')
   @UseGuards(ComposeGuard)
   @UseRoles({ resource: 'field', action: 'update', possession: 'any' })
-  update(
-    @Param('id') id: number,
-    @Body() updateFieldDto: UpdateFieldDto,
-  ): Promise<Field> {
+  update(@Param('id') id: number, @Body() updateFieldDto: UpdateFieldDto): Promise<Field> {
     return this.fieldService.update(id, updateFieldDto);
   }
 
