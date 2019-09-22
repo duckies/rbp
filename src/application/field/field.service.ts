@@ -33,7 +33,8 @@ export class FieldService {
     const currentPosition = field.order,
       desiredPosition = updateFieldDto.order;
 
-    // If we changed the order of the field, we must rearrange other fields transactionally.
+    // A transaction is needed to update all field positions only if the order is changed.
+    // Using this method: https://blogs.wayne.edu/web/2017/03/13/updating-a-database-display-order-with-drag-and-drop-in-sql/
     if (desiredPosition && desiredPosition !== currentPosition) {
       const move = updateFieldDto.order > currentPosition ? 'down' : 'up';
 
