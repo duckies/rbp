@@ -1,13 +1,12 @@
-import { Module, HttpModule } from '@nestjs/common';
-import { AuthModule } from '../../auth/auth.module';
+import { HttpModule, Module } from '@nestjs/common';
+import { BlizzardController } from './blizzard.controller';
 import { BlizzardService } from './blizzard.service';
 import { TokenService } from './token.service';
-import { BlizzardController } from './blizzard.controller';
 
 @Module({
-  imports: [AuthModule, HttpModule],
+  imports: [HttpModule],
   providers: [BlizzardService, TokenService],
   exports: [BlizzardService, TokenService],
-  controllers: [BlizzardController]
+  controllers: [BlizzardController],
 })
 export class BlizzardModule {}

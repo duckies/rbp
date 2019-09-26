@@ -1,20 +1,10 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Param,
-  Put,
-  Delete,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
-import { SlideService } from './slide.service';
-import { CreateSlideDto } from './dto/create-slide.dto';
-import { Slide } from './slide.entity';
-import { UpdateSlideDto } from './dto/update-slide.dto';
-import { ComposeGuard } from '../auth/guards/compose.guard';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { UseRoles } from 'nest-access-control';
+import { ComposeGuard } from '../auth/guards/compose.guard';
+import { CreateSlideDto } from './dto/create-slide.dto';
+import { UpdateSlideDto } from './dto/update-slide.dto';
+import { Slide } from './slide.entity';
+import { SlideService } from './slide.service';
 
 @Controller('slide')
 export class SlideController {
@@ -43,10 +33,7 @@ export class SlideController {
   @Put(':id')
   @UseGuards(ComposeGuard)
   @UseRoles({ resource: 'slide', action: 'update', possession: 'any' })
-  update(
-    @Param('id') id: number,
-    @Body() updateSlideDto: UpdateSlideDto,
-  ): Promise<Slide> {
+  update(@Param('id') id: number, @Body() updateSlideDto: UpdateSlideDto): Promise<Slide> {
     return this.slideService.update(id, updateSlideDto);
   }
 
