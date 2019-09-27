@@ -1,20 +1,43 @@
-import { IsEnum, IsOptional } from 'class-validator';
-import { FieldType } from '../field.entity';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
+
+export class FieldAttribute {
+  [key: string]: any;
+}
+
+export class FieldOptions {
+  @IsOptional()
+  @Type(() => FieldAttribute)
+  attrs?: FieldAttribute[];
+
+  @IsOptional()
+  @IsString({ each: true })
+  choices?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  multiple?: boolean;
+}
 
 export class UpdateFieldDto {
   @IsOptional()
-  order: number;
+  readonly order: number;
 
   @IsOptional()
-  @IsEnum(FieldType)
-  type: FieldType;
+  readonly question: string;
 
   @IsOptional()
-  question: string;
+  @IsString()
+  readonly label?: string;
 
   @IsOptional()
-  hint?: string;
+  readonly hint?: string;
 
   @IsOptional()
-  isRequired: boolean;
+  readonly isRequired: boolean;
+
+  @IsOptional()
+  @Type(() => FieldOptions)
+  @ValidateNested()
+  readonly options?: FieldOptions;
 }

@@ -19,7 +19,7 @@ export class Form extends BaseEntity {
   id: number;
 
   @Column({ type: 'enum', enum: FormStatus })
-  status: FormStatus
+  status: FormStatus;
 
   @Column({ type: 'jsonb' })
   fields: any;
