@@ -1,13 +1,11 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { Form } from './form.entity';
-import { Repository, Any } from 'typeorm';
-import { CreateFormDto } from './dto/create-form.dto';
-import { FieldService } from '../field/field.service';
-import { isEqual } from 'lodash';
+import { Repository } from 'typeorm';
 import { User } from '../../user/user.entity';
-import { FormStatus } from './form-status.enum';
+import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
+import { FormStatus } from './form-status.enum';
+import { Form } from './form.entity';
 
 @Injectable()
 export class FormService {
@@ -19,8 +17,9 @@ export class FormService {
   async create(user: User, createFormDto: CreateFormDto): Promise<Form> {
     const openForms = await this.findAllByUserStatus(user, FormStatus.Open);
 
+    // Users are not permitted multiple open applications.
     if (openForms.length) {
-      throw new BadRequestException('Close open application before opening another.');
+      throw new BadRequestException('User already had an open application.');
     }
 
     const form = new Form();
@@ -37,7 +36,7 @@ export class FormService {
       .createQueryBuilder('form')
       .select(['form.id', 'form.status', 'form.characterData'])
       .where('form.author = :user', { user });
-    if (status) query = query.andWhere(`status = :status`, { status });
+    if (status) { query = query.andWhere(`status = :status`, { status }); }
 
     return await query.getMany();
   }
