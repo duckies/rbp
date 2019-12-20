@@ -1,23 +1,24 @@
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from 'nest-bull';
+import { OnQueueError, OnQueueFailed, Process, Processor } from 'nest-bull';
 import { ConfigService } from '../../config/config.service';
 import { BlizzardService } from '../blizzard/blizzard.service';
-import { CharacterFieldsDto, CharacterLookupDto } from '../dto/get-character.dto';
-import { GuildFields, GuildFieldsDto } from '../dto/guild-fields.dto';
-import { GuildLookupDto } from '../dto/guild-lookup.dto';
 import { RealmNameDictionary } from '../blizzard/realm.map';
+import { CharacterFieldsDto } from '../dto/fields.dto';
+import { CharacterLookupDto } from '../dto/get-character.dto';
+import { GuildLookupDto } from '../dto/guild-lookup.dto';
 import { CharacterFields } from '../interfaces/character.interface';
 import GuildResponse from '../interfaces/guild.interface';
 import { RealmSlug } from '../interfaces/realm.enum';
 import { Character } from './character.entity';
-import { CharacterService } from './character.service';
+import { CharacterService, PurgeResult } from './character.service';
 
 @Processor({ name: 'character' })
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
+
   private guildLookup: GuildLookupDto = new GuildLookupDto();
-  private guildFields: GuildFieldsDto = new GuildFieldsDto();
+
   private readonly fields: CharacterFieldsDto = new CharacterFieldsDto([
     CharacterFields.Items,
     CharacterFields.Mounts,
@@ -28,6 +29,7 @@ export class CharacterQueue {
     CharacterFields.Talents,
     CharacterFields.Titles,
   ]);
+
   private minimumCharacterLevel: number;
 
   constructor(
@@ -38,18 +40,17 @@ export class CharacterQueue {
     this.guildLookup.name = 'Really Bad Players';
     this.guildLookup.realm = RealmSlug.Blackrock;
     this.guildLookup.region = 'us';
-    this.guildFields.fields = [GuildFields.Members];
     this.minimumCharacterLevel = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
   }
 
   @Process({ name: 'updateGuildRoster', concurrency: 1 })
-  private async updateGuildRoster(job: Job<Number>) {
-    let progress = 0,
-      success = 0,
-      failed = 0,
-      ignored = 0;
+  private async updateGuildRoster(job: Job<number>): Promise<{ success: number; failed: number; ignored: number }> {
+    let progress = 0;
+    let success = 0;
+    let failed = 0;
+    let ignored = 0;
 
-    const guild = await this.blizzardService.getGuild(this.guildLookup, this.guildFields);
+    const guild = await this.blizzardService.fetchGuild(this.guildLookup);
 
     // Do not include characters not meeting threshold.
     // Undecided if I want to do this, as the roster could include them later.
@@ -59,25 +60,24 @@ export class CharacterQueue {
     guild.members = guild.members.filter(c => c.character.level > 10);
 
     const promises = guild.members.map(async member => {
-      const { character, rank } = member;
-      const lookup = new CharacterLookupDto(character.name, RealmNameDictionary[character.realm]);
+      const lookup = new CharacterLookupDto(member.character.name, RealmNameDictionary[member.character.realm]);
 
       try {
-        const character = await this.characterService.upsert(
-          lookup,
-          this.fields,
-          false,
-          true,
-          rank,
-        );
+        const character = await this.characterService.upsert(lookup, false, true, member.rank);
 
-        if (character.notUpdated) { ignored++; }
-        else { success++; }
+        if (character.notUpdated) {
+          ignored++;
+        } else {
+          success++;
+        }
 
         return character;
       } catch (error) {
-        if (error.message && error.message.error) { this.logger.error(error.message.error); }
-        else { this.logger.error(error); }
+        if (error.message && error.message.error) {
+          this.logger.error(error.message.error);
+        } else {
+          this.logger.error(error);
+        }
         failed++;
       } finally {
         job.progress(++progress / promises.length);
@@ -90,16 +90,14 @@ export class CharacterQueue {
   }
 
   @Process({ name: 'removeNonGuildMembers', concurrency: 1 })
-  private async removeNonGuildMembers(job: Job<Number>) {
+  private async removeNonGuildMembers(): Promise<unknown> {
     const [blizzard, local]: [GuildResponse, Character[]] = await Promise.all([
-      this.blizzardService.getGuild(this.guildLookup, this.guildFields),
+      this.blizzardService.fetchGuild(this.guildLookup),
       this.characterService.findAllInGuild(),
     ]);
 
     // Creates a list of local characters who are not in the guild.
-    const toRemove: Character[] = local.filter(
-      l => !blizzard.members.some(b => l.name === b.character.name),
-    );
+    const toRemove: Character[] = local.filter(l => !blizzard.members.some(b => l.name === b.character.name));
 
     // Remove all guild associations.
     const promises = [];
@@ -113,34 +111,31 @@ export class CharacterQueue {
   }
 
   @Process({ name: 'purgeGuildRoster', concurrency: 1 })
-  private async purgeGuildRoster(job: Job<Number>) {
+  private async purgeGuildRoster(): Promise<PurgeResult> {
     return await this.characterService.purgeRoster();
   }
 
   @OnQueueError()
-  private onError(job: Job<Number>, error: Error) {
+  private onError(_job: Job<number>, error: Error): void {
     this.logger.error(error);
   }
 
-  @OnQueueCompleted()
-  private onCompleted(job: Job<Number>, result: any) {
-    if (job.name === 'updateGuildRoster') {
-      this.logger.log(
-        `Roster update completed with ${result.success} updated ${result.failed} failed and ${
-          result.ignored
-        } ignored.`,
-      );
-    } else if (job.name === 'purgeGuildRoster') {
-      this.logger.log(
-        `Purge marked ${result.flagged} characters as deleted, removed ${
-          result.deleted
-        } characters.`,
-      );
-    }
-  }
+  // @OnQueueCompleted()
+  // private onCompleted(
+  //   job: Job<number>,
+  //   result: { success: number; failed: number; ignored: number } | { flagged: number; deleted: number },
+  // ): void {
+  //   if (job.name === 'updateGuildRoster') {
+  //     this.logger.log(
+  //       `Roster update completed with ${result.success} updated ${result.failed} failed and ${result.ignored} ignored.`,
+  //     );
+  //   } else if (job.name === 'purgeGuildRoster') {
+  //     this.logger.log(`Purge marked ${result.flagged} characters as deleted, removed ${result.deleted} characters.`);
+  //   }
+  // }
 
   @OnQueueFailed()
-  private onFailed(job: Job<Number>, error: Error) {
-    this.logger.error('erroryerror' + error);
+  private onFailed(_job: Job<number>, error: Error): void {
+    this.logger.error(`erroryerror${error}`);
   }
 }

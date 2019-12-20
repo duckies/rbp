@@ -1,8 +1,8 @@
-import { RaiderIOService } from './raiderIO.service';
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { JWTGuard } from '../../auth/guards/jwt.guard';
 import { CharacterLookupDto } from '../dto/get-character.dto';
 import { RaiderIOCharacterFieldsDto } from './dto/char-fields.dto';
-import { JWTGuard } from '../../auth/guards/jwt.guard';
+import { RaiderIOService } from './raiderIO.service';
 
 @Controller('raiderio')
 export class RaiderIOController {
@@ -13,10 +13,7 @@ export class RaiderIOController {
   fetchCharacter(
     @Param() characterLookupDto: CharacterLookupDto,
     @Query() raiderIOCharacterFieldsDto: RaiderIOCharacterFieldsDto,
-  ) {
-    return this.raiderIOService.getCharacterRaiderIO(
-      characterLookupDto,
-      raiderIOCharacterFieldsDto,
-    );
+  ): Promise<unknown> {
+    return this.raiderIOService.getCharacterRaiderIO(characterLookupDto, raiderIOCharacterFieldsDto);
   }
 }

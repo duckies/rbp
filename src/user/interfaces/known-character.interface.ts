@@ -1,6 +1,6 @@
 import { RealmName } from '../../warcraft/interfaces/realm.enum';
 
-export interface KnownCharacter {
+export default class KnownCharacter {
   name: string;
   realm: RealmName;
   region: string;

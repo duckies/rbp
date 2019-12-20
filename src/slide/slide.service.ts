@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Slide } from './slide.entity';
-import { Repository, DeleteResult, UpdateResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateSlideDto } from './dto/create-slide.dto';
 import { UpdateSlideDto } from './dto/update-slide.dto';
+import { Slide } from './slide.entity';
 
 @Injectable()
 export class SlideService {
@@ -12,21 +12,16 @@ export class SlideService {
     private readonly slideRepository: Repository<Slide>,
   ) {}
 
-  create(createSlideDto: CreateSlideDto) {
+  create(createSlideDto: CreateSlideDto): Promise<Slide> {
     return this.slideRepository.save(createSlideDto);
   }
 
-  async findAll(
-    take: number = 10,
-    skip: number = 0,
-  ): Promise<{ result: Slide[]; total: number }> {
-    const [result, total] = await this.slideRepository.findAndCount({
+  findAll(take = 10, skip = 0): Promise<Slide[]> {
+    return this.slideRepository.find({
       order: { id: 'DESC' },
       take,
       skip,
     });
-
-    return { result, total };
   }
 
   findOne(id: number): Promise<Slide> {

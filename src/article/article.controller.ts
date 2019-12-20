@@ -1,20 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Put,
-  Delete,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query } from '@nestjs/common';
+import { UseRoles } from 'nest-access-control';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { Article } from './article.entity';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ComposeGuard } from '../auth/guards/compose.guard';
-import { UseRoles } from 'nest-access-control';
 import { Usr } from '../user/user.decorator';
 import { User } from '../user/user.entity';
 
@@ -25,18 +15,12 @@ export class ArticleController {
   @Post()
   @UseGuards(ComposeGuard)
   @UseRoles({ resource: 'article', action: 'create', possession: 'any' })
-  create(
-    @Usr() user: User,
-    @Body() createArticleDto: CreateArticleDto,
-  ): Promise<Article> {
+  create(@Usr() user: User, @Body() createArticleDto: CreateArticleDto): Promise<Article> {
     return this.articleService.create(user, createArticleDto);
   }
 
   @Get()
-  findAll(
-    @Query('take') take?: number,
-    @Query('skip') skip?: number,
-  ): Promise<{ result: Article[]; total: number }> {
+  findAll(@Query('take') take?: number, @Query('skip') skip?: number): Promise<{ result: Article[]; total: number }> {
     return this.articleService.findAll(take, skip);
   }
 
@@ -48,10 +32,7 @@ export class ArticleController {
   @Put(':id')
   @UseGuards(ComposeGuard)
   @UseRoles({ resource: 'article', action: 'update', possession: 'any' })
-  update(
-    @Param('id') id: number,
-    @Body() updateArticleDto: UpdateArticleDto,
-  ): Promise<Article> {
+  update(@Param('id') id: number, @Body() updateArticleDto: UpdateArticleDto): Promise<Article> {
     return this.articleService.update(id, updateArticleDto);
   }
 

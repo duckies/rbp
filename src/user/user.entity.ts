@@ -1,22 +1,23 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   BaseEntity,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-  OneToOne,
-  JoinColumn,
   BeforeInsert,
   BeforeUpdate,
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Roles } from '../app.roles';
-import { Article } from '../article/article.entity';
 import { Comment } from '../application/comment/comment.entity';
+import { Article } from '../article/article.entity';
+import { File } from '../file/file.entity';
 import { Character } from '../warcraft/character/character.entity';
-import { Form } from '../application/form/form.entity';
-import { KnownCharacter } from './interfaces/known-character.interface';
+import KnownCharacter from './interfaces/known-character.interface';
+
 import moment = require('moment');
 
 @Entity('user')
@@ -48,58 +49,70 @@ export class User extends BaseEntity {
   @Column({ type: 'enum', enum: Roles, default: [Roles.Guest], array: true })
   roles: Roles[];
 
-  @Column()
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column()
   @UpdateDateColumn()
   updatedAt: Date;
 
   @Column({ nullable: true })
   lastLogin: Date;
 
-  // Not persisted to database.
-  // Instructs frontend that the user is new.
-  justCreated: boolean;
-
-  @OneToMany(type => Form, form => form.author)
-  forms: Form[];
-
-  @OneToMany(type => Article, article => article.author)
+  @OneToMany(() => Article, article => article.author)
   articles: Article[];
 
-  @OneToMany(type => Comment, comment => comment.author)
+  @OneToMany(() => Comment, comment => comment.author)
   comments: Comment[];
 
-  @OneToOne(type => Character, { eager: false })
+  @OneToMany(() => File, file => file.owner)
+  files: File[];
+
+  @OneToOne(() => Character, { eager: false })
   @JoinColumn()
   mainCharacter: Character;
 
-  @OneToMany(type => Character, character => character.account, {
+  @OneToMany(() => Character, character => character.account, {
     cascade: true,
   })
   characters: Character[];
 
-  @Column({ type: 'jsonb', nullable: true, array: true })
+  @Column({ type: 'jsonb', nullable: true })
   knownCharacters: KnownCharacter[];
 
   @Column({ nullable: true })
   knownCharactersLastUpdated: Date;
 
   @BeforeInsert()
-  setToken() {
+  setToken(): void {
     if (this.blizzardtoken) {
-      this.blizzardTokenExpiration = moment().add(24, 'hours').toDate();
+      this.blizzardTokenExpiration = moment()
+        .add(24, 'hours')
+        .toDate();
     }
   }
 
   @BeforeUpdate()
-  updateToken() {
+  updateToken(): void {
     if (this.blizzardtoken === null) {
       this.blizzardTokenExpiration = null;
     } else {
-      this.blizzardTokenExpiration = moment().add(24, 'hours').toDate();
+      this.blizzardTokenExpiration = moment()
+        .add(24, 'hours')
+        .toDate();
     }
+  }
+
+  tokenExpired(): boolean {
+    return (
+      !this.blizzardtoken ||
+      !this.blizzardTokenExpiration ||
+      !moment(this.blizzardTokenExpiration).isSameOrAfter(new Date())
+    );
+  }
+
+  charactersUpdatedWithin(minutes: number): boolean {
+    return moment(this.knownCharactersLastUpdated)
+      .add(minutes, 'minutes')
+      .isAfter(new Date());
   }
 }

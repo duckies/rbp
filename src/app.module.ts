@@ -4,12 +4,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessControlModule } from 'nest-access-control';
 import { Connection } from 'typeorm';
 import { roleBuilder } from './app.roles';
-import { FormModule } from './application/form/form.module';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { BullSharedModule } from './bull.module';
 import { ConfigModule } from './config/config.module';
+import { FileModule } from './file/file.module';
+import { FormModule } from './form/form.module';
 import { SlideModule } from './slide/slide.module';
+import { SubmissionModule } from './submission/submission.module';
 import { UserModule } from './user/user.module';
 import { RaidModule } from './warcraft/raid/raid.module';
 import { WarcraftModule } from './warcraft/warcraft.module';
@@ -30,6 +32,8 @@ import { WarcraftModule } from './warcraft/warcraft.module';
     RaidModule,
     WarcraftModule,
     FormModule,
+    SubmissionModule,
+    FileModule,
   ],
 })
 export class AppModule {

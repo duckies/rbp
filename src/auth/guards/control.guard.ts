@@ -9,8 +9,8 @@ import { ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common
 export class ControlGuard extends ACGuard {
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     try {
-      return await super.canActivate(ctx) as boolean;
-    } catch(error) {
+      return (await super.canActivate(ctx)) as boolean;
+    } catch (error) {
       throw new ForbiddenException();
     }
   }

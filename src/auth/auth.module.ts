@@ -12,24 +12,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 @Global()
 @Module({
   imports: [UserModule],
-  providers: [
-    JwtStrategy,
-    BlizzardStrategy,
-    AuthService,
-    JWTGuard,
-    ACGuard,
-    ControlGuard,
-    ComposeGuard,
-  ],
+  providers: [JwtStrategy, BlizzardStrategy, AuthService, JWTGuard, ACGuard, ControlGuard, ComposeGuard],
   controllers: [AuthController],
-  exports: [
-    AuthService,
-    JwtStrategy,
-    BlizzardStrategy,
-    JWTGuard,
-    ACGuard,
-    ControlGuard,
-    ComposeGuard,
-  ],
+  exports: [AuthService, JwtStrategy, BlizzardStrategy, JWTGuard, ACGuard, ControlGuard, ComposeGuard],
 })
 export class AuthModule {}

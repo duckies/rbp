@@ -18,10 +18,7 @@ export class SlideController {
   }
 
   @Get()
-  findAll(
-    @Query('take') take?: number,
-    @Query('skip') skip?: number,
-  ): Promise<{ result: Slide[]; total: number }> {
+  findAll(@Query('take') take?: number, @Query('skip') skip?: number): Promise<Slide[]> {
     return this.slideService.findAll(take, skip);
   }
 

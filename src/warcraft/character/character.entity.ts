@@ -1,15 +1,14 @@
-import {
-  Entity,
-  BaseEntity,
-  PrimaryGeneratedColumn,
-  Column,
-  Unique,
-  ManyToOne,
-  Index,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { User } from '../../user/user.entity';
-import { CharacterResponse } from '../interfaces/character-response.interface';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
+import {
+  CharacterResponse,
+  Items,
+  Professions,
+  Progression,
+  PVP,
+  Specialization,
+} from '../interfaces/character-response.interface';
 import { RealmName } from '../interfaces/realm.enum';
 
 @Entity('character')
@@ -17,13 +16,13 @@ import { RealmName } from '../interfaces/realm.enum';
 @Index('lower_char_index', { synchronize: false })
 @Index('character_realm_enum', { synchronize: false })
 export class Character extends BaseEntity {
-  constructor(name?: string, realm?: RealmName, region?: string) {
-    super();
+  // constructor(name?: string, realm?: RealmName, region?: string) {
+  //   super();
 
-    this.name = name;
-    this.realm = realm;
-    this.region = region;
-  }
+  //   this.name = name;
+  //   this.realm = realm;
+  //   this.region = region;
+  // }
 
   @PrimaryGeneratedColumn()
   id: number;
@@ -65,10 +64,10 @@ export class Character extends BaseEntity {
   guildRank: number;
 
   @Column({ type: 'jsonb', nullable: true, select: false })
-  items: any;
+  items: Items;
 
   @Column({ type: 'jsonb', nullable: true, select: false })
-  professions: any;
+  professions: Professions;
 
   @Column({ nullable: true })
   title: string;
@@ -80,7 +79,7 @@ export class Character extends BaseEntity {
   specIcon: string;
 
   @Column({ type: 'jsonb', nullable: true, select: false })
-  talents: any;
+  talents: Specialization[];
 
   @Column({ type: 'smallint', nullable: true, select: false })
   mountsCollected: number;
@@ -95,10 +94,10 @@ export class Character extends BaseEntity {
   petsNotCollected: number;
 
   @Column({ type: 'jsonb', nullable: true, select: false })
-  progression: any;
+  progression: Progression;
 
   @Column({ type: 'jsonb', nullable: true, select: false })
-  pvp: any;
+  pvp: PVP;
 
   @Column({ nullable: true, select: false })
   honorableKills: number;
@@ -112,7 +111,7 @@ export class Character extends BaseEntity {
   @Column({ default: 0, select: false })
   retries: number;
 
-  @ManyToOne(type => User, user => user.characters, {
+  @ManyToOne(() => User, user => user.characters, {
     eager: false,
     onDelete: 'SET NULL',
   })
@@ -149,7 +148,7 @@ export class Character extends BaseEntity {
 
   doesNotMatch(data: CharacterResponse): boolean {
     // Character classes are immutable.
-    if (this.class && data.class && this.class != data.class) {
+    if (this.class && data.class && this.class !== data.class) {
       return true;
     }
 
@@ -159,11 +158,7 @@ export class Character extends BaseEntity {
     }
 
     // Character honorable kills cannot go down.
-    if (
-      this.honorableKills &&
-      data.totalHonorableKills &&
-      this.honorableKills > data.totalHonorableKills
-    ) {
+    if (this.honorableKills && data.totalHonorableKills && this.honorableKills > data.totalHonorableKills) {
       return true;
     }
 
@@ -195,11 +190,10 @@ export class Character extends BaseEntity {
     if ('professions' in data) this.professions = data.professions;
     if ('progression' in data) this.progression = data.progression;
     if ('pvp' in data) this.pvp = data.pvp;
-    if ('totalHonorableKills' in data)
-      this.honorableKills = data.totalHonorableKills;
+    if ('totalHonorableKills' in data) this.honorableKills = data.totalHonorableKills;
 
     if ('titles' in data) {
-      let hasSetTitle: boolean = false;
+      let hasSetTitle = false;
 
       for (const title in data.titles) {
         if (data.titles[title].selected) {
@@ -213,14 +207,10 @@ export class Character extends BaseEntity {
     }
 
     if ('talents' in data) {
-      for (const spec of data.talents) {
-        if (spec.selected) {
-          this.spec = spec.spec.name;
-          this.specIcon = spec.spec.icon;
-          break;
-        }
-      }
+      const selected = data.talents.find(talent => talent.selected);
 
+      this.spec = selected.spec.name;
+      this.specIcon = selected.spec.icon;
       this.talents = data.talents;
     }
 

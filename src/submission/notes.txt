@@ -1,0 +1,24 @@
+
+  // Saving for submissions.
+  // async findAllByUserStatus(user: User, status?: FormStatus): Promise<Form[]> {
+  //   let query = this.repository
+  //     .createQueryBuilder('form')
+  //     .select(['form.id', 'form.status', 'form.characterData'])
+  //     .where('form.author = :user', { user });
+  //   if (status) {
+  //     query = query.andWhere(`status = :status`, { status });
+  //   }
+
+  //   return await query.getMany();
+  // }
+
+  // Incomplete, this will need to have pagination.
+  // async findByIdAndSimilarStatus(id: number) {
+  //   const form = await this.repository.findOneOrFail(id);
+  //   const similar = await this.repository.find({
+  //     where: { status: form.status },
+  //     relations: ['user'],
+  //   });
+
+  //   return { application: form, similar };
+  // }

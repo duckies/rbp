@@ -26,7 +26,7 @@ export class UpdateRaidDto {
   realm: number;
 
   @IsOptional()
-  summary: string; 
+  summary: string;
 
   @IsOptional()
   total_bosses: number;

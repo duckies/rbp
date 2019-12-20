@@ -70,8 +70,8 @@ export interface Item {
   artifactId: number;
   displayInfoId: number;
   artifactAppearanceId: number;
-  artifactTraits: any[];
-  relics: any[];
+  artifactTraits: object[];
+  relics: object[];
   appearance: Appearance;
   azeriteItem: AzeriteItem;
   azeriteEmpoweredItem: AzeriteEmpoweredItem;
@@ -188,7 +188,7 @@ export interface Boss {
   id: number;
   name: string;
   normalKills: number;
-  normalTimestamp: any;
+  normalTimestamp: number;
   heroicKills?: number;
   heroicTimestamp?: number;
   lfrKills?: number;

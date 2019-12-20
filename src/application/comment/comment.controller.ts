@@ -1,19 +1,11 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Get,
-  Param,
-  Put,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Put } from '@nestjs/common';
+import { UseRoles } from 'nest-access-control';
 import { CommentService } from './comment.service';
 import { Usr } from '../../user/user.decorator';
 import { User } from '../../user/user.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { Comment } from './comment.entity';
 import { ComposeGuard } from '../../auth/guards/compose.guard';
-import { UseRoles } from 'nest-access-control';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Controller('comment')
@@ -22,10 +14,7 @@ export class CommentController {
 
   @Post()
   @UseGuards(ComposeGuard)
-  create(
-    @Usr() user: User,
-    @Body() createCommentDto: CreateCommentDto,
-  ): Promise<Comment> {
+  create(@Usr() user: User, @Body() createCommentDto: CreateCommentDto): Promise<Comment> {
     return this.commentService.create(user, createCommentDto);
   }
 
@@ -37,11 +26,7 @@ export class CommentController {
   @Put(':id')
   @UseGuards(ComposeGuard)
   @UseRoles({ resource: 'comment', action: 'update', possession: 'any' })
-  update(
-    @Param('id') id: number,
-    @Usr() user: User,
-    updateCommentDto: UpdateCommentDto,
-  ): Promise<Comment> {
+  update(@Param('id') id: number, @Usr() user: User, updateCommentDto: UpdateCommentDto): Promise<Comment> {
     return this.commentService.update(id, user, updateCommentDto);
   }
 }

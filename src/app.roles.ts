@@ -15,15 +15,15 @@ export enum Roles {
 export const NumRanks = 9;
 
 export const Ranks = {
-  [0]: Roles.GuildMaster,
-  [1]: Roles.Officer,
-  [2]: Roles.OfficerAlt,
-  [3]: Roles.RaiderBank,
-  [4]: Roles.Raider,
-  [5]: Roles.Recruit,
-  [6]: Roles.Fan,
-  [7]: Roles.PlayerAlt,
-  [8]: Roles.Guest,
+  0: Roles.GuildMaster,
+  1: Roles.Officer,
+  2: Roles.OfficerAlt,
+  3: Roles.RaiderBank,
+  4: Roles.Raider,
+  5: Roles.Recruit,
+  6: Roles.Fan,
+  7: Roles.PlayerAlt,
+  8: Roles.Guest,
 };
 
 export const roleBuilder: RolesBuilder = new RolesBuilder();
@@ -49,13 +49,16 @@ roleBuilder
   .createAny('article')
   .updateAny('article')
   .deleteAny('article')
-  .createAny('field')
-  .updateAny('field')
-  .deleteAny('field')
+  .createAny('question')
+  .updateAny('question')
+  .deleteAny('question')
   .grant(Roles.OfficerAlt)
   .extend(Roles.Officer)
   .grant(Roles.GuildMaster)
   .extend(Roles.Officer)
+  .createAny('form')
+  .updateAny('form')
+  .deleteAny('form')
   .createAny('raid')
   .updateAny('user')
   .deleteAny('user')

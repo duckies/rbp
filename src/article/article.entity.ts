@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, BaseEntity } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  BaseEntity,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 
 @Entity('article')
@@ -21,7 +29,7 @@ export class Article extends BaseEntity {
   @Column({ nullable: true })
   header: string;
 
-  @ManyToOne(type => User, user => user.articles, { eager: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, user => user.articles, { eager: true, onDelete: 'SET NULL' })
   author: User;
 
   @Column()

@@ -19,3 +19,5 @@ export enum CharacterFields {
   Titles = 'titles',
   Audit = 'audit',
 }
+
+export default { CharacterFields };

@@ -17,7 +17,7 @@ export class Comment extends BaseEntity {
   @Column({ nullable: false })
   message: string;
 
-  @ManyToOne(type => User, user => user.comments, { eager: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, user => user.comments, { eager: true, onDelete: 'SET NULL' })
   author: User;
 
   @CreateDateColumn({ type: 'timestamptz' })

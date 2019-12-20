@@ -1,11 +1,11 @@
-import { Controller, Get, Param, UseGuards, Query, Put, Body } from '@nestjs/common';
-import { UserService } from './user.service';
-import { User } from './user.entity';
+import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { UseRoles } from 'nest-access-control';
-import { Usr } from './user.decorator';
 import { ComposeGuard } from '../auth/guards/compose.guard';
+import { FindAllDto } from './dto/find-all.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { KnownCharacter } from './interfaces/known-character.interface';
+import { Usr } from './user.decorator';
+import { User } from './user.entity';
+import { UserService } from './user.service';
 
 @Controller('user')
 @UseGuards(ComposeGuard)
@@ -14,32 +14,36 @@ export class UserController {
 
   @Get()
   @UseRoles({ resource: 'user', action: 'read', possession: 'any' })
-  findAll(
-    @Query('take') take?: number,
-    @Query('skip') skip?: number,
-  ): Promise<{ result: User[]; total: number }> {
-    return this.userService.findAll(take, skip);
+  findAll(@Query() findAllDto: FindAllDto): Promise<{ result: User[]; total: number }> {
+    return this.userService.findAll(findAllDto.take, findAllDto.skip);
   }
 
   @Get('/me')
-  findMe(@Usr() user: User): Promise<User> {
-    return this.userService.findOne(user.id);
+  findMe(@Usr() user: User): User {
+    delete user.blizzardtoken;
+    delete user.blizzardTokenExpiration;
+    delete user.createdAt;
+    delete user.updatedAt;
+    delete user.knownCharacters;
+    delete user.knownCharactersLastUpdated;
+
+    return user;
   }
 
-  @Get('/known_characters')
-  findKnownCharacters(@Usr() user: User): Promise<User> {
-    return this.userService.findKnownCharacters(user);
-  }
+  // @Get('/known_characters')
+  // findKnownCharacters(@Usr() user: User): Promise<User> {
+  //   // return this.userService.findKnownCharacters(user);
+  // }
 
   @Get(':id')
   @UseRoles({ resource: 'user', action: 'read', possession: 'any' })
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: number): Promise<User> {
     return this.userService.findOne(id);
   }
 
   @Put(':id')
   @UseRoles({ resource: 'user', action: 'update', possession: 'own' })
-  update(@Usr() user: User, @Body() updateUserDto: UpdateUserDto) {
+  update(@Usr() user: User, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.userService.update(user.id, updateUserDto);
   }
 }

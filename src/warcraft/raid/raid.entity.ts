@@ -1,10 +1,4 @@
-import {
-  Entity,
-  BaseEntity,
-  PrimaryGeneratedColumn,
-  Column,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, UpdateDateColumn } from 'typeorm';
 
 export enum Expansion {
   BATTLE_FOR_AZEROTH = 'Battle for Azeroth',
@@ -47,16 +41,16 @@ export class Raid extends BaseEntity {
   summary: string;
 
   @Column()
-  total_bosses: number;
+  bosses: number;
 
   @Column()
-  normal_bosses_killed: number;
+  normalKilled: number;
 
   @Column()
-  heroic_bosses_killed: number;
+  heroicKilled: number;
 
   @Column()
-  mythic_bosses_killed: number;
+  mythicKilled: number;
 
   @Column({ default: false })
   isFeatured: boolean;
