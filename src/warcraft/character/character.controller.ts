@@ -22,10 +22,7 @@ export class CharacterController {
 
   @Put('main/:region/:realm/:name')
   @UseGuards(ComposeGuard)
-  setMain(
-    @Usr() user: User,
-    @Param() characterLookupDto: CharacterLookupDto,
-  ): Promise<User> {
+  setMain(@Usr() user: User, @Param() characterLookupDto: CharacterLookupDto): Promise<User> {
     return this.characterService.setMain(user, characterLookupDto);
   }
 }

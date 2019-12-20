@@ -9,8 +9,8 @@ import { AuthGuard } from '@nestjs/passport';
 export class JWTGuard extends AuthGuard('JWT') {
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     try {
-      return await super.canActivate(ctx) as boolean;
-    } catch(error) {
+      return (await super.canActivate(ctx)) as boolean;
+    } catch (error) {
       throw new UnauthorizedException();
     }
   }

@@ -1,11 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.entity';
 import { Repository } from 'typeorm';
+import { User } from './user.entity';
 import { Provider } from '../auth/auth.service';
 import { JWTPayload } from '../auth/dto/jwt.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { KnownCharacter } from './interfaces/known-character.interface';
 
 @Injectable()
 export class UserService {
@@ -14,7 +13,7 @@ export class UserService {
     private readonly repository: Repository<User>,
   ) {}
 
-  create(blizzardid: number, battletag: string, blizzardtoken: string) {
+  create(blizzardid: number, battletag: string, blizzardtoken: string): Promise<User> {
     return this.repository.save({
       blizzardid,
       battletag,
@@ -22,7 +21,7 @@ export class UserService {
     });
   }
 
-  async findAll(take: number = 100, skip: number = 0): Promise<{ result: User[]; total: number }> {
+  async findAll(take = 100, skip = 0): Promise<{ result: User[]; total: number }> {
     const [result, total] = await this.repository.findAndCount({
       order: { id: 'DESC' },
       take,
@@ -40,7 +39,7 @@ export class UserService {
     return this.repository.findOneOrFail(payload.id);
   }
 
-  findOneByProviderId(thirdPartyId: number, provider: Provider) {
+  findOneByProviderId(thirdPartyId: number, provider: Provider): Promise<User> {
     if (provider === Provider.BLIZZARD) {
       return this.repository.findOneOrFail({ blizzardid: thirdPartyId });
     }
@@ -48,7 +47,7 @@ export class UserService {
     throw new BadRequestException();
   }
 
-  findAllWithGuildCharacters() {
+  findAllWithGuildCharacters(): Promise<User[]> {
     return this.repository
       .createQueryBuilder('user')
       .innerJoinAndSelect('user.characters', 'character')
@@ -57,18 +56,18 @@ export class UserService {
       .getMany();
   }
 
-  async findKnownCharacters(user: User): Promise<User> {
-    return this.repository.findOne({
-      select: ['knownCharacters', 'knownCharactersLastUpdated'],
-      where: { id: user.id },
-    });
-  }
+  // async findKnownCharacters(user: User): Promise<User> {
+  //   return this.repository.findOne({
+  //     select: ['knownCharacters', 'knownCharactersLastUpdated'],
+  //     where: { id: user.id },
+  //   });
+  // }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.repository.findOneOrFail(id);
 
-    const result = await this.repository.merge(user, updateUserDto);
+    this.repository.merge(user, updateUserDto);
 
-    return await this.repository.save(result);
+    return await this.repository.save(user);
   }
 }

@@ -15,7 +15,7 @@ export class RaiderIOScheduler extends NestSchedule {
   }
 
   @Cron('0 * * * *')
-  async updateGuildRaiderIO() {
+  updateGuildRaiderIO(): void {
     this.queue.add('updateGuildRaiderIO', null);
   }
 }

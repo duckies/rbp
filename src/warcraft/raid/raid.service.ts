@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Raid } from './raid.entity';
 import { Repository } from 'typeorm';
+import { Raid } from './raid.entity';
 import { CreateRaidDto } from './dto/create-raid.dto';
 import { UpdateRaidDto } from './dto/update-raid.dto';
 
@@ -26,10 +26,7 @@ export class RaidService {
    * @param take Takes only 10 most recent raids by default
    * @param skip Skips no raids by default
    */
-  async findAll(
-    take: number = 10,
-    skip: number = 0,
-  ): Promise<{ result: Raid[]; total: number }> {
+  async findAll(take = 10, skip = 0): Promise<{ result: Raid[]; total: number }> {
     const [result, total] = await this.raidRepository.findAndCount({
       order: { id: 'DESC' },
       take,
@@ -44,15 +41,12 @@ export class RaidService {
    * @param take Takes only 4 most recent featuerd raids by default.
    * @param skip Skips no raids by default.
    */
-  async findAllFeatured(
-    take: number = 4,
-    skip: number = 0,
-  ): Promise<{ result: Raid[]; total: number }> {
+  async findAllFeatured(take = 4, skip = 0): Promise<{ result: Raid[]; total: number }> {
     const [result, total] = await this.raidRepository.findAndCount({
       order: { id: 'DESC' },
       where: { isFeatured: true },
       take,
-      skip
+      skip,
     });
 
     return { result, total };
@@ -84,8 +78,8 @@ export class RaidService {
   async update(id: number, updateRaidDto: UpdateRaidDto): Promise<Raid> {
     const raid = await this.raidRepository.findOneOrFail(id);
 
-    const result = await this.raidRepository.merge(raid, updateRaidDto);
+    this.raidRepository.merge(raid, updateRaidDto);
 
-    return await this.raidRepository.save(result);
+    return this.raidRepository.save(raid);
   }
 }

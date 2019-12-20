@@ -8,7 +8,7 @@ import { RaiderIOService } from './raiderIO.service';
 @Module({
   imports: [HttpModule, RaidModule],
   providers: [RaiderIOService, RaiderIOQueue, RaiderIOScheduler],
-  exports: [RaiderIOService, RaiderIOQueue],
   controllers: [RaiderIOController],
+  exports: [RaiderIOService, RaiderIOQueue],
 })
 export class RaiderIOModule {}

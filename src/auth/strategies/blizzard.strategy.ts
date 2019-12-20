@@ -1,17 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-bnet';
-import { AuthService, Provider } from '../auth.service';
 import { ConfigService } from '../../config/config.service';
+import { User } from '../../user/user.entity';
+import { AuthService, Provider } from '../auth.service';
 
 @Injectable()
 export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   private readonly logger: Logger = new Logger(BlizzardStrategy.name);
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {
     super({
       clientID: configService.get('BLIZZARD_CLIENTID'),
       clientSecret: configService.get('BLIZZARD_SECRET'),
@@ -22,9 +20,9 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   }
 
   // Blizzard does not provide refresh tokens.
-  async validate(req, accessToken, refreshToken, profile) {
+  async validate(req, accessToken, refreshToken, profile): Promise<User> {
     if (!req.user) {
-      this.logger.log('Logging in or creating ' + profile.battletag);
+      this.logger.log(`Logging in or creating ${profile.battletag}`);
 
       return await this.authService.validateOAuthLogin(
         profile.id,

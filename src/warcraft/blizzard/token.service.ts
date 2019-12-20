@@ -1,4 +1,4 @@
-import { Injectable, HttpService, Logger } from '@nestjs/common';
+import { HttpService, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '../../config/config.service';
 
 export interface Token {
@@ -11,19 +11,18 @@ export interface Token {
 @Injectable()
 export class TokenService {
   private readonly logger: Logger = new Logger(TokenService.name);
-  private token: Token = null;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly http: HttpService,
-  ) {}
+  private static token: Token = null;
+
+  constructor(private readonly configService: ConfigService, private readonly http: HttpService) {}
 
   async getToken(): Promise<void> {
-    if (this.token != null && this.token.expires <= new Date().getTime())
-      return;
+    if (TokenService.token !== null && TokenService.token.expires >= new Date().getTime()) return;
+
+    this.logger.log('Retrieving new auth token...');
 
     try {
-      const resp = await this.http
+      const resp = (await this.http
         .request({
           url: 'https://us.battle.net/oauth/token',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -34,35 +33,32 @@ export class TokenService {
             password: this.configService.get('BLIZZARD_SECRET'),
           },
         })
-        .toPromise();
+        .toPromise()).data;
 
-      if (
-        resp &&
-        resp.data &&
-        resp.data.access_token &&
-        resp.data.expires_in &&
-        resp.data.token_type === 'bearer'
-      ) {
-        this.token = resp.data;
-        this.token.expires =
-          new Date().getTime() + (this.token.expires_in - 3600) * 1000;
+      // TODO: Investigate why optional chaining is not working with the linter.
+      // if (resp?.access_token && resp?.expires_in && resp?.token_type === 'bearer') {
+      if (resp && resp.access_token && resp.expires_in && resp.token_type === 'bearer') {
+        TokenService.token = resp;
+        TokenService.token.expires = new Date().getTime() + (TokenService.token.expires_in - 3600) * 1000;
         return this.setAxiosBearerToken();
-      } else {
-        this.token = null;
       }
+
+      throw new UnauthorizedException('Token data was unexpectedly missing.');
     } catch (error) {
       this.logger.error(error);
-      this.token = null;
+      TokenService.token = null;
     }
   }
 
   private setAxiosBearerToken(): void {
+    this.logger.log('Setting access token: ' + TokenService.token.access_token);
     this.http.axiosRef.defaults.headers.common = {
-      Authorization: `Bearer ${this.token.access_token}`,
+      Authorization: `Bearer ${TokenService.token.access_token}`,
     };
   }
 
   public clearToken(): void {
-    this.token = null;
+    delete this.http.axiosRef.defaults.headers.common.Authorization;
+    TokenService.token = null;
   }
 }

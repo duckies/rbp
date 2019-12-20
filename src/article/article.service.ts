@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Article } from './article.entity';
-import { Repository, UpdateResult, DeleteResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import slugify from 'slugify';
+import { Article } from './article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import slugify from 'slugify';
 import { User } from '../user/user.entity';
 
 @Injectable()
@@ -14,11 +14,8 @@ export class ArticleService {
     private readonly articleRepository: Repository<Article>,
   ) {}
 
-  async create(
-    user: User,
-    createArticleDto: CreateArticleDto,
-  ): Promise<Article> {
-    const article = await this.articleRepository.create(createArticleDto);
+  async create(user: User, createArticleDto: CreateArticleDto): Promise<Article> {
+    const article = this.articleRepository.create(createArticleDto);
 
     article.slug = slugify(createArticleDto.title, {
       lower: true,
@@ -29,10 +26,7 @@ export class ArticleService {
     return article.save();
   }
 
-  async findAll(
-    take: number = 8,
-    skip: number = 0,
-  ): Promise<{ result: Article[]; total: number }> {
+  async findAll(take = 8, skip = 0): Promise<{ result: Article[]; total: number }> {
     const [result, total] = await this.articleRepository.findAndCount({
       order: { id: 'DESC' },
       take,
@@ -50,16 +44,10 @@ export class ArticleService {
     return this.articleRepository.findOneOrFail({ slug });
   }
 
-  async update(
-    id: number,
-    updateArticleDto: UpdateArticleDto,
-  ): Promise<Article> {
+  async update(id: number, updateArticleDto: UpdateArticleDto): Promise<Article> {
     const article = await this.articleRepository.findOneOrFail(id);
 
-    const result = await this.articleRepository.merge(
-      article,
-      updateArticleDto,
-    );
+    const result = this.articleRepository.merge(article, updateArticleDto);
 
     return this.articleRepository.save(result);
   }

@@ -1,17 +1,21 @@
-import { IsNotEmpty, Length, IsOptional } from 'class-validator';
+import { IsOptional, IsString, Length } from 'class-validator';
 
 export class UpdateArticleDto {
-  @IsOptional()
+  @IsString()
   @Length(10, 120)
+  @IsOptional()
   readonly title?: string;
 
-  @IsOptional()
+  @IsString()
   @Length(10, 120)
+  @IsOptional()
   readonly subtitle?: string;
 
   @IsOptional()
+  @IsString()
   content?: string;
 
   @IsOptional()
+  @IsString()
   header?: string;
 }

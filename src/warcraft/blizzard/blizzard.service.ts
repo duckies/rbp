@@ -1,157 +1,155 @@
-import { HttpService, Injectable, NotFoundException, UnauthorizedException, BadGatewayException } from '@nestjs/common';
-import { KnownCharacter } from '../../user/interfaces/known-character.interface';
+import { HttpService, Injectable, BadRequestException } from '@nestjs/common';
+import KnownCharacter from '../../user/interfaces/known-character.interface';
 import { User } from '../../user/user.entity';
-import GuildResponse from '../interfaces/guild.interface';
-import { CharacterFieldsDto, CharacterLookupDto } from '../dto/get-character.dto';
-import { GuildFieldsDto } from '../dto/guild-fields.dto';
+import { CharacterLookupDto } from '../dto/get-character.dto';
 import { GuildLookupDto } from '../dto/guild-lookup.dto';
-import { CharacterNotFoundException } from './exceptions/character-not-found.exception';
+import { CharacterResponse } from '../interfaces/character-response.interface';
+import GuildResponse from '../interfaces/guild.interface';
+import { BlizzardTokenCheck } from './interfaces/check-token.interface';
 import { TokenService } from './token.service';
-import { AxiosError } from 'axios';
-import { UnauthorizedTokenException } from './exceptions/unauthorized-token.exception';
+import { FindCharacterDto } from '../character/dto/find-character.dto';
+import { ProfileAchievements } from './interfaces/profile-achievements.interface';
+import { ProfileCollectionsIndex } from './interfaces/profile-collections-index.interface';
+import { ProfileMountCollection } from './interfaces/profile-mounts.interface';
+import { ProfilePetCollection } from './interfaces/profile-pets.interface';
+
+export enum CharacterProfile {
+  Achievements = 'achievements',
+  Appearance = 'appearance',
+  CollectionsIndex = 'collections',
+  MountsCollection = 'collections/mount',
+  PetsCollection = 'collections/pets',
+  Equipment = 'equipment',
+  HunterPets = 'hunter-pets',
+  CharacterMedia = 'character-media',
+  KeystoneProfileIndex = 'mythic-keystone-profile',
+  KeystoneProfileSeason = 'mythic-keystone-profile/season/',
+  Status = 'status',
+  PvPBracket = 'pvp-bracket/',
+  PvPSummary = 'pvp-summary',
+  Reputations = 'reputations',
+  Specializations = 'specializations',
+  Statistics = 'statistics',
+  Titles = 'titles',
+}
 
 @Injectable()
 export class BlizzardService {
   constructor(private readonly tokenService: TokenService, private readonly http: HttpService) {}
 
-  async checkToken(token: string) {
-    const req = await this.http
-      .post('https://us.battle.net/oauth/check_token', null, { params: { token } })
+  /**
+   * Checks if the Blizzard user token is valid.
+   * [Blizzard OAuth](https://develop.battle.net/documentation/guides/using-oauth)
+   * @param token User token; expires within 24 hours of login.
+   */
+  async checkToken(token: string): Promise<BlizzardTokenCheck> {
+    return (await this.http.post('https://us.battle.net/oauth/check_token', null, { params: { token } }).toPromise())
+      .data;
+  }
+
+  /**
+   * Retrieves the list of known characters owned by an account from the Blizzard OAuth flow.
+   * Operates in three states depending on the sync argument:
+   *    1. If sync is set to false, it will not fetch characters, only sending the current information.
+   *    2. If sync is set to true, it will fetch characters always.
+   *    3. If sync is undefined, it will fetch characters if the information is stale.
+   * @param user User
+   * @param sync Boolean
+   */
+  async fetchKnownCharacters(user: User, sync?: boolean): Promise<Partial<User>> {
+    // Potentially valid token and we're either forcing an update or not throttled.
+    if (!user.tokenExpired() && (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))) {
+      try {
+        await this.checkToken(user.blizzardtoken);
+        await this.syncUserCharacters(user);
+      } catch (error) {
+        user.blizzardtoken = null;
+        await user.save();
+      }
+    }
+
+    return {
+      blizzardTokenExpiration: user.blizzardTokenExpiration,
+      knownCharacters: user.knownCharacters,
+      knownCharactersLastUpdated: user.knownCharactersLastUpdated,
+    };
+  }
+
+  async syncUserCharacters(user: User): Promise<Partial<User>> {
+    const resp = await this.http
+      .get('https://us.api.blizzard.com/wow/user/characters', {
+        headers: { Authorization: `Bearer ${user.blizzardtoken}` },
+      })
       .toPromise();
 
-    return req.data;
+    const characters: KnownCharacter[] = resp.data.characters
+      .filter((c: KnownCharacter) => c.level < 100)
+      .sort((a: KnownCharacter, b: KnownCharacter) => b.level - a.level);
+
+    user.knownCharacters = characters;
+    user.knownCharactersLastUpdated = new Date();
+
+    await user.save();
+
+    return {
+      knownCharacters: characters,
+      knownCharactersLastUpdated: user.knownCharactersLastUpdated,
+    };
   }
 
-  async syncUserCharacters(user: User) {
-    try {
-      const resp = await this.http
-        .get('https://us.api.blizzard.com/wow/user/characters', {
-          headers: { Authorization: `Bearer ${user.blizzardtoken}` },
-        })
-        .toPromise();
-
-      const characters: KnownCharacter[] = [];
-      for (const character of resp.data.characters) {
-        if (character.level < 100) continue;
-
-        characters.push({
-          name: character.name,
-          realm: character.realm,
-          region: 'us',
-          class: character.class,
-          race: character.race,
-          gender: character.gender,
-          level: character.level,
-          thumbnail: character.thumbnail,
-          lastModified: character.lastModified,
-        });
-      }
-
-      characters.sort((a, b) => b.level - a.level);
-
-      if (!characters.length) throw new BadGatewayException();
-
-      user.knownCharacters = characters;
-      user.knownCharactersLastUpdated = new Date();
-
-      await user.save();
-
-      return {
-        knownCharacters: characters,
-        knownCharactersLastUpdated: user.knownCharactersLastUpdated,
-      };
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        user.blizzardtoken = null;
-        user.blizzardTokenExpiration = null;
-
-        await user.save();
-
-        throw new UnauthorizedTokenException();
-      }
-
-      throw error;
-    }
+  getCharacterAchievements(findCharacterDto: FindCharacterDto): Promise<ProfileAchievements> {
+    return this.getProfileData(findCharacterDto, CharacterProfile.Achievements);
   }
 
-  async getCharacter(
-    characterLookupDto: CharacterLookupDto,
-    characterFieldsDto: CharacterFieldsDto,
+  getCharacterCollections(findCharacterDto: FindCharacterDto): Promise<ProfileCollectionsIndex> {
+    return this.getProfileData(findCharacterDto, CharacterProfile.CollectionsIndex);
+  }
+
+  getCharacterMountsCollection(findCharacterDto: FindCharacterDto): Promise<ProfileMountCollection> {
+    return this.getProfileData(findCharacterDto, CharacterProfile.MountsCollection);
+  }
+
+  getCharacterPetsCollection(findCharacterDto: FindCharacterDto): Promise<ProfilePetCollection> {
+    return this.getProfileData(findCharacterDto, CharacterProfile.MountsCollection);
+  }
+
+  /**
+   * Generic method for retrieving character profile information.
+   *
+   * @param findCharacterDto Character name, realm, region.
+   * @param endpoint CharacterProfile endpoint.
+   * @param param Parameter if the profile endpoint requires it.
+   */
+  async getProfileData(
+    { name, realm, region }: FindCharacterDto,
+    endpoint?: CharacterProfile,
+    param?: string | number,
   ): Promise<any> {
-    const { name, realm, region } = characterLookupDto;
-    const { fields } = characterFieldsDto;
+    if ((endpoint === CharacterProfile.KeystoneProfileSeason || endpoint === CharacterProfile.PvPBracket) && !param) {
+      throw new BadRequestException('Param is required.');
+    }
 
-    // This would eventually be replaced by an automatically updating process.
     await this.tokenService.getToken();
 
-    const api = `https://${region}.api.blizzard.com/wow/character/${realm}/${name}${
-      fields != null ? '?fields=' + fields : ''
-    }`;
+    const endpointTack = typeof endpoint === 'undefined' ? '' : `/${endpoint}${param ? param : ''}`;
+    const api = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${name}${endpointTack}?namespace=profile-us&locale=en_US`;
 
-    try {
-      const resp = await this.http.get(api).toPromise();
-
-      return resp.data;
-    } catch (error) {
-      if (error.response) {
-        switch (error.response.status) {
-          // Unauthorized, our token is invalid.
-          case 401:
-            this.tokenService.clearToken();
-            throw new UnauthorizedException();
-
-          // Character not found; possibly bugged.
-          case 404:
-            throw new CharacterNotFoundException(characterLookupDto.name, characterLookupDto.realm);
-
-          default:
-            break;
-        }
-      }
-
-      // Likely a networking error.
-      throw error;
-    }
+    return (await this.http.get(api).toPromise()).data;
   }
 
-  async getGuild(
-    guildLookupDto: GuildLookupDto,
-    guildFieldsDto: GuildFieldsDto,
-  ): Promise<GuildResponse> {
-    // This would eventually be replaced by an automatically updating process.
+  async fetchCharacterProfile({ name, realm, region }: CharacterLookupDto): Promise<CharacterResponse> {
     await this.tokenService.getToken();
 
-    const api = `https://${guildLookupDto.region}.api.blizzard.com/wow/guild/${
-      guildLookupDto.realm
-    }/${guildLookupDto.name}${
-      guildFieldsDto.fields != null ? '?fields=' + guildFieldsDto.fields : ''
-    }`;
+    const api = `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${name}?namespace=profile-us&locale=en_US`;
 
-    try {
-      const resp = await this.http.get(api).toPromise();
+    return (await this.http.get(api).toPromise()).data;
+  }
 
-      return resp.data;
-    } catch (error) {
-      if (error.response) {
-        switch (error.response.status) {
-          // Unauthorized, our token is invalid.
-          case 401:
-            this.tokenService.clearToken();
-            break;
+  async fetchGuild({ name, realm, region }: GuildLookupDto): Promise<GuildResponse> {
+    await this.tokenService.getToken();
 
-          // Character not found; possibly bugged.
-          case 404:
-            throw new NotFoundException(
-              `${guildLookupDto.name} on ${guildLookupDto.realm} was not found.`,
-            );
+    const api = `https://${region}.api.blizzard.com/data/wow/guild/${realm}/${name}/roster?namespace=profile-${region}&locale=en_US`;
 
-          default:
-            break;
-        }
-      }
-
-      // Likely a networking error.
-      throw error;
-    }
+    return (await this.http.get(api).toPromise()).data;
   }
 }

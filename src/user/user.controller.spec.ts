@@ -1,9 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { User } from './user.entity';
-import { UserFactory } from '../../test/factories/User';
+import { Test } from '@nestjs/testing';
 import { ComposeGuard } from '../auth/guards/compose.guard';
+import { UserController } from './user.controller';
+import { User } from './user.entity';
+import { UserService } from './user.service';
 
 jest.mock('./user.service');
 
@@ -26,14 +25,11 @@ describe.only('User Controller', () => {
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
-      const users = UserFactory.buildList(5);
-      const response = { result: users, total: 5 };
+      const users = [new User()];
 
-      jest
-        .spyOn(userService, 'findAll')
-        .mockImplementation(async () => response);
+      jest.spyOn(userService, 'findAll').mockResolvedValueOnce({ result: users, total: 1 });
 
-      expect(await userController.findAll()).toBe(response);
+      expect(await userController.findAll(null)).toBe(users);
     });
   });
 });

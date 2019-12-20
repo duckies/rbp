@@ -1,8 +1,8 @@
-import { Process, Processor } from 'nest-bull';
 import { Logger } from '@nestjs/common';
-import { UserService } from './user.service';
-import { Job } from 'bull';
+import { Process, Processor } from 'nest-bull';
 import { NumRanks, Ranks } from '../app.roles';
+import { User } from './user.entity';
+import { UserService } from './user.service';
 
 @Processor({ name: 'user' })
 export class UserQueue {
@@ -11,7 +11,7 @@ export class UserQueue {
   constructor(private readonly userService: UserService) {}
 
   @Process({ name: 'updateUserRoles', concurrency: 1 })
-  private async updateUserRoles(job: Job<Number>) {
+  private async updateUserRoles(): Promise<User[]> {
     const users = await this.userService.findAllWithGuildCharacters();
 
     console.log(users);

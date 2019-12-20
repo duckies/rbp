@@ -1,17 +1,20 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { ValidationPipe, INestApplication } from '@nestjs/common';
 import {
   EntityNotFoundExceptionFilter,
-  UpdateValuesMissingExceptionFilter,
   QueryFailedExceptionFilter,
+  UpdateValuesMissingExceptionFilter,
 } from './filters/typeorm.filter';
-import { useContainer } from 'typeorm';
-import { BlizzardExceptionFilter } from './filters/blizzard.filter';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  /**
+   * Whitelist all arguments so they must be described in a DTO.
+   * ForbidNonWhitelisted to not allow requests with extraneous information.
+   */
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -20,18 +23,24 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({
-    origin: 'http://localhost:8000',
-    allowedHeaders: ['Authorization'],
-    credentials: true
-  });
-
-  // app.useGlobalFilters(new BlizzardExceptionFilter());
+  /**
+   * Transforms errors received by Postgres and Blizzard.
+   *
+   */
   app.useGlobalFilters(new EntityNotFoundExceptionFilter());
   app.useGlobalFilters(new UpdateValuesMissingExceptionFilter());
   app.useGlobalFilters(new QueryFailedExceptionFilter());
 
-  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  /**
+   * Allows for communication from another domain or port.
+   */
+  app.enableCors({
+    origin: 'http://localhost:3030',
+    allowedHeaders: ['Authorization'],
+    credentials: true,
+  });
+
+  // useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   await app.listen(3000);
 }

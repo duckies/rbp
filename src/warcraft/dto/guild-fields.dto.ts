@@ -9,7 +9,5 @@ export enum GuildFields {
 
 export class GuildFieldsDto {
   @IsNotEmpty()
-  fields: GuildFields[] = [
-    GuildFields.Members
-  ]
+  fields: GuildFields[] = [GuildFields.Members];
 }

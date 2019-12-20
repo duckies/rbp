@@ -1,17 +1,17 @@
 import { BadRequestException, HttpService, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as moment from 'moment';
+import moment from 'moment';
 import { LessThan, Repository } from 'typeorm';
-import { CharacterResponse } from '../interfaces/character-response.interface';
 import { ConfigService } from '../../config/config.service';
 import { User } from '../../user/user.entity';
 import { BlizzardService } from '../blizzard/blizzard.service';
-import { CharacterFieldsDto, CharacterLookupDto } from '../dto/get-character.dto';
-import { TokenService } from '../blizzard/token.service';
-import { Character } from './character.entity';
-import { RealmSlug } from '../interfaces/realm.enum';
 import { RealmSlugDictionary } from '../blizzard/realm.map';
+import { TokenService } from '../blizzard/token.service';
+import { CharacterFieldsDto } from '../dto/fields.dto';
+import { CharacterLookupDto } from '../dto/get-character.dto';
 import { CharacterFields } from '../interfaces/character.interface';
+import { RealmSlug } from '../interfaces/realm.enum';
+import { Character } from './character.entity';
 
 export interface PurgeResult {
   flagged: number;
@@ -30,9 +30,8 @@ export class CharacterService {
     CharacterFields.Talents,
     CharacterFields.Titles,
   ]);
-  private readonly minimumCharacterLevel: number = parseInt(
-    this.configService.get('MINIMUM_CHARACTER_LEVEL'),
-  );
+
+  private readonly minimumCharacterLevel: number = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
 
   constructor(
     @InjectRepository(Character)
@@ -55,17 +54,14 @@ export class CharacterService {
    */
   async upsert(
     characterLookupDto: CharacterLookupDto,
-    characterFieldsDto: CharacterFieldsDto,
     forceUpdate?: boolean,
     inOurGuild?: boolean,
     rank?: number,
     user?: User,
   ): Promise<Character> {
-    const { name, region, realm } = characterLookupDto;
-
-    let [character, data]: [Character, CharacterResponse] = await Promise.all([
+    let [character, data] = await Promise.all([
       this.findOne(characterLookupDto),
-      this.blizzardService.getCharacter(characterLookupDto, characterFieldsDto),
+      this.blizzardService.fetchCharacterProfile(characterLookupDto),
     ]);
 
     // We do not support including young characters or alts.
@@ -83,7 +79,8 @@ export class CharacterService {
         return character;
       }
     } else {
-      character = new Character(name, data.realm, region);
+      // character = new Character(name, data.realm, region);
+      character = new Character();
     }
 
     // The guild master has a rank of 0, which is falsy.
@@ -92,7 +89,7 @@ export class CharacterService {
     }
 
     if (user) {
-      character.account = user;
+      // character.account = user;
     }
 
     if (inOurGuild) {
@@ -142,12 +139,7 @@ export class CharacterService {
       .getOne();
   }
 
-  async getCharacter(
-    region: string,
-    realm: RealmSlug,
-    name: string,
-    fields: string[],
-  ): Promise<any> {
+  async getCharacter(region: string, realm: RealmSlug, name: string, fields: string[]): Promise<unknown> {
     await this.tokenService.getToken();
     const api = `https://${region}.api.blizzard.com/wow/character/${realm}/${name}?fields=${fields}`;
 
@@ -157,14 +149,7 @@ export class CharacterService {
   }
 
   async setMain(user: User, characterLookupDto: CharacterLookupDto): Promise<User> {
-    const character = await this.upsert(
-      characterLookupDto,
-      this.setMainFields,
-      true,
-      null,
-      null,
-      user,
-    );
+    const character = await this.upsert(characterLookupDto, true, null, null, user);
 
     user.mainCharacter = character;
 

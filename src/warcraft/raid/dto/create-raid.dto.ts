@@ -30,7 +30,7 @@ export class CreateRaidDto {
   realm: number;
 
   @IsNotEmpty()
-  summary: string; 
+  summary: string;
 
   @IsNotEmpty()
   total_bosses: number;

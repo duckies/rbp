@@ -247,7 +247,7 @@ export const RealmSlugDictionary = {
   [RealmSlug.JubeiThos]: RealmName.JubeiThos,
   [RealmSlug.Gundrak]: RealmName.Gundrak,
   [RealmSlug.Saurfang]: RealmName.Saurfang,
-}
+};
 
 export const RealmNameDictionary = {
   [RealmName.Lightbringer]: RealmSlug.Lightbringer,
@@ -496,4 +496,4 @@ export const RealmNameDictionary = {
   [RealmName.JubeiThos]: RealmSlug.JubeiThos,
   [RealmName.Gundrak]: RealmSlug.Gundrak,
   [RealmName.Saurfang]: RealmSlug.Saurfang,
-}
+};

@@ -1,8 +1,10 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { UserService } from '../user/user.service';
-import { User } from '../user/user.entity';
-import { ConfigService } from '../config/config.service';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { sign } from 'jsonwebtoken';
+import { ConfigService } from '../config/config.service';
+import { User } from '../user/user.entity';
+import { UserService } from '../user/user.service';
+import { JWTPayload } from './dto/jwt.dto';
+import { BlizzardProfile } from './interfaces/blizzard-auth.interface';
 
 export enum Provider {
   BLIZZARD = 'blizzard',
@@ -18,7 +20,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async verify(payload: any) {
+  async verify(payload: JWTPayload): Promise<User> {
     const user = await this.userService.findOneByJwtPayload(payload);
 
     user.lastLogin = new Date();
@@ -26,44 +28,32 @@ export class AuthService {
     return user.save();
   }
 
-  signToken(user: User) {
+  signToken(user: User): string {
     return sign({ id: user.id }, this.configService.get('JWT_SECRET'));
   }
 
+  // Currently is only typed for Blizzard.
   async validateOAuthLogin(
     thirdPartyId: number,
     accessToken: string,
     refreshToken: string,
-    data: any,
+    data: BlizzardProfile,
     provider: Provider,
   ): Promise<User> {
     try {
-      const user = await this.userService.findOneByProviderId(
-        thirdPartyId,
-        provider,
-      );
+      const user = await this.userService.findOneByProviderId(thirdPartyId, provider);
 
-      if (provider == Provider.BLIZZARD) {
+      if (provider === Provider.BLIZZARD) {
         user.battletag = data.battletag;
         user.blizzardtoken = accessToken;
-
         return await user.save();
       }
     } catch (error) {
       if (error.name === 'EntityNotFound') {
-        const user = await this.userService.create(
-          thirdPartyId,
-          data.battletag,
-          accessToken,
-        );
-        user.justCreated = true;
-
-        return user;
+        return await this.userService.create(thirdPartyId, data.battletag, accessToken);
       }
 
-      this.logger.error(
-        'User was not found or errored out. ' + JSON.stringify(error),
-      );
+      this.logger.error(`User was not found or errored out. ${JSON.stringify(error)}`);
       return Promise.reject();
     }
   }
