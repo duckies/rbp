@@ -47,9 +47,9 @@ export class ArticleService {
   async update(id: number, updateArticleDto: UpdateArticleDto): Promise<Article> {
     const article = await this.articleRepository.findOneOrFail(id);
 
-    const result = this.articleRepository.merge(article, updateArticleDto);
+    this.articleRepository.merge(article, updateArticleDto);
 
-    return this.articleRepository.save(result);
+    return this.articleRepository.save(article);
   }
 
   async delete(id: number): Promise<Article> {

@@ -19,7 +19,7 @@ export class UserQueue {
     const promises = [];
     for (const user of users) {
       // The highest rank is actually the lowest in the game.
-      const rank = Math.min(...user.characters.map(c => c.guildRank), NumRanks - 1);
+      const rank = Math.min(...user.characters.map(c => c.rank), NumRanks - 1);
 
       user.roles = [Ranks[rank]];
       promises.push(user.save());

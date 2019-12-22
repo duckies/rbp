@@ -6,15 +6,17 @@ import { Connection } from 'typeorm';
 import { roleBuilder } from './app.roles';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
+import { BlizzardModule } from './blizzard/blizzard.module';
 import { BullSharedModule } from './bull.module';
+import { CharacterModule } from './character/character.module';
 import { ConfigModule } from './config/config.module';
 import { FileModule } from './file/file.module';
 import { FormModule } from './form/form.module';
+import { RaidModule } from './raid/raid.module';
+import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
 import { SubmissionModule } from './submission/submission.module';
 import { UserModule } from './user/user.module';
-import { RaidModule } from './warcraft/raid/raid.module';
-import { WarcraftModule } from './warcraft/warcraft.module';
 
 @Module({
   imports: [
@@ -30,10 +32,12 @@ import { WarcraftModule } from './warcraft/warcraft.module';
     SlideModule,
     ArticleModule,
     RaidModule,
-    WarcraftModule,
     FormModule,
     SubmissionModule,
     FileModule,
+    BlizzardModule,
+    CharacterModule,
+    RaiderIOModule
   ],
 })
 export class AppModule {

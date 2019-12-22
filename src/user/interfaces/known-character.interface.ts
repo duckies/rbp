@@ -1,4 +1,4 @@
-import { RealmName } from '../../warcraft/interfaces/realm.enum';
+import { RealmName } from '../../blizzard/enum/realm.enum';
 
 export default class KnownCharacter {
   name: string;
