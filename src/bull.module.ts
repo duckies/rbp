@@ -4,7 +4,12 @@ import { BullModule } from 'nest-bull';
 /**
  * Still need forFeature to use this in each individual module?
  */
-const QueueModule: DynamicModule = BullModule.register([{ name: 'character' }, { name: 'raiderIO' }, { name: 'user' }]);
+const QueueModule: DynamicModule = BullModule.register([
+  { name: 'character' },
+  { name: 'raiderIO' },
+  { name: 'user' },
+  { name: 'raid' },
+]);
 
 @Global()
 @Module({

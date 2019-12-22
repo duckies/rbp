@@ -1,21 +1,9 @@
-import {
-  BaseEntity,
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Roles } from '../app.roles';
 import { Comment } from '../application/comment/comment.entity';
 import { Article } from '../article/article.entity';
+import { Character } from '../character/character.entity';
 import { File } from '../file/file.entity';
-import { Character } from '../warcraft/character/character.entity';
 import KnownCharacter from './interfaces/known-character.interface';
 
 import moment = require('moment');
