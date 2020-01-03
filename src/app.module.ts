@@ -11,11 +11,11 @@ import { BullSharedModule } from './bull.module';
 import { CharacterModule } from './character/character.module';
 import { ConfigModule } from './config/config.module';
 import { FileModule } from './file/file.module';
+import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
 import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
-import { SubmissionModule } from './submission/submission.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -33,11 +33,11 @@ import { UserModule } from './user/user.module';
     ArticleModule,
     RaidModule,
     FormModule,
-    SubmissionModule,
+    FormSubmissionModule,
     FileModule,
     BlizzardModule,
     CharacterModule,
-    RaiderIOModule
+    RaiderIOModule,
   ],
 })
 export class AppModule {

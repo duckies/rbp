@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { UseRoles } from 'nest-access-control';
-import { ComposeGuard } from '../auth/guards/compose.guard';
+import { AccessControlGuard } from '../auth/guards/compose.guard';
 import { RaiderIOGuild } from '../raiderIO/raiderIO.interface';
 import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { CreateRaidDto } from './dto/create-raid.dto';
@@ -13,7 +13,7 @@ export class RaidController {
   constructor(private readonly raidService: RaidService, private readonly raiderIOService: RaiderIOService) {}
 
   @Post()
-  @UseGuards(ComposeGuard)
+  @UseGuards(AccessControlGuard)
   @UseRoles({ resource: 'raid', action: 'create', possession: 'any' })
   create(@Body() createRaidDto: CreateRaidDto): Promise<Raid> {
     return this.raidService.create(createRaidDto);

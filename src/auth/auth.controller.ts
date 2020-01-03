@@ -1,6 +1,5 @@
-import { Controller, Get, Post, UseFilters, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { BlizzardExceptionFilter } from '../filters/blizzard.filter';
 import { Usr } from '../user/user.decorator';
 import { User } from '../user/user.entity';
 import { AuthService } from './auth.service';
@@ -16,7 +15,6 @@ export class AuthController {
   }
 
   @Post('blizzard/callback')
-  @UseFilters(BlizzardExceptionFilter)
   @UseGuards(AuthGuard('blizzard'))
   blizzardCallback(@Usr() user: User): { user: User; token: string } {
     const token = this.authService.signToken(user);

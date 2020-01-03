@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Submission } from '../submission/submission.entity';
+import { FormSubmission } from '../form-submission/form-submission.entity';
 import { User } from '../user/user.entity';
 
 @Entity('file')
@@ -38,5 +38,5 @@ export class File extends BaseEntity {
   owner: User;
 
   @ManyToOne(() => User, user => user.files, { onDelete: 'SET NULL' })
-  submission: Submission;
+  submission: FormSubmission;
 }

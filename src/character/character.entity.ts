@@ -7,7 +7,6 @@ import { ProfileCharacter, ProfileMedia } from '../blizzard/interfaces';
 import { User } from '../user/user.entity';
 import { Region } from '../blizzard/enum/region.enum';
 
-
 @Entity('character')
 @Unique('UNIQUE_CHARACTER', ['name', 'realm', 'region'])
 @Index('lower_char_index', { synchronize: false })
@@ -71,7 +70,7 @@ export class Character extends BaseEntity {
   guild_realm: string;
 
   @Column({ nullable: true })
-  rank: number;
+  guild_rank: number;
 
   @Column({ nullable: true })
   title: string;
@@ -155,7 +154,7 @@ export class Character extends BaseEntity {
   }
 
   mergeProfileIndex(data: ProfileCharacter): Character {
-    if (this.character_id && (this.character_id !== data.id)) {
+    if (this.character_id && this.character_id !== data.id) {
       throw new CharacterConflictException(this.name, this.realm);
     }
 
@@ -166,9 +165,9 @@ export class Character extends BaseEntity {
     this.character_id = data.id;
 
     // Check for players not in the guild anymore.
-    this.guild_id = data.guild.id
-    this.guild_name = data.guild.name
-    this.guild_realm = data.guild.realm.name
+    this.guild_id = data.guild.id;
+    this.guild_name = data.guild.name;
+    this.guild_realm = data.guild.realm.name;
 
     this.race_id = data.race.id;
     this.gender = data.gender.name;
@@ -191,7 +190,7 @@ export class Character extends BaseEntity {
     this.average_item_level = data.average_item_level;
     this.equipped_item_level = data.equipped_item_level;
 
-    this.title = data.active_title ? data.active_title.display_string : null
+    this.title = data.active_title ? data.active_title.display_string : null;
 
     return this;
   }

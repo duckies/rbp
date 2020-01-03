@@ -1,6 +1,5 @@
 import { Logger } from '@nestjs/common';
 import { Process, Processor } from 'nest-bull';
-import { NumRanks, Ranks } from '../app.roles';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
@@ -10,21 +9,21 @@ export class UserQueue {
 
   constructor(private readonly userService: UserService) {}
 
-  @Process({ name: 'updateUserRoles', concurrency: 1 })
-  private async updateUserRoles(): Promise<User[]> {
-    const users = await this.userService.findAllWithGuildCharacters();
+  // @Process({ name: 'updateUserRoles', concurrency: 1 })
+  // private async updateUserRoles(): Promise<User[]> {
+  //   const users = await this.userService.findAllWithGuildCharacters();
 
-    console.log(users);
+  //   console.log(users);
 
-    const promises = [];
-    for (const user of users) {
-      // The highest rank is actually the lowest in the game.
-      const rank = Math.min(...user.characters.map(c => c.rank), NumRanks - 1);
+  //   const promises = [];
+  //   for (const user of users) {
+  //     // The highest rank is actually the lowest in the game.
+  //     const rank = Math.min(...user.characters.map(c => c.rank), NumRanks - 1);
 
-      user.roles = [Ranks[rank]];
-      promises.push(user.save());
-    }
+  //     user.roles = [Ranks[rank]];
+  //     promises.push(user.save());
+  //   }
 
-    return Promise.all(promises);
-  }
+  //   return Promise.all(promises);
+  // }
 }

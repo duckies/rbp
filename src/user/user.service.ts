@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -35,13 +35,38 @@ export class UserService {
     return this.repository.findOneOrFail(id);
   }
 
-  findOneByJwtPayload(payload: JWTPayload): Promise<User> {
-    return this.repository.findOneOrFail(payload.id);
+  async findOneByJwtPayload(payload: JWTPayload): Promise<User> {
+    const user = await this.repository
+      .createQueryBuilder('user')
+      .addSelect([
+        'user.blizzardid',
+        'user.blizzardtoken',
+        'user.blizzardTokenExpiration',
+        'user.knownCharacters',
+        'user.knownCharactersLastUpdated',
+      ])
+      .where('user.id = :id', { id: payload.id })
+      .getOne();
+
+    return user;
   }
 
-  findOneByProviderId(thirdPartyId: number, provider: Provider): Promise<User> {
+  async findOneByProviderId(thirdPartyId: number, provider: Provider): Promise<User> {
     if (provider === Provider.BLIZZARD) {
-      return this.repository.findOneOrFail({ blizzardid: thirdPartyId });
+      const user = await this.repository
+        .createQueryBuilder('user')
+        .select(['user.id'])
+        .addSelect([
+          'user.blizzardid',
+          'user.blizzardtoken',
+          'user.blizzardTokenExpiration',
+          'user.knownCharacters',
+          'user.knownCharactersLastUpdated',
+        ])
+        .where('user.blizzardid = :id', { id: thirdPartyId })
+        .getOne();
+
+      return user;
     }
 
     throw new BadRequestException();

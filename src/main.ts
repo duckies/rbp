@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { BlizzardExceptionFilter } from './filters/blizzard.filter';
+import { BlizzardFilter } from './blizzard/filters/blizzard.filter';
 import {
   EntityNotFoundExceptionFilter,
   QueryFailedExceptionFilter,
@@ -28,7 +28,7 @@ async function bootstrap(): Promise<void> {
    * Transforms errors received by Postgres and Blizzard.
    *
    */
-  app.useGlobalFilters(new BlizzardExceptionFilter());
+  // app.useGlobalFilters(new BlizzardFilter());
   app.useGlobalFilters(new EntityNotFoundExceptionFilter());
   app.useGlobalFilters(new UpdateValuesMissingExceptionFilter());
   app.useGlobalFilters(new QueryFailedExceptionFilter());
@@ -36,11 +36,12 @@ async function bootstrap(): Promise<void> {
   /**
    * Allows for communication from another domain or port.
    */
-  app.enableCors({
-    origin: 'http://localhost:3030',
-    allowedHeaders: ['Authorization'],
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: 'http://localhost:3030',
+  //   allowedHeaders: ['Authorization', 'content-type'],
+  //   credentials: true,
+  // });
+  app.enableCors();
 
   await app.listen(3000);
 }

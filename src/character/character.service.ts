@@ -2,14 +2,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
 import { LessThan, Repository } from 'typeorm';
-import { BlizzardService } from '../blizzard/blizzard.service';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { ProfileApiService } from '../blizzard/profile-api.service';
 import { ConfigService } from '../config/config.service';
-import KnownCharacter from '../user/interfaces/known-character.interface';
+import { KnownCharacter } from '../blizzard/interfaces/profile/known-characters.interface';
 import { User } from '../user/user.entity';
 import { Character } from './character.entity';
-import { Region } from '../blizzard/enum/region.enum';
-
 
 export interface PurgeResult {
   flagged: number;
@@ -23,7 +21,7 @@ export class CharacterService {
   constructor(
     @InjectRepository(Character)
     private readonly repository: Repository<Character>,
-    private readonly blizzardService: BlizzardService,
+    private readonly blizzardService: ProfileApiService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -62,7 +60,7 @@ export class CharacterService {
 
     // The guild master has a rank of 0, which is falsy.
     if (typeof rank !== 'undefined') {
-      character.rank = rank;
+      character.guild_rank = rank;
     }
 
     if (user) {
@@ -144,12 +142,15 @@ export class CharacterService {
   async fetchKnownCharacters(user: User, sync?: boolean): Promise<Partial<User>> {
     // Update for a potentially valid token and we're either forcing an update or not throttled.
     if (!user.tokenExpired() && (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))) {
+      console.log('Attempting to download characters.');
       try {
-        await this.blizzardService.checkToken(user.blizzardtoken);
+        await this.blizzardService.checkToken(user);
         await this.syncUserCharacters(user);
       } catch (error) {
-        user.blizzardtoken = null;
-        await user.save();
+        // We should handle authentication errors.
+        console.error(error);
+        // user.blizzardtoken = null;
+        // await user.save();
       }
     }
 
@@ -161,9 +162,11 @@ export class CharacterService {
   }
 
   async syncUserCharacters(user: User): Promise<Partial<User>> {
-    const characters: KnownCharacter[] = (await this.blizzardService.getUserCharacters(user.blizzardtoken))
-      .filter((c: KnownCharacter) => c.level < 100)
-      .sort((a: KnownCharacter, b: KnownCharacter) => b.level - a.level);
+    const knownCharacters = await this.blizzardService.getUserCharacters(user.blizzardtoken);
+
+    const characters = knownCharacters.characters
+      .filter(c => c.level >= this.minimumCharacterLevel)
+      .sort((a, b) => b.level - a.level);
 
     user.knownCharacters = characters;
     user.knownCharactersLastUpdated = new Date();

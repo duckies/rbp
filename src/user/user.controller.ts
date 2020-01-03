@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { UseRoles } from 'nest-access-control';
-import { ComposeGuard } from '../auth/guards/compose.guard';
+import { AccessControlGuard } from '../auth/guards/compose.guard';
 import { FindAllDto } from './dto/find-all.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Usr } from './user.decorator';
@@ -8,7 +8,7 @@ import { User } from './user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
-@UseGuards(ComposeGuard)
+@UseGuards(AccessControlGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

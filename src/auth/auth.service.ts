@@ -21,11 +21,7 @@ export class AuthService {
   ) {}
 
   async verify(payload: JWTPayload): Promise<User> {
-    const user = await this.userService.findOneByJwtPayload(payload);
-
-    user.lastLogin = new Date();
-
-    return user.save();
+    return await this.userService.findOneByJwtPayload(payload);
   }
 
   signToken(user: User): string {

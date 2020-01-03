@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from 'nest-bull';
-import { BlizzardService } from '../blizzard/blizzard.service';
+import { ProfileApiService } from '../blizzard/profile-api.service';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
@@ -24,7 +24,7 @@ export class CharacterQueue {
 
   constructor(
     private readonly characterService: CharacterService,
-    private readonly blizzardService: BlizzardService,
+    private readonly blizzardService: ProfileApiService,
     private readonly configService: ConfigService,
   ) {
     this.minimumCharacterLevel = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
