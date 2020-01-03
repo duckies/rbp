@@ -11,9 +11,9 @@ import { transformException } from '@nestjs/platform-express/multer/multer/multe
 import Multer from 'multer';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { QuestionService } from '../../question/question.service';
+import { FormQuestionService } from '../../form-question/question.service';
 import { ConfigService } from '../../config/config.service';
-import { Question, FieldType, FileTypes } from '../../question/question.entity';
+import { FormQuestion, FieldType, FileTypes } from '../../form-question/question.entity';
 
 export interface MulterField {
   name: string;
@@ -40,9 +40,9 @@ export function FormFilesInterceptor(): Type<NestInterceptor> {
 
     private fields: Multer.Field[];
 
-    private questions: Question[];
+    private questions: FormQuestion[];
 
-    constructor(private readonly configService: ConfigService, private readonly questionService: QuestionService) {
+    constructor(private readonly configService: ConfigService, private readonly questionService: FormQuestionService) {
       this.storage = Multer.diskStorage({
         destination: this.configService.get('FILE_LOCATION'),
         filename: this.fileName,
@@ -60,7 +60,7 @@ export function FormFilesInterceptor(): Type<NestInterceptor> {
 
       this.questions = await this.questionService.findByFormAndType(req.params.id, FieldType.UPLOAD);
 
-      this.fields = this.questions.map((q: Question) => ({
+      this.fields = this.questions.map((q: FormQuestion) => ({
         name: q.id,
         maxCount: q.multiple ? q.multiple : 1,
       }));
@@ -82,7 +82,7 @@ export function FormFilesInterceptor(): Type<NestInterceptor> {
     }
 
     private fileFilter(_req: Request, file: Express.Multer.File, cb: FileFilterCallback): void {
-      const question = this.questions.find((q: Question) => q.id === file.fieldname);
+      const question = this.questions.find((q: FormQuestion) => q.id === file.fieldname);
 
       // TODO: Match file type to mimetype.
       const fileType = FileTypes.Image;

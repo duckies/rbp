@@ -10,10 +10,15 @@ export class BlizzardFilter implements ExceptionFilter {
   catch(exception: AxiosError, host: ArgumentsHost): Response {
     const resp: Response = host.switchToHttp().getResponse();
 
-    if (exception.config && exception.config.url && exception.config.url.includes('api.blizzard.com')) {
+    if (
+      exception.config &&
+      exception.config.url &&
+      (exception.config.url.includes('blizzard.com') || exception.config.url.includes('battle.net'))
+    ) {
       return resp.status(exception.response.status).send(exception.response.data);
     }
-    
-    throw exception
+
+    console.error(exception)
+    return resp.status(500).send({ exception });
   }
 }

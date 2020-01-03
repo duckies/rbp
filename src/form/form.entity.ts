@@ -1,14 +1,6 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { Question } from '../question/question.entity';
-import { Submission } from '../submission/submission.entity';
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { FormQuestion } from '../form-question/question.entity';
+import { FormSubmission } from '../form-submission/form-submission.entity';
 
 @Entity('form')
 export class Form extends BaseEntity {
@@ -18,11 +10,11 @@ export class Form extends BaseEntity {
   @Column()
   name: string;
 
-  @OneToMany(() => Question, question => question.form, { eager: true })
-  questions: Question[];
+  @OneToMany(() => FormQuestion, question => question.form, { eager: true })
+  questions: FormQuestion[];
 
-  @OneToMany(() => Submission, submission => submission.form)
-  submissions: Submission[];
+  @OneToMany(() => FormSubmission, submission => submission.form)
+  submissions: FormSubmission[];
 
   @CreateDateColumn()
   createdOn: Date;

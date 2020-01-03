@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { ComposeGuard } from '../auth/guards/compose.guard';
+import { AccessControlGuard } from '../auth/guards/compose.guard';
 import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { UserService } from './user.service';
@@ -15,7 +15,7 @@ describe.only('User Controller', () => {
       controllers: [UserController],
       providers: [UserService],
     })
-      .overrideGuard(ComposeGuard)
+      .overrideGuard(AccessControlGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

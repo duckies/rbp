@@ -10,5 +10,5 @@ export class FindCharacterDto {
   readonly realm: RealmSlug;
 
   @IsEnum(Region)
-  readonly region: Region;
+  readonly region: Region = Region.US;
 }

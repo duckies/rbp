@@ -1,36 +1,23 @@
 import { RolesBuilder } from 'nest-access-control';
 
 export enum Roles {
-  GuildMaster = 'GUILD_MASTER',
-  Officer = 'OFFICER',
-  OfficerAlt = 'OFFICER_ALT',
-  RaiderBank = 'RAIDER_(BANK)',
-  Raider = 'RAIDER',
-  Recruit = 'RECRUIT',
-  Fan = 'FAN',
-  PlayerAlt = 'PLAYER_ALT',
-  Guest = 'GUEST',
+  GuildMaster = 'Guild Master',
+  Officer = 'Officer',
+  OfficerAlt = 'Officer Alt',
+  RaiderBank = 'Raider (Bank)',
+  Raider = 'Raider',
+  Recruit = 'Recruit',
+  Fan = 'Fan',
+  PlayerAlt = 'Player Alt',
+  Guest = 'Guest',
 }
-
-export const NumRanks = 9;
-
-export const Ranks = {
-  0: Roles.GuildMaster,
-  1: Roles.Officer,
-  2: Roles.OfficerAlt,
-  3: Roles.RaiderBank,
-  4: Roles.Raider,
-  5: Roles.Recruit,
-  6: Roles.Fan,
-  7: Roles.PlayerAlt,
-  8: Roles.Guest,
-};
 
 export const roleBuilder: RolesBuilder = new RolesBuilder();
 
 roleBuilder
   .grant(Roles.Guest)
   .updateOwn('user', ['displayname', 'avatar'])
+  .updateOwn('form-submission')
   .deleteOwn('user')
   .grant(Roles.Fan)
   .extend(Roles.Guest)
@@ -52,6 +39,8 @@ roleBuilder
   .createAny('question')
   .updateAny('question')
   .deleteAny('question')
+  .updateAny('form-submission')
+  .deleteAny('form-submission')
   .grant(Roles.OfficerAlt)
   .extend(Roles.Officer)
   .grant(Roles.GuildMaster)

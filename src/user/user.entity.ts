@@ -1,10 +1,23 @@
-import { BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  BaseEntity,
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Roles } from '../app.roles';
-import { Comment } from '../application/comment/comment.entity';
 import { Article } from '../article/article.entity';
+import { KnownCharacter } from '../blizzard/interfaces/profile/known-characters.interface';
 import { Character } from '../character/character.entity';
 import { File } from '../file/file.entity';
-import KnownCharacter from './interfaces/known-character.interface';
+import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
+import { FormSubmission } from '../form-submission/form-submission.entity';
 
 import moment = require('moment');
 
@@ -25,13 +38,13 @@ export class User extends BaseEntity {
   @Column({ nullable: false })
   battletag: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   blizzardid: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   blizzardtoken: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   blizzardTokenExpiration: Date;
 
   @Column({ type: 'enum', enum: Roles, default: [Roles.Guest], array: true })
@@ -46,29 +59,59 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   lastLogin: Date;
 
-  @OneToMany(() => Article, article => article.author)
+  @OneToMany(
+    () => Article,
+    article => article.author,
+  )
   articles: Article[];
 
-  @OneToMany(() => Comment, comment => comment.author)
-  comments: Comment[];
+  // Not yet implemented.
+  // @OneToMany(() => Comment, comment => comment.author)
+  // comments: Comment[];
 
-  @OneToMany(() => File, file => file.owner)
+  @OneToMany(
+    () => File,
+    file => file.owner,
+  )
   files: File[];
 
   @OneToOne(() => Character, { eager: false })
   @JoinColumn()
   mainCharacter: Character;
 
-  @OneToMany(() => Character, character => character.account, {
-    cascade: true,
-  })
+  @OneToMany(
+    () => Character,
+    character => character.account,
+    {
+      cascade: true,
+    },
+  )
   characters: Character[];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'jsonb', nullable: true, select: false })
   knownCharacters: KnownCharacter[];
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   knownCharactersLastUpdated: Date;
+
+  @OneToMany(
+    () => FormSubmission,
+    formSubmission => formSubmission.author,
+  )
+  formSubmissions: FormSubmission[];
+
+  /**
+   * Notification or "Seen" Relations
+   */
+  @OneToMany(
+    () => FormSubmissionRead,
+    formSubmissionRead => formSubmissionRead.user,
+  )
+  readFormSubmissions: FormSubmissionRead;
+
+  /**
+   * Methods
+   */
 
   @BeforeInsert()
   setToken(): void {
@@ -99,6 +142,8 @@ export class User extends BaseEntity {
   }
 
   charactersUpdatedWithin(minutes: number): boolean {
+    if (!this.knownCharactersLastUpdated) return false;
+
     return moment(this.knownCharactersLastUpdated)
       .add(minutes, 'minutes')
       .isAfter(new Date());

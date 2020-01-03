@@ -4,7 +4,7 @@ import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { Article } from './article.entity';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { ComposeGuard } from '../auth/guards/compose.guard';
+import { AccessControlGuard } from '../auth/guards/compose.guard';
 import { Usr } from '../user/user.decorator';
 import { User } from '../user/user.entity';
 
@@ -13,7 +13,7 @@ export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @Post()
-  @UseGuards(ComposeGuard)
+  @UseGuards(AccessControlGuard)
   @UseRoles({ resource: 'article', action: 'create', possession: 'any' })
   create(@Usr() user: User, @Body() createArticleDto: CreateArticleDto): Promise<Article> {
     return this.articleService.create(user, createArticleDto);
@@ -30,14 +30,14 @@ export class ArticleController {
   }
 
   @Put(':id')
-  @UseGuards(ComposeGuard)
+  @UseGuards(AccessControlGuard)
   @UseRoles({ resource: 'article', action: 'update', possession: 'any' })
   update(@Param('id') id: number, @Body() updateArticleDto: UpdateArticleDto): Promise<Article> {
     return this.articleService.update(id, updateArticleDto);
   }
 
   @Delete(':id')
-  @UseGuards(ComposeGuard)
+  @UseGuards(AccessControlGuard)
   @UseRoles({ resource: 'article', action: 'delete', possession: 'any' })
   delete(@Param('id') id: number): Promise<Article> {
     return this.articleService.delete(id);

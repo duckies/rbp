@@ -9,7 +9,7 @@ import { ControlGuard } from './control.guard';
  * If the ControlGuard fails it returns a ForbiddenException.
  */
 @Injectable()
-export class ComposeGuard implements CanActivate {
+export class AccessControlGuard implements CanActivate {
   constructor(private jWTGuard: JWTGuard, private controlGuard: ControlGuard) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
