@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FormSubmissionRead } from './form-submission-read.entity';
@@ -29,12 +29,12 @@ export class FormSubmissionReadService {
    * @param id FormSubmissionRead.id
    */
   async delete(id: number, userId: number) {
-    const deleted = await this.repository
-      .createQueryBuilder('read')
-      .delete()
-      .where('id = :id', { id })
-      .execute();
+    const formSubmissionRead = await this.repository.findOneOrFail(id, { relations: ['user'] });
 
-    return deleted;
+    if (formSubmissionRead.user.id !== userId) {
+      throw new ForbiddenException();
+    }
+
+    return this.repository.delete(formSubmissionRead);
   }
 }
