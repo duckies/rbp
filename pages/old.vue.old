@@ -1,0 +1,144 @@
+<template>
+  <div>
+    <hero :background="background" :title="title" :caption="caption" />
+
+    <v-container class="hero-nudge">
+      <v-row>
+        <v-col>
+          <v-card class="mb-5">
+            <v-card-title>Application Process</v-card-title>
+            <v-card-text>
+              Thoroughly read our
+              <nuxt-link to="/about">about us</nuxt-link> page to learn more
+              about how our guild operates before applying. Our current
+              recruitment goals are posted where we advertise, but anyone who
+              thinks they have the skill or determination to raid with us should
+              apply. We only ask that you fill out our application completely or
+              it will reflect poorly on your desire to join us.<br /><br />Once
+              an application is submitted, the guild and officers will be
+              notified so comments can be made between both parties on the
+              application. Changes in application status will be tracked through
+              the website as well.
+            </v-card-text>
+          </v-card>
+
+          <v-card v-if="!isAuthenticated">
+            <v-card-title>Login Required</v-card-title>
+            <v-card-text
+              >Our application requires you to
+              <a href="/login">login with Battle.net</a> so we may access your
+              characters. Its fast and secure; the only information provided to
+              our website by Blizzard is your BattleTag and which characters you
+              own.
+            </v-card-text>
+          </v-card>
+
+          <template v-else>
+            <!-- <character-selection /> -->
+
+            <template v-if="!!mainCharacter">
+              <character-panel
+                v-for="character in [mainCharacter, ...altCharacters]"
+                :key="character.id"
+                :name="character.name"
+                :realm="character.realm"
+                :region="character.region"
+                :blizzard="character.blizzard"
+                :raiderio="character.raiderio"
+              />
+            </template>
+
+            <form-generator v-model="formData" :schema="formSchema" />
+          </template>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import { Field } from '@/store/form'
+import { Character, KnownCharacter } from '@/store/character'
+import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
+import FormGenerator from '@/components/fields/FormGenerator.vue'
+import CharacterSelection from '@/components/blizzard/CharacterSelection.vue'
+import Hero from '@/components/Hero.vue'
+import { applicationStore, characterStore, authStore } from '@/store'
+
+/**
+ * Application Logic
+ *
+ * Different Views:
+ *  A. If not logged in, show requirement to login.
+ *  B. Check for an open application, show a link to it.
+ *  C. Download application fields.
+ *
+ *  Application:
+ *  1. Check if the user token is valid. Check from expiration date or check with blizzard?
+ *  2. Download character list if more than 15 minutes old and token is valid.
+ *  3.
+ */
+
+@Component({
+  components: {
+    CharacterPanel,
+    Hero,
+    FormGenerator,
+    CharacterSelection
+  },
+  async fetch(): Promise<void> {
+    if (authStore.loggedIn) {
+      await applicationStore.getApplicationFields()
+
+      try {
+        await characterStore.getKnownCharacters()
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+})
+export default class ApplyOld extends Vue {
+  title = 'Really Bad Application'
+  caption = 'Interested in joining our guild?'
+  background =
+    'https://cdnassets.raider.io/images/login/backgrounds/bfa/froggo-loa.jpg'
+
+  // Form Data
+  formData = {}
+
+  // Character Store
+  knownCharacterDataStale?: boolean
+
+  get isAuthenticated(): boolean {
+    return authStore.loggedIn
+  }
+
+  get formSchema(): Field[] {
+    return applicationStore.fields
+  }
+
+  get mainCharacter(): Character | KnownCharacter | undefined {
+    return characterStore.mainCharacter
+  }
+
+  get altCharacters(): Character[] | KnownCharacter[] {
+    return characterStore.altCharacters
+  }
+
+  // If we can potentially download characters, and not too quickly since
+  // the last time, download them once mounted. This is a VERY slow API call.
+  async mounted(): Promise<void> {
+    // if (this.isTokenInvalid || !characterStore.knownCharacterDataStale) return
+    // await characterStore.getPlayerCharactersFromBlizzard()
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.action-shadow {
+  background: rgba(#000, 0.35);
+}
+</style>

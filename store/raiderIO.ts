@@ -1,5 +1,6 @@
 import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
 import { CharacterLookupDto } from '../interfaces/character-lookup.dto'
+import { $axios } from '../utils/axios'
 
 export enum Expansion {
   BATTLE_FOR_AZEROTH = 'Battle for Azeroth',
@@ -130,7 +131,7 @@ export const actions: ActionTree<RaiderIOState, RaiderIOState> = {
     commit('setStatus', 'loading')
 
     try {
-      const resp = await this.$axios.$get('/raiderIO')
+      const resp = await $axios.$get('/raiderIO')
       commit('setStatus', 'success')
       commit('setTiers', resp.data)
     } catch (error) {
@@ -139,16 +140,11 @@ export const actions: ActionTree<RaiderIOState, RaiderIOState> = {
     }
   },
 
-  async getCharacterRaiderIO(
-    { commit },
-    data: CharacterLookupDto
-  ): Promise<RaiderIOCharacter | undefined> {
+  async getCharacterRaiderIO({ commit }, data: CharacterLookupDto): Promise<RaiderIOCharacter | undefined> {
     commit('setStatus', 'loaded')
 
     try {
-      const resp = await this.$axios.$get(
-        `/raiderio/${data.region}/${data.realm}/${data.name}`
-      )
+      const resp = await $axios.$get(`/raiderio/${data.region}/${data.realm}/${data.name}`)
       commit('setStatus', 'success')
       return resp
     } catch (error) {

@@ -1,8 +1,15 @@
-import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
-import { User } from './auth'
+import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
+import { $axios } from '../utils/axios'
 import { RaiderIOCharacter } from './raiderIO'
+import { User } from './auth'
 
 const FIFTEEN_MINUTES = 1000 * 60 * 16
+
+export interface FindCharacterDto {
+  name: string
+  realm: string
+  region: string
+}
 
 export interface KnownCharacter {
   name: string
@@ -20,21 +27,28 @@ export interface KnownCharacter {
 
 export interface Character {
   id: number
+  character_id: number
   region: string
   realm: string
   name: string
-  class: number
-  race: number
-  gender: number
+  class_id: number
+  class_name: string
+  race_id: number
+  race_name: number
+  gender: string
   level: number
-  thumbnail: string
-  faction: number
-  achievementPoints: number
-  guild: string
-  guildRank: number
+  avatar_url?: string
+  bust_url?: string
+  render_url?: string
+  faction: string
+  achievement_points: number
+  guild_id?: number
+  guild_name?: string
+  guild_realm?: string
+  guild_rank?: number
+  title?: string
   items: JSON
   professions: JSON
-  title: string
   spec: string
   specIcon: string
   talents: JSON
@@ -56,8 +70,8 @@ export interface Character {
 export interface CharacterState {
   status: string
   error?: Error
-  character?: Character
-  characters: Character[]
+  mainCharacter?: Character
+  altCharacters: Character[]
   roster: Character[]
   knownCharacters: KnownCharacter[]
   knownCharactersLastUpdated?: Date
@@ -69,147 +83,82 @@ export interface CharacterRequest {
   region: string
 }
 
-export const state = (): CharacterState => ({
-  status: 'unloaded',
-  error: undefined,
-  character: undefined,
-  characters: [],
-  roster: [],
-  knownCharacters: [],
-  knownCharactersLastUpdated: undefined
-})
+@Module({ name: 'character', namespaced: true, stateFactory: true })
+export default class CharacterModule extends VuexModule {
+  public status = 'unloaded'
+  public error?: Error = undefined
+  public mainCharacter?: Character | KnownCharacter
+  public altCharacters: Character[] | KnownCharacter[] = []
+  public roster: Character[] = []
+  public knownCharacters: KnownCharacter[] = []
+  public knownCharactersLastUpdated?: Date
 
-export const getters: GetterTree<CharacterState, CharacterState> = {
-  character(state: CharacterState): Character | undefined {
-    return state.character
-  },
-  characters(state: CharacterState): Character[] {
-    return state.characters
-  },
-  roster(state: CharacterState): Character[] {
-    return state.roster
-  },
-  knownCharacters(state: CharacterState): Character[] {
-    return state.characters
-  },
-  knownCharactersLastUpdated(state: CharacterState): Date | undefined {
-    return state.knownCharactersLastUpdated
-  },
-  status(state: CharacterState): string {
-    return state.status
-  },
-  error(state: CharacterState): Error | undefined {
-    return state.error
-  },
-  knownCharacterDataStale(state: CharacterState): boolean {
-    if (!state.knownCharactersLastUpdated) return false
+  get isLoading(): boolean {
+    return this.status === 'loading'
+  }
+
+  get knownCharacterDataStale(): boolean {
+    if (!this.knownCharactersLastUpdated) return false
 
     const fifteenMinutesAgo = Date.now() - FIFTEEN_MINUTES
 
-    return state.knownCharactersLastUpdated.getTime() < fifteenMinutesAgo
+    return this.knownCharactersLastUpdated.getTime() < fifteenMinutesAgo
   }
-}
 
-export const mutations: MutationTree<CharacterState> = {
-  setStatus(state: CharacterState, status: string): void {
-    state.status = status
-  },
-  setError(state: CharacterState, error: Error): void {
-    state.error = error
-  },
-  clearError(state: CharacterState): void {
-    state.error = undefined
-  },
-  setCharacter(state: CharacterState, character: Character): void {
-    state.character = character
-  },
-  setCharacters(state: CharacterState, characters: Character[]): void {
-    state.characters = characters
-  },
-  setKnownCharacters(
-    state: CharacterState,
-    characters: KnownCharacter[]
-  ): void {
-    state.knownCharacters = characters
-  },
-  setKnownCharactersLastUpdated(
-    state: CharacterState,
-    lastUpdated: Date
-  ): void {
-    state.knownCharactersLastUpdated = new Date(lastUpdated)
-  },
-  setRoster(state: CharacterState, roster: Character[]): void {
-    state.roster = roster
+  get applicationCharacters(): KnownCharacter[] {
+    return this.knownCharacters.filter(c => c.level >= 110)
   }
-}
 
-export const actions: ActionTree<CharacterState, CharacterState> = {
-  async getRoster({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
+  @Mutation
+  setStatus(data: { status: string; error?: Error }): void {
+    this.status = data.status
+    this.error = data.error
+  }
 
+  @Mutation
+  setMainCharacter(character: Character): void {
+    this.mainCharacter = character
+  }
+
+  @Mutation
+  setAltCharacters(characters: Character[]): void {
+    this.altCharacters = characters
+  }
+
+  @Mutation
+  setRoster(characters: Character[]): void {
+    this.roster = characters
+  }
+
+  @Mutation
+  setKnownCharacters(characters: KnownCharacter[]): void {
+    this.knownCharacters = characters
+  }
+
+  @Action({ commit: 'setRoster' })
+  async getRoster(): Promise<Character[]> {
+    const data = await $axios.$get('/characters/roster')
+
+    return data
+  }
+
+  @Action({ commit: 'setKnownCharacters', rawError: true })
+  async getKnownCharacters(): Promise<KnownCharacter[]> {
     try {
-      const resp = await this.$axios.$get('/character/roster')
+      this.context.commit('setStatus', { status: 'loading' })
+      const data = await $axios.$get('/characters/known')
 
-      commit('setStatus', 'success')
-      commit('setRoster', resp)
+      this.context.commit('setStatus', { status: 'success' })
+      return data.knownCharacters
     } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
-    }
-  },
-
-  async getUserCharactersFromBlizzard({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
-    commit('clearError')
-
-    try {
-      const resp = await this.$axios.$get('/blizzard/characters/user')
-
-      commit('setStatus', 'success')
-      commit('setKnownCharacters', resp.knownCharacters)
-      commit('setKnownCharactersLastUpdated', resp.knownCharactersLastUpdated)
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('setError', error)
-    }
-  },
-
-  async getKnownCharacters({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
-    commit('clearError')
-
-    try {
-      const resp = await this.$axios.$get('/user/known_characters')
-
-      commit('setStatus', 'success')
-      commit('setCharacters', resp.knownCharacters)
-      commit('setKnownCharactersLastUpdated', resp.knownCharactersLastUpdated)
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('setError', error)
-    }
-  },
-
-  async getAppCharacter(
-    { commit },
-    data: CharacterRequest
-  ): Promise<Character | undefined> {
-    commit('setStatus', 'loading')
-    commit('clearError')
-
-    try {
-      const resp = await this.$axios.$get(
-        `/blizzard/character/${data.region}/${data.realm}/${data.name}`
-      )
-
-      commit('setStatus', 'success')
-
-      return resp
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('setError', error)
+      this.context.commit('setStatus', { status: 'error', error })
     }
 
-    return undefined
+    return []
+  }
+
+  @Action({ rawError: true })
+  getCharacterData({ name, realm, region }: FindCharacterDto): Promise<Character> {
+    return $axios.get(`/blizzard/character/${region}/${realm}/${name}`)
   }
 }

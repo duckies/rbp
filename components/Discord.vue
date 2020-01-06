@@ -4,18 +4,10 @@
       Discord
     </div>
     <div class="discord-channels">
-      <div
-        v-for="channel in channels"
-        :key="channel.id"
-        class="discord-channels--channel"
-      >
+      <div v-for="channel in channels" :key="channel.id" class="discord-channels--channel">
         <div class="discord-channels--channel__title" v-text="channel.name" />
 
-        <div
-          v-for="member in channel.members"
-          :key="member.id"
-          class="discord-channels--channel__members"
-        >
+        <div v-for="member in channel.members" :key="member.id" class="discord-channels--channel__members">
           <v-layout row wrap align-center>
             <v-flex shrink>
               <v-avatar size="25" class="ml-4 mr-2">
@@ -47,7 +39,7 @@ export default class Discord extends Vue {
 
 <style lang="scss" scoped>
 .discord {
-  background-color: #202124;
+  // background-color: #202124;
   overflow-y: auto;
   height: 250px;
 

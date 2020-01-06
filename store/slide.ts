@@ -1,4 +1,5 @@
-import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
+import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
+import { $axios } from '../utils/axios'
 
 export interface Slide {
   id: number
@@ -8,53 +9,28 @@ export interface Slide {
   link?: string
 }
 
-export interface SlideState {
-  status: string
-  errors: Error[]
-  slides: Slide[]
-}
+@Module({ namespaced: true, name: 'slide', stateFactory: true })
+export default class SlideModule extends VuexModule {
+  public status = 'unloaded'
+  public slides: Slide[] = []
 
-export const state = (): SlideState => ({
-  status: 'unloaded',
-  errors: [],
-  slides: []
-})
-
-export const getters: GetterTree<SlideState, SlideState> = {
-  slides(state): Slide[] {
-    return state.slides
+  @Mutation
+  setStatus(status: string): void {
+    this.status = status
   }
-}
 
-export const mutations: MutationTree<SlideState> = {
-  setStatus(state, status): void {
-    state.status = status
-  },
-
-  addError(state, error): void {
-    state.errors.unshift(error)
-  },
-
-  popError(state): void {
-    state.errors.pop()
-  },
-
-  setSlides(state, slides): void {
-    state.slides = slides
+  @Mutation
+  setSlides(slides: Slide[]): void {
+    this.slides = slides
   }
-}
 
-export const actions: ActionTree<SlideState, SlideState> = {
-  async getSlides({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
+  @Action({ commit: 'setSlides' })
+  async getSlides(): Promise<Slide[]> {
+    this.context.commit('setStatus', 'loading')
 
-    try {
-      const resp = await this.$axios.$get('/slide')
-      commit('setStatus', 'success')
-      commit('setSlides', resp.result)
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
-    }
+    const resp = await $axios.$get('/slide')
+
+    this.context.commit('setStatus', 'success')
+    return resp
   }
 }

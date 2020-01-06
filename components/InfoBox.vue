@@ -1,9 +1,6 @@
 <template>
   <v-card class="mb-4">
-    <v-img
-      :src="background"
-      gradient="to bottom, rgba(32, 33, 36, 0.3), #202124"
-    >
+    <v-img :src="background" gradient="to bottom, rgba(32, 33, 36, 0.3), #202124">
       <v-card-title class="pa-4">
         <span class="headline" v-text="title" />
         <span class="subtitle" v-text="subtitle" />
@@ -13,7 +10,7 @@
         <v-btn text :to="buttonLink" color="primary" class="button">
           {{ buttonText }}
           <v-icon right>
-            arrow_forward
+            mdi-chevron-right
           </v-icon>
         </v-btn>
       </v-card-actions>

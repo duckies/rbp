@@ -1,28 +1,27 @@
-@import '~vuetify/src/styles/styles.sass';
-@import '~vuetify/src/components/VGrid/_mixins';
+$body-font-family: 'Quicksand', sans-serif;
+$font-size-root: 16px;
+// $heading-font-family
+$border-radius-root: 3px;
 
-$font-size-root: 20px;
-
-$material-dark: map-merge(
-  $material-dark,
-  (
-    bg-color: #141517,
-    background: #141517,
-    cards: #202124
-  )
+$material-dark: (
+  bg-color: #141517,
+  background: #141517,
+  cards: #202124
 );
 
-.v-toolbar__content,
-.v-toolbar__extension {
-  @include make-container-max-widths;
-  padding: 0;
-  margin: 0 auto;
-}
+$card-text-font-size: 1rem;
 
-.v-card {
-  &__title {
-    font-family: Khand, sans-serif;
-    font-size: 30px;
-    font-weight: 700;
-  }
-}
+// .v-toolbar__content,
+// .v-toolbar__extension {
+//   // @include make-container-max-widths;
+//   padding: 0;
+//   margin: 0 auto;
+// }
+
+// .v-card {
+//   &__title {
+//     font-family: Khand, sans-serif;
+//     font-size: 30px;
+//     font-weight: 700;
+//   }
+// }

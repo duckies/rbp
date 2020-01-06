@@ -5,6 +5,9 @@
     <v-container>
       <div class="hero-nudge">
         <v-card height="800" class="thingy">
+          <v-tabs centered grow>
+            <v-tab v-for="link in links" :key="link.to" nuxt :to="link.to">{{ link.title }}</v-tab>
+          </v-tabs>
           <nuxt-child />
         </v-card>
       </div>
@@ -25,6 +28,11 @@ export default class AboutPage extends Vue {
   background = '/images/backgrounds/about-background.jpg'
   title = 'Really Bad Info'
   caption = 'Learn about our guild and things'
+  links = [
+    { title: 'Ranks', to: '/about/ranks' },
+    { title: 'Loot Distribution', to: '/about/loot' },
+    { title: 'Required Addons', to: '/about/addons' }
+  ]
 }
 </script>
 

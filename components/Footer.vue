@@ -1,6 +1,7 @@
 <template>
   <v-footer color="#0f1011">
-    <v-container class="footer-push">
+    <!-- <v-container class="footer-push"> -->
+    <v-container>
       <v-layout row wrap>
         <v-flex xs12 class="footer-top">
           <div class="footer-grid">
@@ -15,11 +16,7 @@
             </div>
             <div class="footer-grid-block footer-grid-block--padded">
               <v-list class="transparent-list" dense nav>
-                <v-list-item
-                  v-for="link in navItems"
-                  :key="link.title"
-                  :to="link.link"
-                >
+                <v-list-item v-for="link in navItems" :key="link.title" :to="link.link">
                   <v-list-item-content>
                     <v-list-item-title v-text="link.title" />
                   </v-list-item-content>
@@ -42,10 +39,7 @@
           <div class="footer-bottom--right">
             <span>
               Created by
-              <a
-                href="https://worldofwarcraft.com/en-us/character/blackrock/duckie"
-                target="blank"
-              >
+              <a href="https://worldofwarcraft.com/en-us/character/blackrock/duckie" target="blank">
                 Duckie
               </a>
             </span>
@@ -111,7 +105,7 @@ export default class Footer extends Vue {
   display: grid;
   padding: 20px;
   grid-template-columns: 1fr 1fr;
-  background-color: #1e1f21;
+  // background-color: #1e1f21;
 
   &--right {
     margin-left: auto;
@@ -122,7 +116,7 @@ export default class Footer extends Vue {
   display: grid;
   grid-template-rows: 250px;
   grid-template-columns: 1.7fr 1fr 1fr 1fr 1.7fr;
-  background-color: #252629;
+  // background-color: #252629;
 
   &-block {
     &--padded {

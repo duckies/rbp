@@ -28,7 +28,7 @@ $class-colors: (
 
 @each $classId, $color in $class-colors {
   .class-border-#{$classId} {
-    border-color: $color;
+    border-color: $color !important;
   }
 
   .class-color-#{$classId} {
@@ -38,6 +38,37 @@ $class-colors: (
 
 @each $classId, $color in $class-colors {
   .class-light-bg-#{$classId} {
-    background-color: rgba($color, 0.2);
+    background-color: rgba($color, 0.2) !important;
+  }
+}
+
+@each $classId, $color in $class-colors {
+  .class-blur-bg-#{$classId} {
+    backdrop-filter: blur(5px);
+    background-color: rgba($color, 0.4) !important;
+  }
+}
+
+@each $classId, $color in $class-colors {
+  .class-bg-#{$classId} {
+    background-color: $color !important;
+  }
+}
+
+@mixin background-variants($opacity: 0.8, $border: false, $hover: false) {
+  @each $classId, $color in $class-colors {
+    &.#{$classId} {
+      background: transparentize($color, $opacity) 1px solid;
+
+      @if $border {
+        border: transparentize($color, $opacity - 0.4);
+      }
+
+      @if $hover {
+        &:hover {
+          background: transparentize($color, $opacity - 0.2);
+        }
+      }
+    }
   }
 }

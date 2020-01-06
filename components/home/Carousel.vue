@@ -2,21 +2,13 @@
   <div class="carousel">
     <client-only>
       <flickity ref="flickity" :options="flickity">
-        <div
-          v-for="slide in slides"
-          :key="slide.id"
-          class="carousel-item"
-          :data-flickity-bg-lazyload="slide.image"
-        >
+        <div v-for="slide in slides" :key="slide.id" class="carousel-item" :data-flickity-bg-lazyload="slide.image">
           <div class="carousel-content">
             <v-container fill-height>
               <v-layout align-center>
                 <v-flex>
                   <h1 class="carousel-content__title" v-text="slide.title" />
-                  <span
-                    class="carousel-content__caption"
-                    v-text="slide.subtitle"
-                  />
+                  <span class="carousel-content__caption" v-text="slide.subtitle" />
                 </v-flex>
               </v-layout>
             </v-container>
@@ -31,10 +23,11 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Slide } from '@/store/slide'
+import { slideStore } from '@/store'
 
 @Component
 export default class Carousel extends Vue {
-  flickity = {
+  private flickity = {
     autoPlay: 5000,
     wrapAround: true,
     contain: true,
@@ -44,8 +37,8 @@ export default class Carousel extends Vue {
     setGallerySize: false
   }
 
-  get slides(): Slide {
-    return this.$store.getters['slide/slides']
+  get slides(): Slide[] {
+    return slideStore.slides
   }
 }
 </script>

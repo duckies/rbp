@@ -2,7 +2,7 @@
  * Complete list of race names:
  * https://wow.gamepedia.com/RaceId
  */
-const WoWRaces = {
+const WoWRaces: Record<number, string> = {
   1: 'Human',
   2: 'Orc',
   3: 'Dwarf',

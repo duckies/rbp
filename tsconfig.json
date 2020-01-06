@@ -6,16 +6,24 @@
     "lib": ["esnext", "esnext.asynciterable", "dom"],
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "importHelpers": true,
     "allowJs": true,
     "sourceMap": true,
     "strict": true,
-    "noImplicitAny": false,
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "~/*": ["./*"],
       "@/*": ["./*"]
     },
-    "types": ["@types/node", "@nuxt/types", "@nuxtjs/axios", "@nuxtjs/vuetify"]
-  }
+    "types": [
+      "@types/node",
+      "@types/nanoid",
+      "@types/lodash",
+      "@types/cookie",
+      "@nuxt/types",
+      "@nuxtjs/axios"
+    ]
+  },
+  "exclude": ["node_modules"]
 }

@@ -19,11 +19,7 @@
               <v-row>
                 <v-col>Role</v-col>
                 <v-col>
-                  <span
-                    v-for="(role, i) in user.roles"
-                    :key="i"
-                    v-text="role"
-                  />
+                  <span v-for="(role, i) in user.roles" :key="i" v-text="role" />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -40,6 +36,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { User } from '../store/auth'
 import Hero from '@/components/Hero.vue'
+import { authStore } from '@/store'
 
 @Component({
   components: {
@@ -49,11 +46,10 @@ import Hero from '@/components/Hero.vue'
 export default class Dashboard extends Vue {
   title = 'Really Bad Dashboard'
   caption = 'Settings and other fun things'
-  background =
-    'https://cdnassets.raider.io/images/login/backgrounds/bfa/nazjatar2.jpg'
+  background = 'https://cdnassets.raider.io/images/login/backgrounds/bfa/nazjatar2.jpg'
 
-  get user(): User {
-    return this.$store.getters['auth/user']
+  get user(): User | undefined {
+    return authStore.usr
   }
 }
 </script>

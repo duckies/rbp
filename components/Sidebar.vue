@@ -12,14 +12,8 @@
         </div>
 
         <v-card-title>
-          <span
-            class="raiderIO--text raiderIO--text__difficulty"
-            v-text="tier.difficulty"
-          />
-          <span
-            class="raiderIO--text raiderIO--text__title"
-            v-text="tier.name"
-          />
+          <span class="raiderIO--text raiderIO--text__difficulty" v-text="tier.difficulty" />
+          <span class="raiderIO--text raiderIO--text__title" v-text="tier.name" />
         </v-card-title>
 
         <v-card-text>
@@ -42,9 +36,7 @@
             <v-card-title>
               <div class="raiderIO--ranking">
                 <span class="raiderIO--ranking__title">{{ raid.rank }}</span>
-                <span class="raiderIO--ranking__value"
-                  >{{ raid.title }} Rank
-                </span>
+                <span class="raiderIO--ranking__value">{{ raid.title }} Rank </span>
               </div>
             </v-card-title>
           </v-img>
@@ -74,6 +66,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Raid } from '../store/raid'
 import InfoBox from '@/components/InfoBox.vue'
+import { raidStore } from '@/store'
 
 export interface Ranking {
   rank: number
@@ -88,7 +81,7 @@ export interface Ranking {
 })
 export default class Sidebar extends Vue {
   get tiers(): Raid[] {
-    return this.$store.getters['raid/raids']
+    return raidStore.raids
   }
 
   get rankings(): Ranking[] | undefined {
@@ -100,20 +93,17 @@ export default class Sidebar extends Vue {
       {
         rank: this.tiers[0].world,
         title: 'World',
-        background:
-          'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/azeroth.jpg'
+        background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/azeroth.jpg'
       },
       {
         rank: this.tiers[0].region,
         title: 'Region',
-        background:
-          'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/barrens.jpg'
+        background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/barrens.jpg'
       },
       {
         rank: this.tiers[0].realm,
         title: 'Realm',
-        background:
-          'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/blackrock.jpg'
+        background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/blackrock.jpg'
       }
     ]
   }

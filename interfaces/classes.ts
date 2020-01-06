@@ -2,7 +2,7 @@
  * Complete list of class names:
  * https://wow.gamepedia.com/ClassId
  */
-const WoWClasses = {
+const WoWClasses: Record<number, string> = {
   1: 'Warrior',
   2: 'Paladin',
   3: 'Hunter',

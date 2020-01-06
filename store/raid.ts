@@ -1,5 +1,5 @@
-import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
-import { AxiosResponse } from 'axios'
+import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
+import { $axios } from '../utils/axios'
 
 export interface Raid {
   id: number
@@ -21,55 +21,28 @@ export interface Raid {
   updatedAt: Date
 }
 
-export interface RaidResponse {
-  result: Raid[]
-  total: number
-}
+@Module({ namespaced: true, name: 'raid', stateFactory: true })
+export default class RaidModule extends VuexModule {
+  public status = 'unloaded'
+  public raids: Raid[] = []
 
-export interface RaidState {
-  status: string
-  raids: Raid[]
-  errors: Error[]
-}
-
-export const state = (): RaidState => ({
-  status: 'unloaded',
-  errors: [],
-  raids: []
-})
-
-export const getters: GetterTree<RaidState, RaidState> = {
-  raids(state: RaidState): Raid[] {
-    return state.raids
+  @Mutation
+  setStatus(status: string): void {
+    this.status = status
   }
-}
 
-export const mutations: MutationTree<RaidState> = {
-  setStatus(state: RaidState, status: string): void {
-    state.status = status
-  },
-  addError(state: RaidState, error: Error): void {
-    state.errors.unshift(error)
-  },
-  popError(state: RaidState): void {
-    state.errors.pop()
-  },
-  setRaids(state: RaidState, raids: Raid[]): void {
-    state.raids = raids
+  @Mutation
+  setRaids(raids: Raid[]): void {
+    this.raids = raids
   }
-}
 
-export const actions: ActionTree<RaidState, RaidState> = {
-  async getFeaturedRaids({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
+  @Action({ commit: 'setRaids' })
+  async getRaids(): Promise<Raid[]> {
+    this.context.commit('setStatus', 'loading')
 
-    try {
-      const resp = await this.$axios.$get('http://localhost:3000/raid/featured')
-      commit('setStatus', 'success')
-      commit('setRaids', resp.result)
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
-    }
+    const resp = await $axios.$get('/raids/featured')
+
+    this.context.commit('setStatus', 'success')
+    return resp.result
   }
 }

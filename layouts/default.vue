@@ -1,61 +1,35 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer v-model="drawer" fixed app>
+    <v-navigation-drawer v-model="drawer" disable-resize-watcher app>
       <v-list>
-        <v-list-item
-          v-for="(item, i) in links"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
+        <v-list-item v-for="(item, i) in links" :key="i" :to="item.to" router exact>
           <v-list-item-action>
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title :v-text="item.title" />
+            <v-list-item-title v-text="item.title" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
-    <v-app-bar class="dark-bar" hide-on-scroll app>
-      <template v-if="submenu" v-slot:extension>
-        <v-tabs align-with-title background-color="transparent">
-          <v-tab v-for="(item, i) in submenu" :key="i" :to="item.to" nuxt>
-            {{ item.title }}
-          </v-tab>
-        </v-tabs>
-      </template>
-
+    <v-app-bar fixed elevate-on-scroll hide-on-scroll app>
       <v-app-bar-nav-icon class="hidden-md-and-up" @click="drawer = !drawer" />
 
-      <v-toolbar-title class="page-title" v-text="title" />
+      <v-toolbar-title id="page-title" v-text="title" />
 
       <v-spacer />
 
-      <v-toolbar-items>
-        <v-btn
-          v-for="(item, i) in links"
-          :key="i"
-          :to="item.to"
-          nuxt
-          exact
-          text
-        >
-          {{ item.title }}
-        </v-btn>
+      <v-toolbar-items class="hidden-sm-and-down">
+        <v-btn v-for="(item, i) in links" :key="i" :to="item.to" nuxt exact text>{{ item.title }}</v-btn>
+
         <template v-if="isAuthenticated && user">
           <v-menu offset-y dark transition="slide-y-transition">
             <template v-slot:activator="{ on }">
               <v-btn text v-on="on">
                 <v-avatar>
                   <img
-                    :src="
-                      user.avatar
-                        ? user.avatar
-                        : 'https://render-us.worldofwarcraft.com/shadow/avatar/10-1.jpg'
-                    "
+                    :src="user.avatar ? user.avatar : 'https://render-us.worldofwarcraft.com/shadow/avatar/10-1.jpg'"
                     height="48"
                     width="48"
                   />
@@ -70,19 +44,17 @@
 
               <v-divider />
 
-              <v-list-item @click="logout">
+              <v-list-item @click="$auth.logout()">
                 <v-list-item-title>Logout</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
         </template>
-        <v-btn v-else @click="login">
-          Login
-        </v-btn>
+        <v-btn v-else text @click="$auth.login()">Login</v-btn>
       </v-toolbar-items>
     </v-app-bar>
 
-    <v-content>
+    <v-content class="pa-0">
       <nuxt />
     </v-content>
 
@@ -95,6 +67,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { User } from '../store/auth'
 import Footer from '@/components/Footer.vue'
+import { authStore } from '@/store'
 
 export interface Link {
   icon?: string
@@ -114,9 +87,9 @@ export default class DefaultLayout extends Vue {
   title = 'Really Bad Players'
   shortTitle = 'RBP'
   links: Link[] = [
-    { icon: 'apps', title: 'Home', to: '/' },
+    { icon: 'mdi-home', title: 'Home', to: '/' },
     {
-      icon: 'bubble_chart',
+      icon: 'mdi-bubble-chart',
       title: 'About',
       lower: 'about',
       to: '/about',
@@ -126,8 +99,8 @@ export default class DefaultLayout extends Vue {
         { title: 'Required Addons', to: '/about/addons' }
       ]
     },
-    { icon: 'apps', title: 'Apply', to: '/apply' },
-    { icon: 'bubble_chart', title: 'Roster', to: '/roster' }
+    { icon: 'mdi-apps', title: 'Apply', to: '/apply' },
+    { icon: 'mdi-bubble-chart', title: 'Roster', to: '/roster' }
   ]
 
   get submenu(): Link[] | undefined {
@@ -142,29 +115,15 @@ export default class DefaultLayout extends Vue {
   }
 
   get isAuthenticated(): boolean {
-    return this.$store.getters['auth/isAuthenticated']
+    return authStore.loggedIn
   }
 
-  get user(): User {
-    return this.$store.getters['auth/user']
+  get user(): User | undefined {
+    return authStore.usr
   }
 
   login(): void {
     window.location.href = 'http://localhost:3000/auth/blizzard/login'
   }
-
-  logout(): Promise<void> {
-    return this.$store.dispatch('auth/logout')
-  }
 }
 </script>
-
-<style lang="scss" scoped>
-.dark-bar {
-  background-color: #202124 !important;
-
-  // .v-toolbar__content {
-  //   padding: 0;
-  // }
-}
-</style>

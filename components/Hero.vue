@@ -1,21 +1,11 @@
 <template>
   <div class="hero">
     <div class="hero--bg">
-      <v-img
-        :src="background"
-        :height="height"
-        class="parallax-gradient"
-        position="center"
-        cover
-      >
+      <v-img :src="background" :height="height" class="parallax-gradient" position="center" cover>
         <v-row>
           <v-container>
             <h1 class="hero--header__title" v-text="title" />
-            <span
-              v-if="caption"
-              class="hero--header__caption"
-              v-text="caption"
-            />
+            <span v-if="caption" class="hero--header__caption" v-text="caption" />
           </v-container>
         </v-row>
       </v-img>

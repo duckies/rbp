@@ -1,16 +1,6 @@
-import cookie from 'cookie'
+import { Store } from 'vuex'
+import { initializeStores } from '~/utils/store-accessor.ts'
 
-export const actions = {
-  async nuxtServerInit({ commit, dispatch }, context): Promise<void> {
-    const cookies = cookie.parse(context.req.headers.cookie || '')
-
-    if (cookies.hasOwnProperty('x-access-token')) {
-      console.info(`Found access token ${cookies['x-access-token']}`)
-      commit('auth/setToken', cookies['x-access-token'])
-
-      await dispatch('auth/getMe')
-    } else {
-      dispatch('auth/logout')
-    }
-  }
-}
+const initializer = (store: Store<unknown>): void => initializeStores(store)
+export const plugins = [initializer]
+export * from '~/utils/store-accessor'

@@ -1,15 +1,6 @@
 <template>
-  <v-card
-    elevation="5"
-    height="250"
-    class="article mb-4 justify-end-image-content"
-  >
-    <v-img
-      :src="post.header"
-      height="250"
-      class="image-hover"
-      gradient="to bottom, transparent, #202124"
-    >
+  <v-card elevation="5" height="250" class="article mb-4 justify-end-image-content">
+    <v-img :src="post.header" height="250" class="image-hover" gradient="to bottom, transparent, #202124">
       <v-card-title>
         <div class="article--header">
           <div class="article__title" v-text="post.title" />

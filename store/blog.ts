@@ -1,4 +1,5 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex/types/index'
+import { Module, Mutation, VuexModule, Action } from 'vuex-module-decorators'
+import { $axios } from '../utils/axios'
 import { User } from './auth'
 
 export interface Article {
@@ -13,61 +14,27 @@ export interface Article {
   updatedAt: Date
 }
 
-export interface BlogState {
-  status: string
-  errors: Error[]
-  articles: Article[]
-  total: number
-}
+@Module({ namespaced: true, name: 'blog', stateFactory: true })
+export default class BlogModule extends VuexModule {
+  public status = 'unloaded'
+  public articles: Article[] = []
 
-export const state = (): BlogState => ({
-  status: 'unloaded',
-  errors: [],
-  articles: [],
-  total: 0
-})
-
-export const getters: GetterTree<BlogState, BlogState> = {
-  articles(state: BlogState): Article[] {
-    return state.articles
-  },
-  total(state: BlogState): number {
-    return state.total
+  @Mutation
+  setStatus(status: string): void {
+    this.status = status
   }
-}
 
-export const mutations: MutationTree<BlogState> = {
-  setStatus(state: BlogState, status: string): void {
-    state.status = status
-  },
-  addError(state: BlogState, error: Error): void {
-    state.errors.unshift(error)
-  },
-  popError(state: BlogState): void {
-    state.errors.pop()
-  },
-  setArticles(state: BlogState, articles: Article[]): void {
-    state.articles = articles
-  },
-  setTotal(state: BlogState, total: number): void {
-    state.total = total
+  @Mutation
+  setArticles(articles: Article[]): void {
+    this.articles = articles
   }
-}
 
-export const actions: ActionTree<BlogState, BlogState> = {
-  async getArticles({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
+  @Action({ commit: 'setArticles', rawError: true })
+  async getArticles(): Promise<Article[]> {
+    this.context.commit('setStatus', 'loading')
 
-    try {
-      const resp = await this.$axios.$get('/article')
-      console.log('Response:', resp)
+    const resp = await $axios.$get('/article')
 
-      commit('setStatus', 'success')
-      commit('setTotal', resp.total)
-      commit('setArticles', resp.result)
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
-    }
+    return resp.result
   }
 }

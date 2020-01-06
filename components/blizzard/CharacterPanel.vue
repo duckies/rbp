@@ -1,19 +1,10 @@
 <template>
-  <v-card
-    :class="
-      `left-border-rounded class-border-${classId} class-light-bg-${classId}`
-    "
-  >
+  <v-card :class="`left-border-rounded class-border-${classId} class-light-bg-${classId} mb-4`">
     <v-card-text class="ma-0 pa-0">
       <v-layout>
         <v-row>
           <v-col class="avatar-column">
-            <v-img
-              :src="thumbnail"
-              height="84"
-              width="84"
-              :class="`thumbnail class-color-${classId}`"
-            />
+            <v-img :src="thumbnail" height="84" width="84" :class="`thumbnail class-color-${classId}`" />
             <h2>{{ name }}</h2>
             <span>{{ raceName }} {{ className }}</span>
           </v-col>
@@ -56,7 +47,7 @@ export default class CharacterPanel extends Vue {
 
   get classId(): number {
     if (typeof this.blizzard !== 'undefined') {
-      return this.blizzard.class
+      return this.blizzard.class_id
     }
 
     return 0
@@ -67,9 +58,9 @@ export default class CharacterPanel extends Vue {
       return this.raiderio.thumbnail_url
     }
 
-    if (typeof this.blizzard !== 'undefined' && this.blizzard.thumbnail) {
-      return `http://render-us.worldofwarcraft.com/character/${this.blizzard.thumbnail}`
-    }
+    // if (typeof this.blizzard !== 'undefined' && this.blizzard.thumbnail) {
+    //   return `https://render-us.worldofwarcraft.com/character/${this.blizzard.thumbnail}`
+    // }
 
     return '/images/avatars/generic-belf.jpg'
   }
@@ -77,21 +68,21 @@ export default class CharacterPanel extends Vue {
   get className(): string {
     if (typeof this.blizzard === 'undefined') return 'Unknown'
 
-    if (!Classes.hasOwnProperty(this.blizzard.class)) {
+    if (!Object.prototype.hasOwnProperty.call(Classes, this.blizzard.class_id)) {
       return 'Unknown'
     }
 
-    return Classes[this.blizzard.class]
+    return Classes[this.blizzard.class_id]
   }
 
   get raceName(): string {
     if (typeof this.blizzard === 'undefined') return 'Unknown'
 
-    if (!Races.hasOwnProperty(this.blizzard.race)) {
+    if (!Object.prototype.hasOwnProperty.call(Races, this.blizzard.race_id)) {
       return 'Unknown'
     }
 
-    return Races[this.blizzard.race]
+    return Races[this.blizzard.race_id]
   }
 }
 </script>

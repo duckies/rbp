@@ -1,17 +1,23 @@
-import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
-import { Article } from './blog'
+import { Module, Mutation, VuexModule, Action } from 'vuex-module-decorators'
+import { $axios } from '../utils/axios'
 
-export enum Roles {
-  GuildMaster = 'Guild Master',
-  Technician = 'Technician',
-  Officer = 'Officer',
-  Raider = 'Raider',
-  Trial = 'Trial',
-  Fan = 'Fan',
-  Guest = 'Guest'
+export interface User {
+  id: number
+  displayname?: string
+  avatar?: string
+  customAvatar: boolean
+  battletag: string
+  blizzardid: number
+  blizzardtoken?: string
+  blizzardTokenExpiration?: Date
+  roles: string[] // Replace with role enum.
+  createdAt: Date
+  updatedAt: Date
+  lastLogin?: Date
+  // knownCharacters?:
 }
 
-export const Ranks = [
+export const Ranks: string[] = [
   'Guild Master',
   'Officer',
   'Officer Alt',
@@ -22,94 +28,41 @@ export const Ranks = [
   'Player Alt'
 ]
 
-export interface User {
-  id: number
-  displayName: string
-  avatar: string
-  customAvatar: boolean
-  battletag: string
-  blizzardid?: number
-  blizzardtoken?: string
-  blizzardTokenExpiration?: Date
-  roles: Roles[]
-  createdAt: Date
-  updatedAt: Date
-  justCreated?: boolean
-  articles?: Article[]
-  // comments?: Comment[]
-  // mainCharacter?: Character
-  // characters?: Character[]
-}
+@Module({ namespaced: true, name: 'auth', stateFactory: true })
+export default class AuthModule extends VuexModule {
+  public status = 'unloaded'
+  public user?: User = undefined
 
-export interface AuthState {
-  status: string
-  errors: Error[]
-  token: string
-  user?: User
-}
-
-export const state = (): AuthState => ({
-  status: 'unloaded',
-  errors: [],
-  token: '',
-  user: undefined
-})
-
-export const getters: GetterTree<AuthState, AuthState> = {
-  user(state: AuthState): User | undefined {
-    return state.user
-  },
-  isAuthenticated(state: AuthState): boolean {
-    return !!state.user
-  },
-  isTokenInvalid(state: AuthState): boolean {
-    return (
-      typeof state.user === 'undefined' ||
-      typeof state.user.blizzardTokenExpiration === 'undefined' ||
-      new Date(state.user.blizzardTokenExpiration) < new Date()
-    )
+  get usr(): User | undefined {
+    return this.user
   }
-}
 
-export const mutations: MutationTree<AuthState> = {
-  setStatus(state: AuthState, status: string): void {
-    state.status = status
-  },
-  addError(state: AuthState, error: Error): void {
-    state.errors.unshift(error)
-  },
-  popError(state: AuthState): void {
-    state.errors.pop()
-  },
-  setUser(state: AuthState, user: User): void {
-    state.user = user
-  },
-  setToken(state: AuthState, token: string): void {
-    state.token = token
-  },
-  clearUser(state: AuthState): void {
-    state.token = ''
-    state.user = undefined
+  get loggedIn(): boolean {
+    return !!this.user && Object.keys(this.user).length > 0
   }
-}
 
-export const actions: ActionTree<AuthState, AuthState> = {
-  async getMe({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
+  @Mutation
+  setStatus(status: string): void {
+    this.status = status
+  }
 
-    try {
-      const resp = await this.$axios.$get('/user/me')
+  @Mutation
+  setUser(user: User): void {
+    this.user = Object.assign({}, user)
+  }
 
-      commit('setStatus', 'success')
-      commit('setUser', resp)
-    } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
-      console.error(error)
-    }
-  },
+  @Mutation
+  clearUser(): void {
+    this.user = Object.assign({})
+  }
 
-  logout({ commit }): void {
-    commit('clearUser')
+  @Action({ commit: 'setUser', rawError: true })
+  async fetchUser(): Promise<User> {
+    this.context.commit('setStatus', 'loading')
+
+    const resp = await $axios.$get('/user/me')
+
+    this.context.commit('setStatus', 'success')
+    return resp
   }
 }
