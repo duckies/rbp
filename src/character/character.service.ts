@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
-import { LessThan, Repository } from 'typeorm';
+import { LessThan, Repository, In } from 'typeorm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileApiService } from '../blizzard/profile-api.service';
 import { ConfigService } from '../config/config.service';
@@ -79,16 +79,10 @@ export class CharacterService {
    * @param ranks
    */
   findRoster(ranks: number[] = [0, 1, 3, 4, 5]): Promise<Character[]> {
-    return this.repository
-      .createQueryBuilder('character')
-      .where('character.rank IN (:...ranks)', {
-        ranks,
-      })
-      .orderBy({
-        'character.rank': 'ASC',
-        'character.name': 'ASC',
-      })
-      .getMany();
+    return this.repository.find({
+      where: { guild_rank: In(ranks) },
+      order: { guild_rank: 'ASC', name: 'ASC' },
+    });
   }
 
   findAllInGuild(): Promise<Character[]> {

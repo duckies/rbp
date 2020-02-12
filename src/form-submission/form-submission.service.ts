@@ -1,9 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { GameDataService } from '../blizzard/game-data-api.service';
-import { ProfileCharacter, ProfileEquipment, ProfileMedia } from '../blizzard/interfaces';
+import { ProfileCharacter, ProfileEquipment, ProfileMedia, ProfileSpecializations } from '../blizzard/interfaces';
 import { ProfileApiService } from '../blizzard/profile-api.service';
 import { FormCharacter } from '../form-character/form-character.entity';
 import { FormSubmissionReadService } from '../form-submission-seen/form-submission-read.service';
@@ -27,23 +27,25 @@ export class SubmissionService {
    * @param findCharacterDto FindCharacterDto
    * @param isMain Boolean determining if this is a main character.
    */
-  async buildFormCharacter({ name, realm, region }: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
+  async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
     // There are promise.all() issues with Typescript 3.7, check on this later.
-    const [data, media, equipment]: [
+    const [data, specs, media, equipment]: [
       ProfileCharacter | Error,
+      ProfileSpecializations | Error,
       ProfileMedia | Error,
       ProfileEquipment | Error,
     ] = await Promise.all([
-      this.profileApiService.getCharacter({ name, realm, region }).catch(e => e),
-      this.profileApiService.getCharacterMedia({ name, realm, region }).catch(e => e),
-      this.profileApiService.getCharacterEquipment({ name, realm, region }).catch(e => e),
+      this.profileApiService.getCharacter(findCharacterDto).catch(e => e),
+      this.profileApiService.getCharacterSpecializations(findCharacterDto).catch(e => e),
+      this.profileApiService.getCharacterMedia(findCharacterDto).catch(e => e),
+      this.profileApiService.getCharacterEquipment(findCharacterDto).catch(e => e),
     ]);
 
     const character = new FormCharacter();
 
-    character.name = name;
-    character.realm = realm;
-    character.region = region;
+    character.name = findCharacterDto.name;
+    character.realm = findCharacterDto.realm;
+    character.region = findCharacterDto.region;
     character.isMain = isMain || false;
 
     if (!(data instanceof Error)) {
@@ -55,9 +57,16 @@ export class SubmissionService {
     }
 
     if (!(media instanceof Error)) {
+      console.log(media);
       character.avatar_url = media.avatar_url;
       character.bust_url = media.bust_url;
       character.render_url = media.render_url;
+    }
+
+    if (!(specs instanceof Error)) {
+      character.specialization_id = specs.active_specialization.id;
+      character.specialization_name = specs.active_specialization.name;
+      character.specializations = specs.specializations;
     }
 
     if (!(equipment instanceof Error)) {
@@ -109,10 +118,62 @@ export class SubmissionService {
    * Finds an individual form submission.
    * @param id Form submission id.
    */
-  findOne(id: number): Promise<FormSubmission> {
-    return this.formSubRepository.findOneOrFail(id, {
-      relations: ['form', 'author', 'characters', 'seenFormSubmissions'],
-    });
+  async findOne(id: number): Promise<FormSubmission> {
+    const data = await this.formSubRepository.query(
+      `
+      WITH characters AS
+      (
+          SELECT
+                  char.id,
+                  char.name,
+                  char.realm,
+                  char.region,
+                  char."isMain",
+                  char.avatar_url,
+                  char.bust_url,
+                  char.render_url,
+                  char.race_id,
+                  char.race_name,
+                  char.class_id,
+                  char.class_name,
+                  char.gender,
+                  char.specializations,
+                  char.specialization_id,
+                  char.specialization_name,
+                  jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment
+          FROM    form_character char,
+                  jsonb_array_elements(char.equipment) slot
+          JOIN    wow_assets asset on asset.id = (slot->'item'->'id')::integer
+          WHERE   char."submissionId" = $1
+          GROUP BY    char.id
+          ORDER BY    char.id ASC
+      )
+      SELECT
+          s.id,
+          s.answers,
+          s."formId",
+          s."authorId",
+          s.status,
+          s."createdAt",
+          json_build_object(
+              'id', author.id
+          ) as author,
+          json_agg(characters) as characters,
+          row_to_json(f) as form
+      FROM characters, form_submission s
+      JOIN form f ON s."formId" = f.id
+      JOIN "user" author on s."authorId" = author.id
+      WHERE s.id = 60
+      GROUP BY s.id, author.id, f.id;
+    `,
+      [id],
+    );
+
+    if (data.length === 0) {
+      throw new NotFoundException();
+    }
+
+    return data[0];
   }
 
   /**
@@ -201,7 +262,7 @@ export class SubmissionService {
     // Currently cannot add computed selectors to TypeORM. Depression!
     // .addSelect('(seen.id) IS NOT NULL', 'submission.seen')
     if (user) {
-      query = query.leftJoinAndSelect('submission.seenFormSubmissions', 'seen', 'seen.userId = :uId', { uId: user.id });
+      query = query.leftJoinAndSelect('submission.readFormSubmissions', 'read', 'read.userId = :uId', { uId: user.id });
     }
 
     query
@@ -283,11 +344,11 @@ export class SubmissionService {
   // findOneCharacter(id: number): Promise<FormCharacter> {
   //   return this.repository.query(
   //     `
-  //   SELECT c.id, c.name, c.realm, c.region, jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_array(jsonb_build_object('key', asset.type, 'value', asset.value)))) AS equipment
-  //   FROM form_character c, jsonb_array_elements(c.equipment) slot
-  //   JOIN wow_assets asset on asset.id = (slot->'item'->'id')::integer
-  //   WHERE c.id = $1
-  //   GROUP BY c.id;
+  // SELECT c.id, c.name, c.realm, c.region, jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_array(jsonb_build_object('key', asset.type, 'value', asset.value)))) AS equipment
+  // FROM form_character c, jsonb_array_elements(c.equipment) slot
+  // JOIN wow_assets asset on asset.id = (slot->'item'->'id')::integer
+  // WHERE c.id = $1
+  // GROUP BY c.id;
   //   `,
   //     [id],
   //   );

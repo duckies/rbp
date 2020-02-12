@@ -2,6 +2,11 @@ import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique }
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
 import { EquippedItemsEntity } from '../blizzard/interfaces/profile-equipment.interface';
+import {
+  TalentMeta,
+  ProfileSpecializations,
+  SpecializationMeta,
+} from '../blizzard/interfaces/profile-specializations.interface';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
 @Entity('form_character')
@@ -52,6 +57,15 @@ export class FormCharacter extends BaseEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   equipment?: EquippedItemsEntity[];
+
+  @Column({ nullable: true })
+  specialization_id?: number;
+
+  @Column({ nullable: true })
+  specialization_name?: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  specializations?: SpecializationMeta[];
 
   /**
    * Form Character Relations

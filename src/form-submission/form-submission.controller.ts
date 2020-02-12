@@ -58,7 +58,6 @@ export class SubmissionController {
     @Query() { take, skip, status, id }: FindAllFormSubmissionsDto,
     @Usr() user?: User,
   ): Promise<[FormSubmission[], number]> {
-    console.log(`Received user in request?: ${!!user} - ${user ? user.id : '[?]'}`);
     return this.submissionService.findAll(take, skip, status, id, user);
   }
 

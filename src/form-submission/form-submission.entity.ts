@@ -36,7 +36,7 @@ export class FormSubmission extends BaseEntity {
   )
   files: File[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @Column()
