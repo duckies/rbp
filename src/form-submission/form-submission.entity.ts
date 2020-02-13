@@ -89,7 +89,7 @@ export class FormSubmission extends BaseEntity {
   seen?: boolean;
 
   @AfterLoad()
-  setSeen() {
+  setSeen(): void {
     this.seen = !!(this.readFormSubmissions && this.readFormSubmissions.length);
   }
 }

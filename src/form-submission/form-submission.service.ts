@@ -1,10 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { GameDataService } from '../blizzard/game-data-api.service';
-import { ProfileCharacter, ProfileEquipment, ProfileMedia, ProfileSpecializations } from '../blizzard/interfaces';
-import { ProfileApiService } from '../blizzard/profile-api.service';
+import { GameDataService } from '../blizzard/game-data.service';
+import { ProfileService } from '../blizzard/profile.service';
 import { FormCharacter } from '../form-character/form-character.entity';
 import { FormSubmissionReadService } from '../form-submission-seen/form-submission-read.service';
 import { User } from '../user/user.entity';
@@ -18,7 +17,7 @@ export class SubmissionService {
     @InjectRepository(FormSubmission)
     private readonly formSubRepository: Repository<FormSubmission>,
     private readonly formSubmissionReadService: FormSubmissionReadService,
-    private readonly profileApiService: ProfileApiService,
+    private readonly profileService: ProfileService,
     private readonly gameDataService: GameDataService,
   ) {}
 
@@ -29,16 +28,11 @@ export class SubmissionService {
    */
   async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
     // There are promise.all() issues with Typescript 3.7, check on this later.
-    const [data, specs, media, equipment]: [
-      ProfileCharacter | Error,
-      ProfileSpecializations | Error,
-      ProfileMedia | Error,
-      ProfileEquipment | Error,
-    ] = await Promise.all([
-      this.profileApiService.getCharacter(findCharacterDto).catch(e => e),
-      this.profileApiService.getCharacterSpecializations(findCharacterDto).catch(e => e),
-      this.profileApiService.getCharacterMedia(findCharacterDto).catch(e => e),
-      this.profileApiService.getCharacterEquipment(findCharacterDto).catch(e => e),
+    const [data, specs, media, equipment] = await Promise.all([
+      this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
+      this.profileService.getCharacterMediaSummary(findCharacterDto),
+      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
     ]);
 
     const character = new FormCharacter();
@@ -94,11 +88,11 @@ export class SubmissionService {
       .where('submission.status = :status', { status: FormSubmissionStatus.Open })
       .getOne();
 
-    // if (openForm) {
-    //   throw new BadRequestException(
-    //     'You already have an open form. Please wait for your other application to be processed or cancel it.',
-    //   );
-    // }
+    if (openForm) {
+      throw new BadRequestException(
+        'You already have an open form. Please wait for your other application to be processed or cancel it.',
+      );
+    }
 
     const [mainCharacter, ...altCharacters] = characters;
 

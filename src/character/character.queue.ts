@@ -1,10 +1,10 @@
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from 'nest-bull';
-import { ProfileApiService } from '../blizzard/profile-api.service';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
+import { ProfileService } from '../blizzard/profile.service';
 import { ConfigService } from '../config/config.service';
 import { CharacterService, PurgeResult } from './character.service';
 
@@ -24,7 +24,7 @@ export class CharacterQueue {
 
   constructor(
     private readonly characterService: CharacterService,
-    private readonly blizzardService: ProfileApiService,
+    private readonly profileService: ProfileService,
     private readonly configService: ConfigService,
   ) {
     this.minimumCharacterLevel = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
@@ -37,7 +37,7 @@ export class CharacterQueue {
     let failed = 0;
     let ignored = 0;
 
-    const guild = await this.blizzardService.getGuildRoster(this.guildLookup);
+    const guild = await this.profileService.getGuildRoster(this.guildLookup);
 
     // Do not include characters not meeting threshold.
     guild.members.filter(m => m.character.level >= this.minimumCharacterLevel);

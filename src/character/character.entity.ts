@@ -2,10 +2,10 @@
 
 import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
-import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
-import { ProfileCharacter, ProfileMedia } from '../blizzard/interfaces';
-import { User } from '../user/user.entity';
 import { Region } from '../blizzard/enum/region.enum';
+import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
+import { CharacterProfileSummary, CharacterMediaSummary } from '../blizzard/interfaces/profile';
+import { User } from '../user/user.entity';
 
 @Entity('character')
 @Unique('UNIQUE_CHARACTER', ['name', 'realm', 'region'])
@@ -130,7 +130,7 @@ export class Character extends BaseEntity {
   // Internal use only for tracking non-updated characters.
   notUpdated: boolean;
 
-  doesNotMatch(data: ProfileCharacter): boolean {
+  doesNotMatch(data: CharacterProfileSummary): boolean {
     // Characters are no longer valid if their id changes.
     if (data.id !== this.character_id) {
       return true;
@@ -153,7 +153,7 @@ export class Character extends BaseEntity {
     return this.last_login < new Date(lastUpdated);
   }
 
-  mergeProfileIndex(data: ProfileCharacter): Character {
+  mergeProfileIndex(data: CharacterProfileSummary): Character {
     if (this.character_id && this.character_id !== data.id) {
       throw new CharacterConflictException(this.name, this.realm);
     }
@@ -195,7 +195,7 @@ export class Character extends BaseEntity {
     return this;
   }
 
-  mergeProfileMedia(data: ProfileMedia): Character {
+  mergeProfileMedia(data: CharacterMediaSummary): Character {
     this.avatar_url = data.avatar_url;
     this.bust_url = data.bust_url;
     this.render_url = data.render_url;

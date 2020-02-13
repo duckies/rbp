@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UsePipes } from '@nestjs/common';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { AccessControlGuard, JWTGuard } from '../auth/guards';
 import { OptionalAuthGuard } from '../auth/guards/optional.guard';
@@ -14,7 +14,7 @@ import {
 import { FormSubmission } from './form-submission.entity';
 import { SubmissionService } from './form-submission.service';
 import { CreateSubmissionPipe } from './pipes/create-submission.pipe';
-import { PutSeenFormSubmissionDto } from './dto/put-seen-form-submission.dto';
+// import { PutSeenFormSubmissionDto } from './dto/put-seen-form-submission.dto';
 
 @Controller('submission')
 export class SubmissionController {
@@ -67,7 +67,7 @@ export class SubmissionController {
     @Param() { id }: FindFormSubmissionDto,
     @Usr() user: User,
     @Body() updateFormSubmissionDto: UpdateFormSubmissionDto,
-  ) {
+  ): Promise<FormSubmission | Partial<FormSubmission>> {
     if (this.rolebuilder.can(user.roles).updateAny('form-submission').granted) {
       return this.submissionService.update(id, updateFormSubmissionDto);
     } else {

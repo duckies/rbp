@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
-import { LessThan, Repository, In } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
+import { BattleNetService } from '../blizzard/battle.net.service';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { ProfileApiService } from '../blizzard/profile-api.service';
+import { ProfileService } from '../blizzard/profile.service';
 import { ConfigService } from '../config/config.service';
-import { KnownCharacter } from '../blizzard/interfaces/profile/known-characters.interface';
 import { User } from '../user/user.entity';
 import { Character } from './character.entity';
 
@@ -21,7 +21,8 @@ export class CharacterService {
   constructor(
     @InjectRepository(Character)
     private readonly repository: Repository<Character>,
-    private readonly blizzardService: ProfileApiService,
+    private readonly battleNetService: BattleNetService,
+    private readonly profileService: ProfileService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -36,8 +37,8 @@ export class CharacterService {
     // If the profile request(s) fail, there is no point in updating so let the error propagate.
     let [character, profileCharacter, profileMedia] = await Promise.all([
       this.repository.findOne(findCharacterDto),
-      this.blizzardService.getCharacter(findCharacterDto),
-      this.blizzardService.getCharacterMedia(findCharacterDto),
+      this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterMediaSummary(findCharacterDto),
     ]);
 
     // We do not support underaged characters.
@@ -138,7 +139,7 @@ export class CharacterService {
     if (!user.tokenExpired() && (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))) {
       console.log('Attempting to download characters.');
       try {
-        await this.blizzardService.checkToken(user);
+        await this.battleNetService.checkToken(user);
         await this.syncUserCharacters(user);
       } catch (error) {
         // We should handle authentication errors.
@@ -156,11 +157,9 @@ export class CharacterService {
   }
 
   async syncUserCharacters(user: User): Promise<Partial<User>> {
-    const knownCharacters = await this.blizzardService.getUserCharacters(user.blizzardtoken);
+    const profile = await this.profileService.getAccountProfileSummary(user);
 
-    const characters = knownCharacters.characters
-      .filter(c => c.level >= this.minimumCharacterLevel)
-      .sort((a, b) => b.level - a.level);
+    const characters = profile.wow_accounts.map(a => a.characters).flat();
 
     user.knownCharacters = characters;
     user.knownCharactersLastUpdated = new Date();

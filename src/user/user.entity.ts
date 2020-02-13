@@ -13,13 +13,13 @@ import {
 } from 'typeorm';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
-import { KnownCharacter } from '../blizzard/interfaces/profile/known-characters.interface';
 import { Character } from '../character/character.entity';
 import { File } from '../file/file.entity';
 import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
 import moment = require('moment');
+import { ProfileKnownCharacter } from '../blizzard/interfaces/profile/account-profile/account-profile-summary.interface';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -89,7 +89,7 @@ export class User extends BaseEntity {
   characters: Character[];
 
   @Column({ type: 'jsonb', nullable: true, select: false })
-  knownCharacters: KnownCharacter[];
+  knownCharacters: ProfileKnownCharacter[];
 
   @Column({ nullable: true, select: false })
   knownCharactersLastUpdated: Date;

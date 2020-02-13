@@ -8,12 +8,12 @@ import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 export class RaiderIOController {
   constructor(private readonly raiderIOService: RaiderIOService) {}
 
-  @Get('/:region/:realm/:name')
-  @UseGuards(JWTGuard)
-  fetchCharacter(
-    @Param() findCharacterDto: FindCharacterDto,
-    @Query() raiderIOCharacterFieldsDto: RaiderIOCharacterFieldsDto,
-  ) {
-    return this.raiderIOService.getCharacterRaiderIO(findCharacterDto, raiderIOCharacterFieldsDto);
-  }
+  // @Get('/:region/:realm/:name')
+  // @UseGuards(JWTGuard)
+  // fetchCharacter(
+  //   @Param() findCharacterDto: FindCharacterDto,
+  //   @Query() raiderIOCharacterFieldsDto: RaiderIOCharacterFieldsDto,
+  // ) {
+  //   return this.raiderIOService.getCharacterRaiderIO(findCharacterDto, raiderIOCharacterFieldsDto);
+  // }
 }

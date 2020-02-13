@@ -18,7 +18,7 @@ export class BlizzardFilter implements ExceptionFilter {
       return resp.status(exception.response.status).send(exception.response.data);
     }
 
-    console.error(exception)
+    console.error(exception);
     return resp.status(500).send({ exception });
   }
 }

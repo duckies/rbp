@@ -1,4 +1,4 @@
-import { Links } from '../blizzard-shared.interface';
+import { Links } from '../profile/shared-profile.interface';
 
 export interface GameDataItemMedia {
   _links: Links;

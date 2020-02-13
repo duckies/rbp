@@ -22,11 +22,11 @@ export type RaiderIOCharacterFieldsType = {
   [RaiderIOCharacterFields.PREVIOUS_MYTHIC_PLUS_RANKS]: any;
   [RaiderIOCharacterFields.RAID_ACHIEVEMENT_META]: any;
   [RaiderIOCharacterFields.RAID_ACHIEVEMENT_META]: any;
-}
+};
 
-type what = RaiderIOCharacterFields[]
+type what = RaiderIOCharacterFields[];
 
-export type RaiderIOCharacterReturnType<K extends RaiderIOCharacterFields[]>= {
+export type RaiderIOCharacterReturnType = {
   name: string;
   race: string;
   class: string;
@@ -37,8 +37,7 @@ export type RaiderIOCharacterReturnType<K extends RaiderIOCharacterFields[]>= {
   region: string;
   realm: string;
   profile_url: string;
-  RaiderIOCharacterFields[]: any;
-}
+};
 
 @Injectable()
 export class RaiderIOService {
@@ -66,7 +65,7 @@ export class RaiderIOService {
   async getCharacterRaiderIO<K extends RaiderIOCharacterFields>(
     { name, realm, region }: FindCharacterDto,
     fields: K[],
-  ): Promise<RaiderIOCharacterReturnType[K][]> {
+  ): Promise<any> {
     const api = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${name}${
       fields.length ? `&fields=${fields}` : ''
     }`;

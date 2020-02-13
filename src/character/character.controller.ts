@@ -1,10 +1,10 @@
-import { Controller, Get, Param, Put, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
+import { AccessControlGuard, JWTGuard } from '../auth/guards';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { Usr } from '../user/user.decorator';
+import { User } from '../user/user.entity';
 import { Character } from './character.entity';
 import { CharacterService } from './character.service';
-import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { AccessControlGuard, JWTGuard } from '../auth/guards';
-import { User } from '../user/user.entity';
-import { Usr } from '../user/user.decorator';
 
 @Controller('characters')
 export class CharacterController {

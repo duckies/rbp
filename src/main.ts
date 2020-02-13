@@ -28,7 +28,7 @@ async function bootstrap(): Promise<void> {
    * Transforms errors received by Postgres and Blizzard.
    *
    */
-  // app.useGlobalFilters(new BlizzardFilter());
+  app.useGlobalFilters(new BlizzardFilter());
   app.useGlobalFilters(new EntityNotFoundExceptionFilter());
   app.useGlobalFilters(new UpdateValuesMissingExceptionFilter());
   app.useGlobalFilters(new QueryFailedExceptionFilter());
