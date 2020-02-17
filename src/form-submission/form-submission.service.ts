@@ -27,7 +27,6 @@ export class SubmissionService {
    * @param isMain Boolean determining if this is a main character.
    */
   async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
-    // There are promise.all() issues with Typescript 3.7, check on this later.
     const [data, specs, media, equipment] = await Promise.all([
       this.profileService.getCharacterProfileSummary(findCharacterDto),
       this.profileService.getCharacterSpecializationsSummary(findCharacterDto),

@@ -10,7 +10,6 @@ export class RateLimiter {
   constructor(private readonly http: HttpService, private readonly tokenService: TokenService) {
     this.blizzard = new PQueue({
       autoStart: true,
-      concurrency: 50,
       intervalCap: 100,
       interval: 1000,
     });
