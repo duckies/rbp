@@ -14,7 +14,6 @@ import {
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
 import { Character } from '../character/character.entity';
-import { File } from '../file/file.entity';
 import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
@@ -86,12 +85,6 @@ export class User extends BaseEntity {
   // Not yet implemented.
   // @OneToMany(() => Comment, comment => comment.author)
   // comments: Comment[];
-
-  @OneToMany(
-    () => File,
-    file => file.owner,
-  )
-  files: File[];
 
   @OneToOne(() => Character, { eager: false })
   @JoinColumn()

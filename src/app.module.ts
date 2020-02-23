@@ -10,7 +10,6 @@ import { BlizzardModule } from './blizzard/blizzard.module';
 import { BullSharedModule } from './bull.module';
 import { CharacterModule } from './character/character.module';
 import { ConfigModule } from './config/config.module';
-import { FileModule } from './file/file.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
 import { TestModule } from './queue/test.module';
@@ -35,7 +34,6 @@ import { UserModule } from './user/user.module';
     RaidModule,
     FormModule,
     FormSubmissionModule,
-    // FileModule,
     BlizzardModule,
     CharacterModule,
     RaiderIOModule,

@@ -10,7 +10,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { File } from '../file/file.entity';
 import { FormCharacter } from '../form-character/form-character.entity';
 import { Form } from '../form/form.entity';
 import { User } from '../user/user.entity';
@@ -29,12 +28,6 @@ export class FormSubmission extends BaseEntity {
 
   @Column({ type: 'jsonb' })
   answers: Answers;
-
-  @OneToMany(
-    () => File,
-    file => file.submission,
-  )
-  files: File[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
