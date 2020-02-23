@@ -7,7 +7,7 @@ import {
   EntityNotFoundExceptionFilter,
   QueryFailedExceptionFilter,
   UpdateValuesMissingExceptionFilter,
-} from './filters/typeorm.filter';
+} from './typeorm.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
