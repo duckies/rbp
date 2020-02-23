@@ -1,9 +1,16 @@
-import { Character, Enum, KeyId, KeyNameId, Links, RGBA } from '../shared-profile.interface';
+import { Asset } from '../../game-data/item/item-media.interface';
+import { Character, Enum, KeyId, KeyNameId, Link, Links, RGBA } from '../shared-profile.interface';
 
 export interface CharacterEquipmentSummary {
   _links: Links;
   character: Character;
   equipped_items: EquippedItem[];
+}
+
+export interface ItemMedia {
+  id: number;
+  key: Link;
+  assets?: Asset;
 }
 
 export interface EquippedItem {
@@ -16,7 +23,7 @@ export interface EquippedItem {
   name: string;
   modified_appearance_id?: number;
   azerite_details?: AzeriteDetails;
-  media: KeyId;
+  media: ItemMedia;
   item_class: KeyNameId;
   item_subclass: KeyNameId;
   inventory_type: Enum;

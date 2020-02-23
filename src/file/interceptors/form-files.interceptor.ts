@@ -34,7 +34,7 @@ export type FileFilterCallback = (error: Error | null, acceptFile: boolean) => v
 export function FormFilesInterceptor(): Type<NestInterceptor> {
   @Injectable()
   class MixinInterceptor implements NestInterceptor {
-    protected multer: Multer.Instance;
+    protected multer;
 
     protected storage: Multer.StorageEngine;
 

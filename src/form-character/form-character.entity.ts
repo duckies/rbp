@@ -63,6 +63,9 @@ export class FormCharacter extends BaseEntity {
   @Column({ type: 'jsonb', nullable: true })
   specializations?: SpecializationMeta[];
 
+  @Column({ type: 'jsonb', nullable: true })
+  raiderIO?: any;
+
   /**
    * Form Character Relations
    */

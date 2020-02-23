@@ -69,7 +69,6 @@ export class RaiderIOService {
     const api = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${name}${
       fields.length ? `&fields=${fields}` : ''
     }`;
-    console.log(api);
     return (await this.http.get(api).toPromise()).data;
   }
 }

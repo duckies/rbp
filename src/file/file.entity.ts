@@ -34,9 +34,17 @@ export class File extends BaseEntity {
   @Column()
   ownerId: number;
 
-  @ManyToOne(() => User, user => user.files, { onDelete: 'SET NULL' })
+  @ManyToOne(
+    () => User,
+    user => user.files,
+    { onDelete: 'SET NULL' },
+  )
   owner: User;
 
-  @ManyToOne(() => User, user => user.files, { onDelete: 'SET NULL' })
+  @ManyToOne(
+    () => User,
+    user => user.files,
+    { onDelete: 'SET NULL' },
+  )
   submission: FormSubmission;
 }

@@ -17,6 +17,7 @@ export class RateLimiter {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getBlizzard(uri: string, user?: User): Promise<any> {
+    // try {
     await this.tokenService.getToken();
 
     const config = user
@@ -28,5 +29,8 @@ export class RateLimiter {
     return (
       await this.blizzard.add(() => this.http.get(uri + '?namespace=profile-us&locale=en_US', config).toPromise())
     ).data;
+    // } catch (error) {
+    //   return error;
+    // }
   }
 }

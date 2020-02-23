@@ -60,6 +60,9 @@ export class FormSubmission extends BaseEntity {
   )
   characters: FormCharacter[];
 
+  @Column()
+  authorId: number;
+
   @ManyToOne(
     () => User,
     user => user.formSubmissions,

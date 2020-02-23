@@ -2,6 +2,8 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UsePipes }
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { AccessControlGuard, JWTGuard } from '../auth/guards';
 import { OptionalAuthGuard } from '../auth/guards/optional.guard';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { FormCharacter } from '../form-character/form-character.entity';
 import { Usr } from '../user/user.decorator';
 import { User } from '../user/user.entity';
 import {
@@ -14,7 +16,6 @@ import {
 import { FormSubmission } from './form-submission.entity';
 import { SubmissionService } from './form-submission.service';
 import { CreateSubmissionPipe } from './pipes/create-submission.pipe';
-// import { PutSeenFormSubmissionDto } from './dto/put-seen-form-submission.dto';
 
 @Controller('submission')
 export class SubmissionController {
@@ -59,6 +60,12 @@ export class SubmissionController {
     @Usr() user?: User,
   ): Promise<[FormSubmission[], number]> {
     return this.submissionService.findAll(take, skip, status, id, user);
+  }
+
+  @UseGuards(AccessControlGuard)
+  @Get('/character/:region/:realm/:name')
+  formCharacterData(@Param() findCharacterDto: FindCharacterDto): Promise<FormCharacter> {
+    return this.submissionService.getFormCharacterData(findCharacterDto);
   }
 
   @UseGuards(AccessControlGuard)

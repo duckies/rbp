@@ -35,7 +35,7 @@ export class User extends BaseEntity {
   @Column({ default: false })
   customAvatar: boolean;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   battletag: string;
 
   @Column({ nullable: true, select: false })
@@ -46,6 +46,24 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true, select: false })
   blizzardTokenExpiration: Date;
+
+  @Column()
+  discord_id?: string;
+
+  @Column({ nullable: true })
+  discord_username?: string;
+
+  @Column({ nullable: true })
+  discord_discriminator?: string;
+
+  @Column({ nullable: true, select: false })
+  discord_access_token?: string;
+
+  @Column({ nullable: true, select: false })
+  discord_refresh_token?: string;
+
+  @Column({ nullable: true })
+  discord_avatar?: string;
 
   @Column({ type: 'enum', enum: Roles, default: [Roles.Guest], array: true })
   roles: Roles[];

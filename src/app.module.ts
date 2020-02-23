@@ -35,7 +35,7 @@ import { UserModule } from './user/user.module';
     RaidModule,
     FormModule,
     FormSubmissionModule,
-    FileModule,
+    // FileModule,
     BlizzardModule,
     CharacterModule,
     RaiderIOModule,

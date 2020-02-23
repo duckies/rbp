@@ -3,9 +3,10 @@ import { IsOptional } from 'class-validator';
 export enum RaiderIOCharacterFields {
   GEAR = 'gear',
   GUILD = 'guild',
-  RAIDER_PROGRESSION = 'raid_progression',
+  RAID_PROGRESSION = 'raid_progression',
   MYTHIC_PLUS_SCORES_BY_SEASON = 'mythic_plus_scores_by_season',
   MYTHIC_PLUS_SCORES_BY_CURRENT_SEASON = 'mythic_plus_scores_by_season:current',
+  MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON = 'mythic_plus_scores_by_season:current:previous',
   MYTHIC_PLUS_SCORES_BY_PREVIOUS_SEASON = 'mythic_plus_scores_by_season:previous',
   MYTHIC_PLUS_RANKS = 'mythic_plus_ranks',
   MYTHIC_PLUS_RECENT_RUNS = 'mythic_plus_recent_runs',
@@ -21,7 +22,7 @@ export class RaiderIOCharacterFieldsDto {
   @IsOptional()
   fields: RaiderIOCharacterFields[] = [
     RaiderIOCharacterFields.GEAR,
-    RaiderIOCharacterFields.RAIDER_PROGRESSION,
+    RaiderIOCharacterFields.RAID_PROGRESSION,
     RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_SEASON,
     RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_PREVIOUS_SEASON,
     RaiderIOCharacterFields.MYTHIC_PLUS_RECENT_RUNS,

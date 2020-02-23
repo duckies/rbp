@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Provider } from '../auth/auth.service';
+import { Provider, DiscordProfile } from '../auth/auth.service';
 import { JWTPayload } from '../auth/dto/jwt.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
@@ -13,11 +13,12 @@ export class UserService {
     private readonly repository: Repository<User>,
   ) {}
 
-  create(blizzardid: number, battletag: string, blizzardtoken: string): Promise<User> {
+  create(discord_id: string, access_token: string, refresh_token: string, profile: DiscordProfile): Promise<User> {
     return this.repository.save({
-      blizzardid,
-      battletag,
-      blizzardtoken,
+      discord_id,
+      discord_access_token: access_token,
+      discord_refresh_token: refresh_token,
+      discord_avatar: profile.avatar,
     });
   }
 
@@ -51,9 +52,9 @@ export class UserService {
     return user;
   }
 
-  async findOneByProviderId(thirdPartyId: number, provider: Provider): Promise<User> {
+  async findOneByProviderId(thirdPartyId: number | string, provider: Provider): Promise<User> {
     if (provider === Provider.BLIZZARD) {
-      const user = await this.repository
+      return this.repository
         .createQueryBuilder('user')
         .select(['user.id'])
         .addSelect([
@@ -65,8 +66,13 @@ export class UserService {
         ])
         .where('user.blizzardid = :id', { id: thirdPartyId })
         .getOne();
-
-      return user;
+    } else if (provider === Provider.DISCORD) {
+      return this.repository
+        .createQueryBuilder('user')
+        .select(['user.id'])
+        .addSelect(['user.discord_id'])
+        .where('user.discord_id = :id', { id: thirdPartyId })
+        .getOne();
     }
 
     throw new BadRequestException();

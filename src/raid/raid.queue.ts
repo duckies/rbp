@@ -42,8 +42,6 @@ export class RaidQueue {
       raid.heroic_bosses_killed = raiderIOData.raid_progression[raid.slug].heroic_bosses_killed;
       raid.mythic_bosses_killed = raiderIOData.raid_progression[raid.slug].mythic_bosses_killed;
 
-      console.log(raid.slug, raiderIOData.raid_progression[raid.slug].mythic_bosses_killed);
-
       if (raiderIOData.raid_rankings[raid.slug].mythic.world > 0) {
         raid.difficulty = 'Mythic';
         raid.world = raiderIOData.raid_rankings[raid.slug].mythic.world;

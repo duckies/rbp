@@ -26,7 +26,6 @@ export class FileService {
       size: f.size,
       folder: f.destination,
       path: f.path,
-      url: f.location,
       ownerId: user.id,
     }));
 

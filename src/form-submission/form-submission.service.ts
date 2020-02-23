@@ -5,20 +5,23 @@ import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { GameDataService } from '../blizzard/game-data.service';
 import { ProfileService } from '../blizzard/profile.service';
 import { FormCharacter } from '../form-character/form-character.entity';
-import { FormSubmissionReadService } from '../form-submission-seen/form-submission-read.service';
 import { User } from '../user/user.entity';
 import { CreateFormSubmissionDto, UpdateFormSubmissionDto } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 import { FormSubmission } from './form-submission.entity';
+import { RaiderIOService } from '../raiderIO/raiderIO.service';
+import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
+import { RateLimiter } from '../blizzard/rate-limiter.service';
 
 @Injectable()
 export class SubmissionService {
   constructor(
     @InjectRepository(FormSubmission)
     private readonly formSubRepository: Repository<FormSubmission>,
-    private readonly formSubmissionReadService: FormSubmissionReadService,
     private readonly profileService: ProfileService,
     private readonly gameDataService: GameDataService,
+    private readonly raiderIOService: RaiderIOService,
+    private readonly rateLimiter: RateLimiter,
   ) {}
 
   /**
@@ -27,11 +30,15 @@ export class SubmissionService {
    * @param isMain Boolean determining if this is a main character.
    */
   async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
-    const [data, specs, media, equipment] = await Promise.all([
-      this.profileService.getCharacterProfileSummary(findCharacterDto),
-      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
-      this.profileService.getCharacterMediaSummary(findCharacterDto),
-      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
+    const [data, specs, media, equipment, raiderIO] = await Promise.all([
+      this.profileService.getCharacterProfileSummary(findCharacterDto).catch(e => e),
+      this.profileService.getCharacterSpecializationsSummary(findCharacterDto).catch(e => e),
+      this.profileService.getCharacterMediaSummary(findCharacterDto).catch(e => e),
+      this.profileService.getCharacterEquipmentSummary(findCharacterDto).catch(e => e),
+      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+        RaiderIOCharacterFields.RAID_PROGRESSION,
+        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+      ]),
     ]);
 
     const character = new FormCharacter();
@@ -71,6 +78,68 @@ export class SubmissionService {
       );
     }
 
+    if (!(raiderIO instanceof Error)) {
+      character.raiderIO = raiderIO;
+    }
+
+    return character;
+  }
+
+  // TODO: Abstract a generic character builder function.
+  async getFormCharacterData(findCharacterDto: FindCharacterDto): Promise<FormCharacter> {
+    const [data, specs, media, equipment, raiderIO] = await Promise.all([
+      this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
+      this.profileService.getCharacterMediaSummary(findCharacterDto),
+      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
+      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+        RaiderIOCharacterFields.RAID_PROGRESSION,
+        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+      ]),
+    ]);
+
+    const character = new FormCharacter();
+
+    character.name = findCharacterDto.name;
+    character.realm = findCharacterDto.realm;
+    character.region = findCharacterDto.region;
+    character.isMain = false;
+
+    if (!(data instanceof Error)) {
+      character.race_id = data.race.id;
+      character.race_name = data.race.name;
+      character.class_id = data.character_class.id;
+      character.class_name = data.character_class.name;
+      character.gender = data.gender.name;
+    }
+
+    if (!(media instanceof Error)) {
+      character.avatar_url = media.avatar_url;
+      character.bust_url = media.bust_url;
+      character.render_url = media.render_url;
+    }
+
+    if (!(specs instanceof Error)) {
+      character.specialization_id = specs.active_specialization.id;
+      character.specialization_name = specs.active_specialization.name;
+      character.specializations = specs.specializations;
+    }
+
+    if (!(equipment instanceof Error)) {
+      character.equipment = await Promise.all(
+        equipment.equipped_items.map(async slot => {
+          const assets = (await this.gameDataService.getGameItemMedia(slot.item.id, true)).assets;
+
+          slot.media.assets = assets[0];
+          return slot;
+        }),
+      );
+    }
+
+    if (!(raiderIO instanceof Error)) {
+      character.raiderIO = raiderIO;
+    }
+
     return character;
   }
 
@@ -81,13 +150,12 @@ export class SubmissionService {
    * @param createSubmissionDto CreateSubmissionDto
    */
   async create(author: User, { formId, answers, characters }: CreateFormSubmissionDto): Promise<FormSubmission> {
-    const openForm = await this.formSubRepository
-      .createQueryBuilder('submission')
-      .leftJoinAndSelect('submission.author', 'user', 'user.id = :id', { id: author.id })
-      .where('submission.status = :status', { status: FormSubmissionStatus.Open })
-      .getOne();
+    const openForm = await this.formSubRepository.find({
+      where: { status: FormSubmissionStatus.Open, authorId: author.id },
+      select: ['author'],
+    });
 
-    if (openForm) {
+    if (openForm.length) {
       throw new BadRequestException(
         'You already have an open form. Please wait for your other application to be processed or cancel it.',
       );
@@ -95,6 +163,9 @@ export class SubmissionService {
 
     const [mainCharacter, ...altCharacters] = characters;
 
+    console.table(characters);
+
+    // This does not properly delegate error handling.
     const formCharacters = await Promise.all([
       this.buildFormCharacter(mainCharacter, true),
       ...altCharacters.map(alt => this.buildFormCharacter(alt)),
@@ -113,51 +184,59 @@ export class SubmissionService {
    */
   async findOne(id: number): Promise<FormSubmission> {
     const data = await this.formSubRepository.query(
-      `
-      WITH characters AS
-      (
-          SELECT
-                  char.id,
-                  char.name,
-                  char.realm,
-                  char.region,
-                  char."isMain",
-                  char.avatar_url,
-                  char.bust_url,
-                  char.render_url,
-                  char.race_id,
-                  char.race_name,
-                  char.class_id,
-                  char.class_name,
-                  char.gender,
-                  char.specializations,
-                  char.specialization_id,
-                  char.specialization_name,
-                  jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment
-          FROM    form_character char,
-                  jsonb_array_elements(char.equipment) slot
-          JOIN    wow_assets asset on asset.id = (slot->'item'->'id')::integer
-          WHERE   char."submissionId" = $1
-          GROUP BY    char.id
-          ORDER BY    char.id ASC
-      )
-      SELECT
-          s.id,
+      `WITH characters AS
+            (
+                SELECT char.id,
+                      char.name,
+                      char.realm,
+                      char.region,
+                      char."isMain",
+                      char.avatar_url,
+                      char.bust_url,
+                      char.render_url,
+                      char.race_id,
+                      char.race_name,
+                      char.class_id,
+                      char.class_name,
+                      char.gender,
+                      char.specializations,
+                      char.specialization_id,
+                      char.specialization_name,
+                      jsonb_agg(jsonb_insert(slot, '{
+                        media,
+                        assets
+                      }', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment
+                FROM form_character char,
+                    jsonb_array_elements(char.equipment) slot
+                        JOIN wow_assets asset on asset.id = (slot -> 'item' -> 'id')::integer
+                WHERE char."submissionId" = $1
+                GROUP BY char.id
+                ORDER BY char.id
+            )
+      SELECT s.id,
           s.answers,
           s."formId",
           s."authorId",
           s.status,
           s."createdAt",
           json_build_object(
-              'id', author.id
-          ) as author,
-          json_agg(characters) as characters,
-          row_to_json(f) as form
-      FROM characters, form_submission s
-      JOIN form f ON s."formId" = f.id
-      JOIN "user" author on s."authorId" = author.id
-      WHERE s.id = 60
-      GROUP BY s.id, author.id, f.id;
+                  'id', u.id,
+                  'discord_avatar', u."discord_avatar",
+                  'discord_username', u."discord_username",
+                  'discord_discriminator', u."discord_discriminator"
+              ) as author,
+          json_build_object(
+                  'id', f.id,
+                  'questions', json_agg(DISTINCT q.*)
+              )                           as form,
+          json_agg(DISTINCT characters.*) as characters
+      FROM characters,
+        form_submission s
+            JOIN form f ON s."formId" = f.id
+            JOIN form_question q ON q."formId" = f.id
+            JOIN "user" u on s."authorId" = u.id
+      WHERE s.id = $1
+      GROUP BY s.id, f.id, u.id;
     `,
       [id],
     );

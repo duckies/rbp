@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 import { InjectQueue } from 'nest-bull';
-import { Cron, NestSchedule, Timeout } from 'nest-schedule';
+import { Cron, NestSchedule } from 'nest-schedule';
 
 @Injectable()
 export class RaidScheduler extends NestSchedule {
@@ -11,8 +11,7 @@ export class RaidScheduler extends NestSchedule {
     super();
   }
 
-  // @Cron('0 0 * ? * *')
-  @Timeout(1000)
+  @Cron('0 * * * *')
   private updateRaids(): void {
     this.queue.add('updateRaids');
   }

@@ -12,12 +12,12 @@ import { FormFilesInterceptor, MulterResponse } from './interceptors/form-files.
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @Post(':id')
-  @UseGuards(JWTGuard)
-  @UseInterceptors(FormFilesInterceptor())
-  create(@Usr() user: User, @UploadedFiles() files: MulterResponse): Promise<ObjectLiteral[]> {
-    return this.fileService.create(user, files);
-  }
+  // @Post(':id')
+  // @UseGuards(JWTGuard)
+  // @UseInterceptors(FormFilesInterceptor())
+  // create(@Usr() user: User, @UploadedFiles() files: MulterResponse): Promise<ObjectLiteral[]> {
+  //   return this.fileService.create(user, files);
+  // }
 
   @Get(':id')
   findOne({ id }: FindFileDto): Promise<File> {
