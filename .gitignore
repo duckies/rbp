@@ -4,7 +4,10 @@
 
 # Environment
 .gitignore
+
+# Configuration
 .configrc
+ormconfig.json
 
 # Logs
 logs
