@@ -4,6 +4,7 @@
 
 # Environment
 .gitignore
+.configrc
 
 # Logs
 logs
