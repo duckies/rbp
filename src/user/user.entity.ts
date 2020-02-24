@@ -26,7 +26,7 @@ export class User extends BaseEntity {
   id: number;
 
   @Column({ nullable: true })
-  displayname: string;
+  nickname: string;
 
   @Column({ nullable: true })
   avatar: string;

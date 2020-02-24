@@ -12,7 +12,6 @@ import { CharacterModule } from './character/character.module';
 import { ConfigModule } from './config/config.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
-import { TestModule } from './queue/test.module';
 import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
@@ -37,7 +36,6 @@ import { UserModule } from './user/user.module';
     BlizzardModule,
     CharacterModule,
     RaiderIOModule,
-    TestModule,
   ],
 })
 export class AppModule {

@@ -35,10 +35,12 @@ export class SubmissionService {
       this.profileService.getCharacterSpecializationsSummary(findCharacterDto).catch(e => e),
       this.profileService.getCharacterMediaSummary(findCharacterDto).catch(e => e),
       this.profileService.getCharacterEquipmentSummary(findCharacterDto).catch(e => e),
-      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
-        RaiderIOCharacterFields.RAID_PROGRESSION,
-        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-      ]),
+      this.raiderIOService
+        .getCharacterRaiderIO(findCharacterDto, [
+          RaiderIOCharacterFields.RAID_PROGRESSION,
+          RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+        ])
+        .catch(e => e),
     ]);
 
     const character = new FormCharacter();
@@ -57,7 +59,6 @@ export class SubmissionService {
     }
 
     if (!(media instanceof Error)) {
-      console.log(media);
       character.avatar_url = media.avatar_url;
       character.bust_url = media.bust_url;
       character.render_url = media.render_url;
@@ -205,7 +206,9 @@ export class SubmissionService {
                       jsonb_agg(jsonb_insert(slot, '{
                         media,
                         assets
-                      }', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment
+                      }', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment,
+                      char."raiderIO",
+                      char."updatedAt"
                 FROM form_character char,
                     jsonb_array_elements(char.equipment) slot
                         JOIN wow_assets asset on asset.id = (slot -> 'item' -> 'id')::integer
@@ -221,6 +224,7 @@ export class SubmissionService {
           s."createdAt",
           json_build_object(
                   'id', u.id,
+                  'discord_id', u."discord_id",
                   'discord_avatar', u."discord_avatar",
                   'discord_username', u."discord_username",
                   'discord_discriminator', u."discord_discriminator"
@@ -314,7 +318,7 @@ export class SubmissionService {
         'submission.createdAt',
         'submission.formId',
         'author.id',
-        'author.displayname',
+        'author.nickname',
         'author.avatar',
         'author.customAvatar',
         'author.battletag',

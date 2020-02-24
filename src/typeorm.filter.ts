@@ -7,7 +7,7 @@ import { QueryFailedError } from 'typeorm';
 export class EntityNotFoundExceptionFilter implements ExceptionFilter {
   catch(exception: EntityNotFoundError, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse();
-
+    console.log('Here');
     response.status(404).send({ message: exception.message });
   }
 }
@@ -16,7 +16,7 @@ export class EntityNotFoundExceptionFilter implements ExceptionFilter {
 export class UpdateValuesMissingExceptionFilter implements ExceptionFilter {
   catch(exception: UpdateValuesMissingError, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse();
-
+    console.log('Here');
     response.status(400).send({ message: 'No update values defined.' });
   }
 }
@@ -27,7 +27,7 @@ export class QueryFailedExceptionFilter implements ExceptionFilter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catch(exception: any, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse();
-
+    console.log('Here');
     switch (exception.code) {
       // Unique Constraint Violation
       case '23505':
@@ -39,6 +39,7 @@ export class QueryFailedExceptionFilter implements ExceptionFilter {
         break;
 
       default:
+        console.warn('Unhandled TypeORM erorr encountered.');
         console.error(exception);
         response.status(500).send({ error: exception });
         break;

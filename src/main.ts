@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { BlizzardFilter } from './blizzard/filters/blizzard.filter';
 import {
   EntityNotFoundExceptionFilter,
   QueryFailedExceptionFilter,
@@ -28,7 +27,6 @@ async function bootstrap(): Promise<void> {
    * Transforms errors received by Postgres and Blizzard.
    *
    */
-  app.useGlobalFilters(new BlizzardFilter());
   app.useGlobalFilters(new EntityNotFoundExceptionFilter());
   app.useGlobalFilters(new UpdateValuesMissingExceptionFilter());
   app.useGlobalFilters(new QueryFailedExceptionFilter());

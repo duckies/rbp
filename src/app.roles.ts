@@ -16,7 +16,7 @@ export const roleBuilder: RolesBuilder = new RolesBuilder();
 
 roleBuilder
   .grant(Roles.Guest)
-  .updateOwn('user', ['displayname', 'avatar'])
+  .updateOwn('user', ['nickname', 'avatar'])
   .updateOwn('form-submission')
   .deleteOwn('user')
   .grant(Roles.Fan)

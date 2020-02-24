@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
 import { FormSubmission } from '../form-submission/form-submission.entity';
@@ -65,6 +65,9 @@ export class FormCharacter extends BaseEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   raiderIO?: any;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   /**
    * Form Character Relations

@@ -1,4 +1,10 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import {
+  HttpService,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { RaiderIOCharacterFieldsDto, RaiderIOCharacterFields } from './dto/char-fields.dto';
 import { RaiderIOGuild } from './raiderIO.interface';
@@ -66,9 +72,23 @@ export class RaiderIOService {
     { name, realm, region }: FindCharacterDto,
     fields: K[],
   ): Promise<any> {
-    const api = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${name}${
-      fields.length ? `&fields=${fields}` : ''
-    }`;
-    return (await this.http.get(api).toPromise()).data;
+    try {
+      const api = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${name}${
+        fields.length ? `&fields=${fields}` : ''
+      }`;
+      return (await this.http.get(api).toPromise()).data;
+    } catch (error) {
+      switch (error.response.status) {
+        case 404:
+          throw new NotFoundException(error.response.data);
+
+        case 400:
+          throw new BadRequestException(error.response.data);
+
+        default:
+          console.error(error.response.status, error.response.data);
+          throw new InternalServerErrorException(error.response.data);
+      }
+    }
   }
 }
