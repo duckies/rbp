@@ -20,7 +20,8 @@ module.exports = {
   // add your custom rules here
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'errir' : 'off',
-    'no-explicit-any': 'off'
+    'no-explicit-any': 'off',
+    '@typescript-eslint/camelcase': 'off'
   },
   overrides: [
     {

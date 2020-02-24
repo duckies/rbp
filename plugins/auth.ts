@@ -20,12 +20,17 @@ interface AuthOptions {
 
 const defaults = {
   redirectPath: '/callback',
-  authorization_endpoint: 'https://us.battle.net/oauth/authorize',
-  tokenEndpoint: 'http://localhost:3000/auth/blizzard/callback',
-  response_type: 'code',
-  client_id: '032ed041ad3446efbc559dfa954a9783',
+  tokenEndpoint: 'http://localhost:3000/auth/discord/callback',
+  authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
   redirect_uri: 'http://localhost:3030/callback',
-  scope: ['wow.profile']
+  response_type: 'code',
+  client_id: '678486837626404885',
+  scope: ['identify']
+  // authorization_endpoint: 'https://us.battle.net/oauth/authorize',
+  // tokenEndpoint: 'http://localhost:3000/auth/blizzard/callback',
+  // client_id: '032ed041ad3446efbc559dfa954a9783',
+  // redirect_uri: 'http://localhost:3030/callback',
+  // scope: ['wow.profile'],
 }
 
 export class Auth {
@@ -96,24 +101,29 @@ export class Auth {
       return false
     }
 
-    const data = await $axios.$post(this.options.tokenEndpoint, null, {
-      params: { code: parsedQuery.code }
-    })
+    try {
+      const data = await $axios.$get(this.options.tokenEndpoint, {
+        params: { code: parsedQuery.code }
+      })
 
-    // Send token to auth
-    if (data.token) {
-      this._setToken(data.token)
-      this.ctx.$storage.setCookie('token', data.token)
+      // Send token to auth
+      if (data.token) {
+        this._setToken(data.token)
+        this.ctx.$storage.setCookie('token', data.token)
+      }
+
+      const redirect = this.ctx.$storage.getCookie('redirect')
+      this.ctx.$storage.removeCookie('redirect')
+
+      if (redirect && typeof redirect === 'string') {
+        this.redirect(redirect)
+      }
+
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
     }
-
-    const redirect = this.ctx.$storage.getCookie('redirect')
-    this.ctx.$storage.removeCookie('redirect')
-
-    if (redirect && typeof redirect === 'string') {
-      this.redirect(redirect)
-    }
-
-    return true
   }
 
   public redirect(path: string): void {
@@ -122,7 +132,6 @@ export class Auth {
 
   // Sets the Authorization header for all axios requests.
   private _setToken(token: string): void {
-    console.info('Setting authorization header.')
     $axios.setHeader('Authorization', 'Bearer ' + token)
   }
 

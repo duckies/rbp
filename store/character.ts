@@ -1,5 +1,8 @@
 import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import { $axios } from '../utils/axios'
+import { ProfileEquipment } from '../interfaces/profile/profile-equipment.interface'
+import { ProfileSpecializations } from '../interfaces/profile/profile-specializations.interface'
+import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
 import { RaiderIOCharacter } from './raiderIO'
 import { User } from './auth'
 
@@ -9,6 +12,29 @@ export interface FindCharacterDto {
   name: string
   realm: string
   region: string
+}
+
+export interface FormCharacter {
+  id: number
+  name: string
+  realm: string
+  region: string
+  equipment?: ProfileEquipment
+  submissionId?: number
+  isMain?: number
+  avatar_url?: string
+  bust_url?: string
+  render_url?: string
+  race_id?: number
+  race_name?: string
+  class_id?: number
+  class_name?: string
+  gender?: string
+  specializations?: ProfileSpecializations
+  specialization_id?: number
+  specialization_name?: string
+  raiderIO?: CharacterRaiderIO
+  updatedAt: Date
 }
 
 export interface KnownCharacter {
@@ -65,6 +91,10 @@ export interface Character {
   missingSince: Date
   isDeleted: boolean
   notUpdated: boolean
+  // Optional
+  specialization_id?: number
+  specialization_name?: string
+  // specializations?: Specialization
 }
 
 export interface CharacterState {
@@ -106,7 +136,7 @@ export default class CharacterModule extends VuexModule {
   }
 
   get applicationCharacters(): KnownCharacter[] {
-    return this.knownCharacters.filter(c => c.level >= 110)
+    return this.knownCharacters && this.knownCharacters.length ? this.knownCharacters.filter(c => c.level >= 110) : []
   }
 
   @Mutation
@@ -135,7 +165,7 @@ export default class CharacterModule extends VuexModule {
     this.knownCharacters = characters
   }
 
-  @Action({ commit: 'setRoster' })
+  @Action({ commit: 'setRoster', rawError: true })
   async getRoster(): Promise<Character[]> {
     const data = await $axios.$get('/characters/roster')
 
@@ -158,7 +188,7 @@ export default class CharacterModule extends VuexModule {
   }
 
   @Action({ rawError: true })
-  getCharacterData({ name, realm, region }: FindCharacterDto): Promise<Character> {
-    return $axios.get(`/blizzard/character/${region}/${realm}/${name}`)
+  getCharacterData({ name, realm, region }: FindCharacterDto): Promise<FormCharacter> {
+    return $axios.$get(`/submission/character/${region}/${realm}/${name.toLowerCase()}`)
   }
 }

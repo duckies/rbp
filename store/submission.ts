@@ -1,8 +1,9 @@
-import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import slugify from 'slugify'
 import Vue from 'vue'
+import { Action, Module, Mutation, VuexModule } from 'vuex-module-decorators'
+import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
 import { $axios } from '../utils/axios'
-import { KnownCharacter } from './character'
+import { FormCharacter } from './character'
 
 export type AnswerData = string | string[] | boolean
 
@@ -10,26 +11,13 @@ export interface Answers {
   [uuid: string]: AnswerData
 }
 
-export interface FormCharacter {
-  id: number
-  name: string
-  realm: string
-  race_id?: number
-  race_name?: string
-  class_id?: number
-  class_name?: string
-  gender?: string
-  avatar_url?: string
-  bust_url?: string
-  render_url?: string
-}
-
 export interface FormAuthor {
   id: number
-  displayname?: string
-  avatar?: string
-  customAvatar: boolean
-  battletag: string
+  nickname?: string
+  discord_id: string
+  discord_avatar: string
+  discord_username: string
+  discord_discriminator: string
 }
 
 export interface FormSubmission {
@@ -56,12 +44,21 @@ export enum SubmissionStatus {
 
 export type OpenSubmission = Pick<FormSubmission, 'id' | 'status'>
 
+export interface FormCharacterIdentity {
+  name: string
+  realm: string
+  realm_name: string
+  region: string
+  blizzard?: Omit<FormCharacter, 'raiderIO'>
+  raiderIO?: CharacterRaiderIO
+}
+
 @Module({ namespaced: true, name: 'submission', stateFactory: true })
 export default class SubmissionStore extends VuexModule {
   public status = 'unloaded'
   public error: Error | null = null
   public answers: Answers = {}
-  public characters: KnownCharacter[] = []
+  public characters: FormCharacterIdentity[] = []
   public submission: FormSubmission | null = null
   public submissions: FormSubmission[] = []
   public selectedSubmission: FormSubmission | null = null
@@ -71,6 +68,12 @@ export default class SubmissionStore extends VuexModule {
   public pagination: Pagination = {
     current: 1,
     total: 0
+  }
+
+  get mainCharacter(): FormCharacter | undefined {
+    return this.submission && this.submission.characters && this.submission.characters.length > 0
+      ? this.submission.characters[0]
+      : undefined
   }
 
   @Mutation
@@ -83,8 +86,12 @@ export default class SubmissionStore extends VuexModule {
     this.answers = Object.assign({}, answers)
   }
 
-  @Mutation setCharacters(characters: KnownCharacter[]): void {
+  @Mutation setCharacters(characters: FormCharacterIdentity[]): void {
     this.characters = characters
+  }
+
+  @Mutation addCharacter(character: FormCharacterIdentity): void {
+    this.characters.push(character)
   }
 
   @Mutation setAnswer(data: { id: string; value: string | string[] | boolean }): void {
@@ -142,6 +149,16 @@ export default class SubmissionStore extends VuexModule {
     }
   }
 
+  // @Action({ rawError: true })
+  // async setSubmissionSeen(args: { seen: boolean }) {
+  //   if (!this.submission) return
+
+  //   try {
+  //     this.context.commit('setStatus', { status: 'loading' })
+  //     const data = await $axios.$get(`/submissiom/${this.submission.id}/seen`)
+  //   } catch (error) {}
+  // }
+
   @Action({ commit: 'setSubmission', rawError: true })
   async getSubmission(params: { id?: number | string; status?: string }): Promise<FormSubmission | null> {
     const param = params.id ? params.id : `status/${params.status}`
@@ -169,11 +186,11 @@ export default class SubmissionStore extends VuexModule {
   }): Promise<FormSubmission[]> {
     try {
       this.context.commit('setStatus', { status: 'loading' })
-      
+
       const data = await $axios.$get('/submission', { params })
       const status = params && params.status ? params.status : data[0].length ? data[0][0].status : 'open'
 
-      console.warn(data[0][0].seen)
+      // console.warn(data[0][0].seen)
 
       this.context.commit('setStatus', { status: 'success' })
       this.context.commit('setTotalSubmissions', data[1])

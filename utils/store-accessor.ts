@@ -8,6 +8,7 @@ import CharacterModule from '../store/character'
 import AuthModule from '../store/auth'
 import SubmissionStore from '../store/submission'
 import FormStore from '../store/form'
+import RaiderIOModule from '../store/raiderIO'
 
 /* eslint-disable import/no-mutable-exports */
 let authStore: AuthModule
@@ -18,6 +19,7 @@ let raidStore: RaidModule
 let discordStore: DiscordModule
 let submissionStore: SubmissionStore
 let formStore: FormStore
+let raiderIOStore: RaiderIOModule
 /* eslint-enable import/no-mutable-exports */
 
 export function initializeStores(store: Store<unknown>): void {
@@ -29,6 +31,17 @@ export function initializeStores(store: Store<unknown>): void {
   blogStore = getModule(BlogModule, store)
   raidStore = getModule(RaidModule, store)
   discordStore = getModule(DiscordModule, store)
+  raiderIOStore = getModule(RaiderIOModule, store)
 }
 
-export { authStore, characterStore, slideStore, blogStore, raidStore, discordStore, submissionStore, formStore }
+export {
+  authStore,
+  characterStore,
+  slideStore,
+  blogStore,
+  raidStore,
+  discordStore,
+  submissionStore,
+  formStore,
+  raiderIOStore
+}

@@ -6,7 +6,7 @@
           <div class="carousel-content">
             <v-container fill-height>
               <v-layout align-center>
-                <v-flex>
+                <v-flex class="carousel-content__box">
                   <h1 class="carousel-content__title" v-text="slide.title" />
                   <span class="carousel-content__caption" v-text="slide.subtitle" />
                 </v-flex>
@@ -58,16 +58,25 @@ export default class Carousel extends Vue {
     position: relative;
     height: 100%;
 
+    &__box {
+      position: relative;
+      bottom: 80px;
+    }
+
     &__title {
       font-family: Khand, sans-serif;
-      font-size: 70px;
+      font-size: 3.5rem;
       text-transform: uppercase;
       line-height: 1.1;
       text-shadow: 4px 3px 4px #000;
     }
 
-    &__subtitle {
-      font-size: 18px;
+    &__caption {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      font-size: 1.2rem;
+      display: block;
+      font-weight: 500;
+      width: 100%;
     }
   }
 

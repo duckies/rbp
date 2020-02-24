@@ -21,7 +21,7 @@ const NuxtConfiguration: Partial<Configuration> = {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: 'Gaming platform' }
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }]
   },
 
   loading: { color: '#854feb' },
@@ -32,7 +32,6 @@ const NuxtConfiguration: Partial<Configuration> = {
     { src: '~/plugins/flickity', ssr: false },
     { src: '~/plugins/vee-validate' },
     { src: '~/plugins/axios-accessor' },
-    // { src: '~/plugins/store' },
     { src: '~/plugins/auth' }
   ],
 
@@ -43,6 +42,11 @@ const NuxtConfiguration: Partial<Configuration> = {
     progressiveImages: true,
     icons: {
       iconfont: 'mdiSvg'
+      // values: {
+      //   discord: {
+      //     component: DiscordLogoSVG
+      //   }
+      // }
     },
     frameworkOptions: {
       theme: {
@@ -78,13 +82,23 @@ const NuxtConfiguration: Partial<Configuration> = {
         grant_type: 'authorization_code',
         response_type: 'code',
         token_key: 'code'
+      },
+      discord: {
+        _scheme: 'oauth2',
+        authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
+        token_endpoint: 'http://localhost:3000/auth/discord/callback',
+        userinfo_endpoint: '/me',
+        scope: ['identify'],
+        client_id: '678486837626404885',
+        grant_type: 'authorization_code',
+        response_type: 'code'
       }
     }
   },
 
   webfontloader: {
     google: {
-      families: ['Roboto:300,400,500,700', 'Khand:300,400,500,700', 'Roboto+Mono:400', 'Quicksand:400,700']
+      families: ['Roboto:300,400,500,700', 'Khand:300,400,500,700', 'Roboto+Mono:400', 'Montserrat:400,500,700']
     }
   },
 
@@ -99,8 +113,12 @@ const NuxtConfiguration: Partial<Configuration> = {
   build: {
     // Pulls css into files instead of injecting them in the header
     // for better cache support.
-    extractCSS: true,
-    transpile: ['vee-validate/dist/rules']
+    // extractCSS: true,
+    cache: true,
+    transpile: ['vee-validate/dist/rules'],
+    babel: {
+      plugins: ['@babel/plugin-proposal-optional-chaining']
+    }
   }
 }
 

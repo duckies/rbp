@@ -4,9 +4,9 @@
 
     <v-container>
       <div class="hero-nudge">
-        <v-card height="800" class="thingy">
+        <v-card>
           <v-tabs centered grow>
-            <v-tab v-for="link in links" :key="link.to" nuxt :to="link.to">{{ link.title }}</v-tab>
+            <v-tab v-for="link in links" :key="link.to" nuxt to="/about/ranks">{{ link.title }}</v-tab>
           </v-tabs>
           <nuxt-child />
         </v-card>
@@ -36,8 +36,4 @@ export default class AboutPage extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
-.thingy {
-  margin-bottom: 200px;
-}
-</style>
+<style lang="scss" scoped></style>

@@ -14,7 +14,9 @@
                 />
               </div>
             </div>
+
             <div class="footer-grid-block footer-grid-block--padded">
+              <h3>Navigation</h3>
               <v-list class="transparent-list" dense nav>
                 <v-list-item v-for="link in navItems" :key="link.title" :to="link.link">
                   <v-list-item-content>
@@ -23,13 +25,29 @@
                 </v-list-item>
               </v-list>
             </div>
-            <div class="footer-grid-block footer-grid-block--padded" />
-            <div class="footer-grid-block footer-grid-block--padded" />
+
+            <div class="footer-grid-block footer-grid-block--padded">
+              <h3>External Info</h3>
+              <v-list class="transparent-list" dense>
+                <v-list-item v-for="link in resources" :key="link.title" :href="link.link" target="_blank">
+                  <v-list-item-content>
+                    <v-list-item-title v-text="link.title"></v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </div>
+
+            <div class="footer-grid-block footer-grid-block--padded">
+              <h3 class="mb-3">Really Bad</h3>
+              The world's premiere terrible 2-night raiding guild on Area-52.
+            </div>
+
             <div class="footer-grid-block">
               <discord />
             </div>
           </div>
         </v-flex>
+
         <v-flex xs12 class="footer-bottom">
           <div class="footer-bottom--left">
             <span class="copyright-info">
@@ -39,9 +57,10 @@
           <div class="footer-bottom--right">
             <span>
               Created by
-              <a href="https://worldofwarcraft.com/en-us/character/blackrock/duckie" target="blank">
+              <a href="https://worldofwarcraft.com/en-us/character/area-52/duckys" target="blank">
                 Duckie
               </a>
+              with hate.
             </span>
           </div>
         </v-flex>
@@ -77,10 +96,21 @@ export default class Footer extends Vue {
     {
       title: 'Roster',
       link: '/roster'
+    }
+  ]
+
+  private readonly resources = [
+    {
+      title: 'WarcraftLogs',
+      link: 'https://www.warcraftlogs.com/guild/calendar/500023/'
     },
     {
-      title: 'Logs',
-      link: 'https://www.warcraftlogs.com/guild/id/5825'
+      title: 'WoWProgress',
+      link: 'https://www.wowprogress.com/guild/us/area-52/Really+Bad+Players'
+    },
+    {
+      title: 'RaiderIO',
+      link: 'https://raider.io/guilds/us/area-52/Really%20Bad%20Players'
     }
   ]
 }

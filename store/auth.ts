@@ -10,11 +10,21 @@ export interface User {
   blizzardid: number
   blizzardtoken?: string
   blizzardTokenExpiration?: Date
+  discord_id: string
+  discord_avatar?: string
+  discord_username: string
   roles: string[] // Replace with role enum.
   createdAt: Date
   updatedAt: Date
   lastLogin?: Date
   // knownCharacters?:
+}
+
+export interface Avatars {
+  gif?: string
+  webp: string
+  jpg: string
+  png: string
 }
 
 export const Ranks: string[] = [
@@ -31,14 +41,34 @@ export const Ranks: string[] = [
 @Module({ namespaced: true, name: 'auth', stateFactory: true })
 export default class AuthModule extends VuexModule {
   public status = 'unloaded'
-  public user?: User = undefined
-
-  get usr(): User | undefined {
-    return this.user
-  }
+  public user: User | null = null
 
   get loggedIn(): boolean {
     return !!this.user && Object.keys(this.user).length > 0
+  }
+
+  get isOfficer(): boolean {
+    return !!(this.user?.roles?.includes('Guild Master') || this.user?.roles?.includes('Officer'))
+  }
+
+  get avatars(): Avatars | undefined {
+    if (!this.user || !this.user.discord_avatar) {
+      return undefined
+    }
+
+    const base = `https://cdn.discordapp.com/avatars/${this.user.discord_id}/${this.user.discord_avatar}`
+
+    const avatars: Avatars = {
+      webp: `${base}.webp`,
+      png: `${base}.png`,
+      jpg: `${base}.jpg`
+    }
+
+    if (this.user.discord_avatar.startsWith('a_')) {
+      avatars.gif = `${base}.gif`
+    }
+
+    return avatars
   }
 
   @Mutation

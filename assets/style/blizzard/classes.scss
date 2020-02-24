@@ -55,6 +55,26 @@ $class-colors: (
   }
 }
 
+@each $classId, $color in $class-colors {
+  .class-progress-#{$classId} {
+    .v-progress-linear__background.primary {
+      background-color: rgba($color, 0.5) !important;
+    }
+
+    .v-progress-linear__determinate.primary {
+      background-color: $color !important;
+    }
+  }
+}
+
+@each $classId, $color in $class-colors {
+  .class-logo-#{$classId} {
+    &::after {
+      background-image: url('/images/class-logos/#{$classId}.png');
+    }
+  }
+}
+
 @mixin background-variants($opacity: 0.8, $border: false, $hover: false) {
   @each $classId, $color in $class-colors {
     &.#{$classId} {

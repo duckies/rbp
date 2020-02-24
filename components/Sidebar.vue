@@ -1,7 +1,9 @@
 <template>
   <div class="raiderIO">
     <v-card v-for="tier in tiers" :key="tier.slug" height="200" class="mb-4">
+      <!-- Fix this to ignore raids without backgrounds -->
       <v-img
+        v-if="tier.background"
         :src="tier.background"
         class="image-hover"
         height="200"
@@ -22,6 +24,7 @@
             rounded
             :value="tier.progress * 100"
             height="25"
+            color="#854feb"
             background-color="#854feb"
             background-opacity=".3"
           />
@@ -36,7 +39,7 @@
             <v-card-title>
               <div class="raiderIO--ranking">
                 <span class="raiderIO--ranking__title">{{ raid.rank }}</span>
-                <span class="raiderIO--ranking__value">{{ raid.title }} Rank </span>
+                <span class="raiderIO--ranking__value">{{ raid.title }}</span>
               </div>
             </v-card-title>
           </v-img>
@@ -53,7 +56,7 @@
     />
     <info-box
       title="Discord"
-      :subtitle="'discordOnline' + ' Members Online'"
+      :subtitle="onlineMembers + ' members currently online.'"
       button-text="Join Our Discord"
       button-link="https://discord.gg/mbwbzAs"
       background="https://s3.amazonaws.com/files.enjin.com/632721/material/images/sidebar/WLOP.jpg"
@@ -66,7 +69,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Raid } from '../store/raid'
 import InfoBox from '@/components/InfoBox.vue'
-import { raidStore } from '@/store'
+import { raidStore, discordStore } from '@/store'
 
 export interface Ranking {
   rank: number
@@ -82,6 +85,10 @@ export interface Ranking {
 export default class Sidebar extends Vue {
   get tiers(): Raid[] {
     return raidStore.raids
+  }
+
+  get onlineMembers(): number {
+    return discordStore.onlineMembers
   }
 
   get rankings(): Ranking[] | undefined {
@@ -119,9 +126,9 @@ export default class Sidebar extends Vue {
     text-align: center;
     align-content: center;
     width: 100%;
-    font-family: Khand, sans-serif;
     height: 95px;
     font-weight: 700;
+    text-shadow: #000 0 0 3px;
 
     &__title {
       flex-basis: 100%;
@@ -129,7 +136,7 @@ export default class Sidebar extends Vue {
     }
 
     &__value {
-      font-size: 16px;
+      font-size: 0.9rem;
     }
   }
   &--summary {
@@ -144,14 +151,12 @@ export default class Sidebar extends Vue {
 
     &__text {
       color: #fff;
-      font-size: 18px;
-      font-family: Khand, sans-serif;
+      font-size: 0.9rem;
     }
   }
 
   &--text {
     flex-basis: 100%;
-    font-family: Khand, sans-serif;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85);
     text-transform: uppercase;
     margin-left: 5px;
@@ -159,21 +164,20 @@ export default class Sidebar extends Vue {
 
     &__difficulty {
       margin-top: 10%;
-      font-size: 20px;
+      font-size: 1.1rem;
       color: #854feb;
     }
 
     &__title {
-      font-size: 28px;
+      font-size: 1.2rem;
     }
   }
 }
 
 .ranking--location {
   display: block;
-  font-size: 20px;
+  font-size: 1rem;
   font-weight: 700;
-  font-family: Khand, sans-serif;
   text-transform: uppercase;
   opacity: 0.8;
 }
@@ -182,7 +186,6 @@ export default class Sidebar extends Vue {
   display: block;
   font-size: 25px;
   font-weight: 700;
-  font-family: Khand, sans-serif;
 }
 </style>
 
@@ -190,6 +193,11 @@ export default class Sidebar extends Vue {
 .raiderIO {
   .v-progress-linear--rounded {
     border-radius: 100px;
+  }
+
+  .v-progress-linear__background {
+    left: 0 !important;
+    width: 100% !important;
   }
 
   .v-progress-linear {

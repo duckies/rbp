@@ -1,12 +1,19 @@
-$body-font-family: 'Quicksand', sans-serif;
+// $body-font-family: 'Montserrat', sans-serif;
 $font-size-root: 16px;
 // $heading-font-family
-$border-radius-root: 3px;
+
+$border-radius-root: 0;
+// $border-radius-root: 10px;
+// $material-dark: (
+//   bg-color: #191726,
+//   background: #141517,
+//   cards: #1e2033
+// );
 
 $material-dark: (
   bg-color: #141517,
-  background: #141517,
-  cards: #202124
+  background: #131519,
+  cards: #1d1e22
 );
 
 $card-text-font-size: 1rem;

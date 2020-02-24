@@ -5,12 +5,7 @@
     :data-class="character.class"
     :data-race="character.race"
   >
-    <!-- Not working in new Vuetify version. -->
-    <!-- <div class="character--bg">
-      <v-img class="character--bg__image" :src="background" />
-    </div> -->
-
-    <v-img class="character--bg__image" :src="character.render_url" position="right 35%">
+    <v-img class="character--bg__image" :src="character.render_url" height="280">
       <div class="character--content">
         <div class="character--avatars">
           <v-img
@@ -54,6 +49,9 @@
             />
           </svg>
         </a>
+        <a :href="wclLink" target="_blank">
+          <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px;"></v-img>
+        </a>
       </div>
     </v-img>
   </div>
@@ -83,7 +81,7 @@ export default class CharacterWindow extends Vue {
   }
 
   get rank(): string {
-    return this.character.guild_rank ? Ranks[this.character.guild_rank] : 'none'
+    return typeof this.character.guild_rank === 'number' ? Ranks[this.character.guild_rank] : 'none'
   }
 
   get armoryLink(): string {
@@ -92,6 +90,12 @@ export default class CharacterWindow extends Vue {
 
   get raiderIOLink(): string {
     return `https://raider.io/characters/us/${this.character.realm.toLowerCase()}/${this.character.name.toLowerCase()}`
+  }
+
+  get wclLink(): string {
+    return `https://www.warcraftlogs.com/character/${this.character.region}/${
+      this.character.realm
+    }/${this.character.name.toLowerCase()}`
   }
 }
 </script>
@@ -182,7 +186,6 @@ export default class CharacterWindow extends Vue {
     position: relative;
     align-items: center;
     align-content: center;
-    margin-bottom: 50px;
     padding: 20px 10px;
     grid-template-rows: 1fr 1fr;
     text-align: center;
@@ -192,7 +195,6 @@ export default class CharacterWindow extends Vue {
     display: grid;
     align-items: center;
     justify-content: center;
-    margin-bottom: -20px;
   }
 
   &--avatar {
@@ -216,7 +218,14 @@ export default class CharacterWindow extends Vue {
     &__name {
       font-size: 18px;
       font-weight: 500;
-      text-shadow: 0 0 5px #000;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    &__rank {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      display: block;
+      font-weight: 500;
+      width: 100%;
     }
   }
 }

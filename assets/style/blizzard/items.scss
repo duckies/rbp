@@ -7,6 +7,17 @@ $item-legendary: #ff8000;
 $item-artifact: #e5cc80;
 $item-blizzard: #0cf;
 
+$qualities: (
+  'poor': $item-poor,
+  'common': $item-common,
+  'uncommon': $item-uncommon,
+  'rare': $item-rare,
+  'epic': $item-epic,
+  'legendary': $item-legendary,
+  'artifact': $item-artifact,
+  'blizzard': $item-blizzard
+);
+
 $quality-colors: (
   0: $item-poor,
   1: $item-common,
@@ -17,6 +28,16 @@ $quality-colors: (
   6: $item-artifact,
   7: $item-blizzard
 );
+
+@each $quality, $color in $qualities {
+  .item-quality-border-#{$quality} {
+    border-color: $color;
+  }
+
+  .item-quality-color-#{$quality} {
+    color: $color;
+  }
+}
 
 @each $qualityId, $color in $quality-colors {
   .quality-border-#{$qualityId} {

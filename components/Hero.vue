@@ -2,12 +2,16 @@
   <div class="hero">
     <div class="hero--bg">
       <v-img :src="background" :height="height" class="parallax-gradient" position="center" cover>
-        <v-row>
-          <v-container>
-            <h1 class="hero--header__title" v-text="title" />
-            <span v-if="caption" class="hero--header__caption" v-text="caption" />
-          </v-container>
-        </v-row>
+        <v-container>
+          <v-layout>
+            <v-row>
+              <v-col>
+                <h1 class="hero--header__title" v-text="title" />
+                <span v-if="caption" class="hero--header__caption" v-text="caption" />
+              </v-col>
+            </v-row>
+          </v-layout>
+        </v-container>
       </v-img>
     </div>
   </div>
@@ -59,14 +63,18 @@ export default class Hero extends Vue {
     &__title {
       font-family: 'Khand', sans-serif;
       font-weight: 900;
-      font-size: 65px;
+      font-size: 3.5rem;
       margin-top: 90px;
+      line-height: 3.1rem;
       text-transform: uppercase;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
     }
 
     &__caption {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      font-size: 1.2rem;
       display: block;
+      font-weight: 500;
       width: 100%;
     }
   }

@@ -40,15 +40,31 @@ export interface Discord {
 @Module({ namespaced: true, name: 'discord', stateFactory: true })
 export default class DiscordModule extends VuexModule {
   status = 'unloaded'
-  discord?: Discord = undefined
+  discord: Discord | null = null
+  error: Error | null = null
 
   get channels(): Channel[] {
     return this.discord ? this.discord.channels : []
   }
 
+  get onlineMembers(): number {
+    let count = 0
+
+    if (!this.discord || !this.discord.members.length) {
+      return count
+    }
+
+    this.discord.members.forEach(member => {
+      if (member.status === 'online') count++
+    })
+
+    return count
+  }
+
   @Mutation
-  setStatus(status: string): void {
-    this.status = status
+  setStatus(data: { status: string; error?: Error }): void {
+    this.status = data.status
+    this.error = data.error || null
   }
 
   @Mutation
@@ -74,9 +90,16 @@ export default class DiscordModule extends VuexModule {
   }
 
   @Action({ commit: 'setDiscord' })
-  getDiscord(): Promise<Discord> {
-    this.context.commit('setStatus', 'loading')
+  async getDiscord(): Promise<Discord | null> {
+    try {
+      this.context.commit('setStatus', { status: 'loading' })
+      const data = await $axios.$get('https://discordapp.com/api/servers/142372929961721856/embed.json')
 
-    return $axios.$get('https://discordapp.com/api/servers/142372929961721856/embed.json')
+      this.context.commit('setStatus', { status: 'success' })
+      return data
+    } catch (error) {
+      this.context.commit('setStatus', { status: 'error', error })
+      return null
+    }
   }
 }

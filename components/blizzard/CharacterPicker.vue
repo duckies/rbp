@@ -3,79 +3,43 @@
     <v-card-title>Character Selection</v-card-title>
 
     <v-card-text>
-      Select your main character first as the character you plan to raid with and optionally any alts you wish to show
-      us.
+      Select your main character and any alts you wish to show to us.
 
-      <v-select
-        v-model="mainCharacter"
-        :items="applicationCharacters"
-        label="Main Character"
-        class="mt-2"
-        item-text="name"
-        return-object
-        outlined
-        clearable
-      >
-        <template v-slot:item="{ item }">
-          <v-avatar left>
-            <v-img
-              :src="
-                `https://render-us.worldofwarcraft.com/character/${item.thumbnail}?alt=/wow/static/images/2d/avatar/${item.race}-${item.gender}.jpg`
-              "
+      <v-alert v-if="characterError.length" text error>
+        {{ characterError }}
+      </v-alert>
+
+      <v-row>
+        <v-col>
+          <validation-provider v-slot="{ errors }" :rules="{ oneOf: realmSlugs }">
+            <v-autocomplete
+              v-model="realm"
+              label="Realm"
+              :items="realmSlugs"
+              :error-messages="errors"
+              item-text="name"
+              item-value="slug"
+              return-object
+              outlined
             />
-          </v-avatar>
-          {{ item.name }} - {{ item.realm }}
-        </template>
-
-        <template v-slot:selection="{ item }">
-          <v-chip pill :class="`class-bg-${item.class}`">
-            <v-avatar left>
-              <v-img
-                :src="
-                  `https://render-us.worldofwarcraft.com/character/${item.thumbnail}?alt=/wow/static/images/2d/avatar/${item.race}-${item.gender}.jpg`
-                "
-              />
-            </v-avatar>
-            {{ item.name }}
-          </v-chip>
-        </template>
-      </v-select>
-
-      <v-slide-y-transition>
-        <v-select
-          v-show="mainCharacter"
-          v-model="altCharacters"
-          :items="possibleAltCharacters"
-          label="Alt Characters (Optional)"
-          multiple
-          outlined
-        >
-          <template v-slot:item="{ item, select }">
-            <v-checkbox @input="select($event)" />
-            <v-avatar left>
-              <v-img
-                :src="
-                  `https://render-us.worldofwarcraft.com/character/${item.thumbnail}?alt=/wow/static/images/2d/avatar/${item.race}-${item.gender}.jpg`
-                "
-              />
-            </v-avatar>
-            {{ item.name }} - {{ item.realm }}
-          </template>
-
-          <template v-slot:selection="{ item }">
-            <v-chip :class="`class-bg-${item.class}`" pill>
-              <v-avatar left>
-                <v-img
-                  :src="
-                    `https://render-us.worldofwarcraft.com/character/${item.thumbnail}?alt=/wow/static/images/2d/avatar/${item.race}-${item.gender}.jpg`
-                  "
-                />
-              </v-avatar>
-              {{ item.name }}
-            </v-chip>
-          </template>
-        </v-select>
-      </v-slide-y-transition>
+          </validation-provider>
+        </v-col>
+        <v-col>
+          <v-text-field v-model="name" label="Name" outlined />
+        </v-col>
+        <v-col cols="auto">
+          <v-btn
+            :loading="loading || downloading"
+            :disabled="!realm || !name"
+            class="character-add"
+            color="primary"
+            outlined
+            x-large
+            @click="addCharacter"
+            >Add Character</v-btn
+          >
+        </v-col>
+      </v-row>
     </v-card-text>
   </v-card>
 </template>
@@ -83,67 +47,79 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Watch } from 'vue-property-decorator'
-import slugify from 'slugify'
-import { characterStore, submissionStore } from '../../store'
-import { KnownCharacter } from '../../store/character'
+import { ValidationProvider } from 'vee-validate'
+import { characterStore, authStore, submissionStore } from '../../store'
+import { FormCharacterIdentity } from '@/store/submission'
+import { RealmSlugs, RealmList } from '@/interfaces/realms'
 
-@Component
+@Component({
+  components: { ValidationProvider }
+})
 export default class CharacterPicker extends Vue {
-  private mainCharacter: KnownCharacter | null = null
-  private altCharacters: KnownCharacter[] = []
   private downloading = false
+  private realmSlugs = RealmSlugs
+  private name = ''
+  private characterError = ''
+  private realm: RealmList = {
+    name: '',
+    slug: ''
+  }
 
   get loading(): boolean {
     return characterStore.isLoading
   }
 
-  get applicationCharacters(): KnownCharacter[] {
-    return characterStore.applicationCharacters
-  }
-
-  get possibleAltCharacters(): KnownCharacter[] {
-    if (!this.mainCharacter || !this.applicationCharacters) return []
-
-    return this.applicationCharacters.filter(c => c !== this.mainCharacter)
+  get characters(): FormCharacterIdentity[] {
+    return submissionStore.characters
   }
 
   async mounted(): Promise<void> {
-    await characterStore.getKnownCharacters()
+    if (authStore.loggedIn) {
+      await characterStore.getKnownCharacters()
+    }
   }
 
-  @Watch('mainCharacter')
-  async onMainChanged(character: KnownCharacter): Promise<void> {
-    // When cleared character is null.
-    if (!character) {
-      submissionStore.setCharacters([])
+  async addCharacter(): Promise<void> {
+    if (!this.realm || !this.name) {
       return
+    }
+
+    const character: FormCharacterIdentity = {
+      name: this.name,
+      realm: this.realm.slug,
+      realm_name: this.realm.name,
+      region: 'us'
+    }
+
+    // Avoid trying to make requests when we already have this character.
+    const existing = this.characters.find(
+      c =>
+        c.name.toLowerCase() === character.name.toLowerCase() &&
+        c.realm === character.realm &&
+        c.region === character.region
+    )
+
+    if (existing) {
+      this.characterError = 'That character has already been entered.'
+      return
+    } else {
+      this.characterError = ''
     }
 
     try {
       this.downloading = true
 
-      const data = await characterStore.getCharacterData({
-        name: character.name.toLowerCase(),
-        realm: slugify(character.realm, { lower: true }),
-        region: 'us'
-      })
+      const { raiderIO, ...blizzard } = await characterStore.getCharacterData(character)
 
-      console.log(data)
+      character.blizzard = blizzard
+      character.raiderIO = raiderIO
     } catch (error) {
       console.error(error)
     } finally {
       this.downloading = false
     }
 
-    submissionStore.setCharacters([character, ...this.altCharacters])
-  }
-
-  @Watch('altCharacters')
-  onAltsChanged(characters: KnownCharacter[]): void {
-    if (!this.mainCharacter) return
-
-    submissionStore.setCharacters([this.mainCharacter, ...characters])
+    submissionStore.addCharacter(character)
   }
 }
 </script>

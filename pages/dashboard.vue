@@ -48,8 +48,8 @@ export default class Dashboard extends Vue {
   caption = 'Settings and other fun things'
   background = 'https://cdnassets.raider.io/images/login/backgrounds/bfa/nazjatar2.jpg'
 
-  get user(): User | undefined {
-    return authStore.usr
+  get user(): User | null {
+    return authStore.user
   }
 }
 </script>

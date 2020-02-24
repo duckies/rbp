@@ -1,4 +1,4 @@
-import { GetterTree, MutationTree, ActionTree } from 'vuex/types/index'
+import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import { CharacterLookupDto } from '../interfaces/character-lookup.dto'
 import { $axios } from '../utils/axios'
 
@@ -89,68 +89,47 @@ export interface RaiderIOCharacter {
   gear: Gear
 }
 
-export interface RaiderIOState {
-  status: string
-  tiers: Tier[]
-  errors: Error[]
-}
+@Module({ namespaced: true, name: 'raiderIO', stateFactory: true })
+export default class RaiderIOModule extends VuexModule {
+  status = 'unloaded'
+  tiers: Tier[] = []
+  error: Error | null = null
 
-export const state = (): RaiderIOState => ({
-  status: 'unloaded',
-  tiers: [],
-  errors: []
-})
-
-export const getters: GetterTree<RaiderIOState, RaiderIOState> = {
-  tiers(state): Tier[] {
-    return state.tiers
+  @Mutation
+  setStatus(data: { status: string; error?: Error }): void {
+    this.status = data.status
+    this.error = data.error || null
   }
-}
 
-export const mutations: MutationTree<RaiderIOState> = {
-  setStatus(state, { status }): void {
-    state.status = status
-  },
-
-  addError(state, { error }): void {
-    state.status = 'error'
-    state.errors.unshift(error)
-  },
-
-  popError(state): void {
-    state.errors.pop()
-  },
-
-  setTiers(state, { tiers }): void {
-    state.tiers = tiers
+  @Mutation
+  setTiers(tiers: Tier[]): void {
+    this.tiers = tiers
   }
-}
 
-export const actions: ActionTree<RaiderIOState, RaiderIOState> = {
-  async getRaiderIO({ commit }): Promise<void> {
-    commit('setStatus', 'loading')
-
+  @Action({ commit: 'setTiers' })
+  async getRaiderIO(): Promise<Tier[]> {
     try {
-      const resp = await $axios.$get('/raiderIO')
-      commit('setStatus', 'success')
-      commit('setTiers', resp.data)
+      this.context.commit('setStatus', { status: 'loading' })
+      const data = await $axios.$get('/raids/featured')
+      this.context.commit('setStatus', { status: 'success' })
+
+      return data
     } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
+      this.context.commit('setStatus', { status: 'error', error })
+      return []
     }
-  },
+  }
 
-  async getCharacterRaiderIO({ commit }, data: CharacterLookupDto): Promise<RaiderIOCharacter | undefined> {
-    commit('setStatus', 'loaded')
-
+  @Action({ commit: 'setTiers' })
+  async getCharacterRaiderIO(data: CharacterLookupDto): Promise<RaiderIOCharacter | undefined> {
     try {
+      this.context.commit('setStatus', { status: 'loading' })
       const resp = await $axios.$get(`/raiderio/${data.region}/${data.realm}/${data.name}`)
-      commit('setStatus', 'success')
+      this.context.commit('setStatus', { status: 'success' })
+
       return resp
     } catch (error) {
-      commit('setStatus', 'error')
-      commit('addError', error)
-      return undefined
+      this.context.commit('setStatus', { status: 'error', error })
     }
   }
 }

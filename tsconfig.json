@@ -21,8 +21,9 @@
       "@types/nanoid",
       "@types/lodash",
       "@types/cookie",
+      "@types/vue-markdown",
       "@nuxt/types",
-      "@nuxtjs/axios"
+      "@nuxtjs/axios",
     ]
   },
   "exclude": ["node_modules"]

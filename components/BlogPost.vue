@@ -9,24 +9,31 @@
       </v-card-title>
 
       <v-layout row wrap class="article--footer">
-        <v-flex class="article--footer__date" />
+        <v-flex class="article--footer__date">Posted {{ date }}</v-flex>
         <v-flex class="article--footer__more">
-          <v-btn :to="'/news/' + post.slug" text>
+          <!-- Currently we don't have blog pages -->
+          <!-- <v-btn :to="'/news/' + post.slug" text>
             Read More
-          </v-btn>
+          </v-btn> -->
         </v-flex>
       </v-layout>
     </v-img>
   </v-card>
 </template>
 
-<script>
-export default {
-  props: {
-    post: {
-      type: Object,
-      required: true
-    }
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import { Prop } from 'vue-property-decorator'
+import { formatRelative } from 'date-fns'
+import { Article } from '../store/blog'
+
+@Component
+export default class BlogPost extends Vue {
+  @Prop() readonly post!: Article
+
+  get date(): string {
+    return formatRelative(new Date(this.post.createdAt), new Date())
   }
 }
 </script>

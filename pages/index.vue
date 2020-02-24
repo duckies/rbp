@@ -22,7 +22,7 @@ import { Article } from '@/store/blog'
 import Carousel from '@/components/home/Carousel.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import BlogPost from '@/components/BlogPost.vue'
-import { slideStore, blogStore, raidStore, discordStore } from '@/store'
+import { slideStore, blogStore, raidStore, discordStore, raiderIOStore } from '@/store'
 
 @Component({
   components: {
@@ -35,7 +35,8 @@ import { slideStore, blogStore, raidStore, discordStore } from '@/store'
       slideStore.getSlides(),
       raidStore.getRaids(),
       blogStore.getArticles(),
-      discordStore.getDiscord()
+      discordStore.getDiscord(),
+      raiderIOStore.getRaiderIO()
     ]).catch(e => e)
   }
 })

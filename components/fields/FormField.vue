@@ -21,6 +21,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import { ValidationProvider } from 'vee-validate'
+import TextInput from '@/components/fields/TextInput.vue'
 import TextArea from '@/components/fields/TextArea.vue'
 import Checkbox from '@/components/fields/Checkbox.vue'
 import Select from '@/components/fields/Select.vue'
@@ -33,7 +34,7 @@ export interface QuestionRules {
 }
 
 @Component({
-  components: { TextArea, Checkbox, Select, ValidationProvider }
+  components: { TextArea, TextInput, Checkbox, Select, ValidationProvider }
 })
 export default class FormField extends Vue {
   @Prop() readonly question!: Question

@@ -23,11 +23,12 @@ import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import { ValidationObserver } from 'vee-validate'
 import TextArea from './TextArea.vue'
+import TextInput from './TextInput.vue'
 import Select from './Select.vue'
 import Checkbox from './Checkbox.vue'
 
 @Component({
-  components: { TextArea, Select, Checkbox, ValidationObserver }
+  components: { TextArea, TextInput, Select, Checkbox, ValidationObserver }
 })
 export default class FormGenerator extends Vue {
   @Prop() private readonly schema!: JSON

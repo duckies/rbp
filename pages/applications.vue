@@ -1,11 +1,15 @@
 <template>
   <div>
-    <hero :background="background" :title="title" caption="caption" />
+    <hero
+      background="https://cdnassets.raider.io/images/login/backgrounds/bfa/blood-temple.jpg"
+      title="Really Bad Applications"
+      caption="Blizzard's #1 source of transfer income since 2004"
+    />
 
     <!-- Invalid Character Information Dialog -->
     <v-dialog v-model="invalidDialog" max-width="500">
       <v-card>
-        <v-card-title>Missing Characters!?</v-card-title>
+        <v-card-title>Missing Characters?</v-card-title>
         <v-card-text>
           Blizzard's privacy requirements require invalid or expired character data to be deleted. Characters typically
           become invalid due to realm, race, or name changes or have not been logged into for a long time. Our guild
@@ -23,71 +27,68 @@
     </v-dialog>
 
     <v-container class="hero-nudge">
-      <!-- Pagination and Status Selector -->
-      <v-row justify="end">
-        <v-col>
-          <v-card>
-            <v-pagination v-model="paginationCurrent" :length="pagination.total" @input="onPageChange"></v-pagination>
-          </v-card>
-        </v-col>
-
-        <v-col sm="3">
+      <v-row>
+        <!-- Category Selectors -->
+        <v-col cols="12" xs="12" md="5" lg="4" xl="3">
           <v-card>
             <v-select
               :value="statusCategory"
+              class="px-5 py-4"
               label="Application Status"
-              filled
+              solo
+              flat
               hide-details
+              append-icon="mdi-chevron-down"
               :items="formStatuses"
               @change="changeStatus"
-            />
+            >
+              <template v-slot:selection="{ item }">
+                <span class="category-title">{{ item.text }} Applications</span>
+              </template>
+            </v-select>
+
+            <v-divider></v-divider>
+
+            <v-card-text>
+              <v-list-item-group>
+                <v-list-item
+                  v-for="submission in submissions"
+                  :key="submission.id"
+                  :to="`/applications/${submission.id}`"
+                >
+                  <v-list-item-avatar>
+                    <v-img
+                      v-if="submission.characters && submission.characters[0]"
+                      :src="defaultingAvatar(submission.characters[0])"
+                    ></v-img>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title v-if="submission">{{ defaultingTitle(submission) }}</v-list-item-title>
+                    <v-list-item-subtitle v-if="submission.characters && submission.characters[0]">{{
+                      defaultingCharSubtitle(submission.characters[0])
+                    }}</v-list-item-subtitle>
+                    <v-list-item-subtitle> Submitted {{ formatDate(submission.createdAt) }} </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list-item-group>
+            </v-card-text>
           </v-card>
         </v-col>
-      </v-row>
 
-      <!-- No Applications Found -->
-      <v-row v-if="!submissions.length">
-        <v-col>
+        <v-col v-if="!submissions.length">
           <v-card>
             <v-card-title>No Applications Found</v-card-title>
           </v-card>
         </v-col>
-      </v-row>
 
-      <!-- Form Submission Selectors -->
-      <v-row v-else>
-        <v-col v-for="submission in submissions" :key="submission.id" cols="12" sm="4">
-          <v-card :to="`/applications/${submission.id}`" :class="classUnread(submission)">
-            <v-row>
-              <v-col cols="3">
-                <v-row align="center" justify="center">
-                  <v-avatar height="84" width="84">
-                    <v-img
-                      :class="defaultingClassBorderColor('class-avatar', submission.characters[0])"
-                      :src="defaultingAvatar(submission.characters[0])"
-                    ></v-img>
-                  </v-avatar>
-                </v-row>
-              </v-col>
-
-              <v-col>
-                <h3>
-                  {{ defaultingTitle(submission) }}
-                </h3>
-                <span v-if="submission.characters[0] && submission.characters[0].class_name">
-                  {{ defaultingCharSubtitle(submission.characters[0]) }}
-                </span>
-                <span v-else>
-                  Character Missing
-                  <v-icon @click="invalidDialog = true">mdi-help-circle-outline</v-icon>
-                </span>
-              </v-col>
-            </v-row>
-          </v-card>
+        <v-col v-else>
+          <v-row no-gutters>
+            <v-col>
+              <nuxt-child />
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
-
-      <nuxt-child />
     </v-container>
   </div>
 </template>
@@ -95,9 +96,11 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
+import { formatRelative } from 'date-fns'
+import { FormCharacter } from '../store/character'
 import Hero from '@/components/Hero.vue'
 import { submissionStore, formStore } from '@/store'
-import { FormSubmission, Pagination, FormCharacter } from '@/store/submission'
+import { FormSubmission, Pagination } from '@/store/submission'
 import { Question } from '@/store/form'
 
 @Component({
@@ -114,7 +117,7 @@ export default class Applications extends Vue {
     { text: 'Cancelled', value: 'cancelled' }
   ]
 
-  get background(): string {
+  get submissionBackground(): string {
     return submissionStore.submission &&
       submissionStore.submission.characters &&
       submissionStore.submission.characters[0].render_url
@@ -164,6 +167,14 @@ export default class Applications extends Vue {
     submissionStore.setPaginationCurrent(current)
   }
 
+  created(): void {
+    if (process.browser) {
+      const wowheadScript = document.createElement('script')
+      wowheadScript.setAttribute('src', 'https://wow.zamimg.com/widgets/power.js')
+      document.body.appendChild(wowheadScript)
+    }
+  }
+
   changeStatus(status: string): void {
     this.$router.push(`/applications/${status}`)
   }
@@ -171,10 +182,10 @@ export default class Applications extends Vue {
   defaultingTitle(submission: FormSubmission): string {
     if (submission.characters[0]) {
       return submission.characters[0].name
-    } else if (submission.author.displayname) {
-      return submission.author.displayname
+    } else if (submission.author.nickname) {
+      return submission.author.nickname
     } else {
-      return submission.author.battletag
+      return submission.author.discord_username
     }
   }
 
@@ -230,6 +241,15 @@ export default class Applications extends Vue {
     return classObj
   }
 
+  formatDate(date: Date): string {
+    try {
+      return formatRelative(new Date(date), new Date())
+    } catch (error) {
+      console.warn(error)
+      return 'Some time ago...'
+    }
+  }
+
   async onPageChange(page: number): Promise<void> {
     await submissionStore.getSubmissions({
       take: 6,
@@ -253,5 +273,10 @@ export default class Applications extends Vue {
 
 .unread {
   border: 2px solid pink;
+}
+
+.category-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 20px;
 }
 </style>
