@@ -1,15 +1,15 @@
 import { RolesBuilder } from 'nest-access-control';
 
 export enum Roles {
-  GuildMaster = 'Guild Master',
-  Officer = 'Officer',
-  OfficerAlt = 'Officer Alt',
-  RaiderBank = 'Raider (Bank)',
-  Raider = 'Raider',
-  Recruit = 'Recruit',
-  Fan = 'Fan',
-  PlayerAlt = 'Player Alt',
-  Guest = 'Guest',
+  GuildMaster = 'Rank0',
+  Officer = 'Rank1',
+  OfficerAlt = 'Rank2',
+  RaiderBank = 'Rank3',
+  Raider = 'Rank4',
+  Recruit = 'Rank5',
+  Fan = 'Rank6',
+  PlayerAlt = 'Rank7',
+  Guest = 'Rank8',
 }
 
 export const roleBuilder: RolesBuilder = new RolesBuilder();

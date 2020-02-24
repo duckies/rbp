@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
-import { InjectQueue } from 'nest-bull';
+import { InjectQueue } from '@nestjs/bull';
 import { Cron, NestSchedule } from 'nest-schedule';
 
 @Injectable()

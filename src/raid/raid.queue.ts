@@ -1,13 +1,11 @@
-// RaiderIO API data comes in camelcase
-/* eslint-disable @typescript-eslint/camelcase */
-import { Logger, BadRequestException } from '@nestjs/common';
-import { Process, Processor, OnQueueError, OnQueueCompleted, OnQueueFailed } from 'nest-bull';
-import { RaiderIOService } from '../raiderIO/raiderIO.service';
-import { RaidService } from './raid.service';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { Job } from 'bull';
+import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { Raid } from './raid.entity';
+import { RaidService } from './raid.service';
 
-@Processor({ name: 'raid' })
+@Processor('raid')
 export class RaidQueue {
   private readonly logger: Logger = new Logger(RaidQueue.name);
 

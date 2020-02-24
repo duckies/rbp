@@ -7,7 +7,6 @@ import { roleBuilder } from './app.roles';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
-import { BullSharedModule } from './bull.module';
 import { CharacterModule } from './character/character.module';
 import { ConfigModule } from './config/config.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
@@ -24,7 +23,6 @@ import { UserModule } from './user/user.module';
     }),
     TypeOrmModule.forRoot(),
     AccessControlModule.forRoles(roleBuilder),
-    BullSharedModule,
     ConfigModule,
     UserModule,
     AuthModule,

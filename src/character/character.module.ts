@@ -6,9 +6,10 @@ import { Character } from './character.entity';
 import { CharacterQueue } from './character.queue';
 import { CharacterScheduler } from './character.scheduler';
 import { CharacterService } from './character.service';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Character]), BlizzardModule],
+  imports: [TypeOrmModule.forFeature([Character]), BullModule.registerQueue({ name: 'character' }), BlizzardModule],
   providers: [CharacterService, CharacterQueue, CharacterScheduler],
   exports: [CharacterService, CharacterQueue],
   controllers: [CharacterController],

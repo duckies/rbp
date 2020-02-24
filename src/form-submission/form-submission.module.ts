@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
+import { HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlizzardModule } from '../blizzard/blizzard.module';
 import { FormQuestion } from '../form-question/question.entity';
@@ -7,16 +8,19 @@ import { FormSubmissionReadModule } from '../form-submission-seen/form-submissio
 import { RaiderIOModule } from '../raiderIO/raiderIO.module';
 import { SubmissionController } from './form-submission.controller';
 import { FormSubmission } from './form-submission.entity';
+import { FormSubmissionQueue } from './form-submission.queue';
 import { SubmissionService } from './form-submission.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([FormSubmission, FormQuestion]),
+    BullModule.registerQueue({ name: 'form' }),
+    HttpModule,
     FormSubmissionReadModule,
     BlizzardModule,
     RaiderIOModule,
   ],
-  providers: [SubmissionService, FormQuestionService],
+  providers: [SubmissionService, FormQuestionService, FormSubmissionQueue],
   controllers: [SubmissionController],
   exports: [SubmissionService],
 })

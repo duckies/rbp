@@ -1,17 +1,19 @@
+import { InjectQueue } from '@nestjs/bull';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
 import { Repository } from 'typeorm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { GameDataService } from '../blizzard/game-data.service';
 import { ProfileService } from '../blizzard/profile.service';
+import { RateLimiter } from '../blizzard/rate-limiter.service';
 import { FormCharacter } from '../form-character/form-character.entity';
+import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
+import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { User } from '../user/user.entity';
 import { CreateFormSubmissionDto, UpdateFormSubmissionDto } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 import { FormSubmission } from './form-submission.entity';
-import { RaiderIOService } from '../raiderIO/raiderIO.service';
-import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
-import { RateLimiter } from '../blizzard/rate-limiter.service';
 
 @Injectable()
 export class SubmissionService {
@@ -22,6 +24,7 @@ export class SubmissionService {
     private readonly gameDataService: GameDataService,
     private readonly raiderIOService: RaiderIOService,
     private readonly rateLimiter: RateLimiter,
+    @InjectQueue('form') private readonly queue: Queue,
   ) {}
 
   /**
@@ -30,18 +33,18 @@ export class SubmissionService {
    * @param isMain Boolean determining if this is a main character.
    */
   async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
-    const [data, specs, media, equipment, raiderIO] = await Promise.all([
-      this.profileService.getCharacterProfileSummary(findCharacterDto).catch(e => e),
-      this.profileService.getCharacterSpecializationsSummary(findCharacterDto).catch(e => e),
-      this.profileService.getCharacterMediaSummary(findCharacterDto).catch(e => e),
-      this.profileService.getCharacterEquipmentSummary(findCharacterDto).catch(e => e),
-      this.raiderIOService
-        .getCharacterRaiderIO(findCharacterDto, [
+    const [data, specs, media, equipment, raiderIO] = await Promise.all(
+      [
+        this.profileService.getCharacterProfileSummary(findCharacterDto),
+        this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
+        this.profileService.getCharacterMediaSummary(findCharacterDto),
+        this.profileService.getCharacterEquipmentSummary(findCharacterDto),
+        this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
           RaiderIOCharacterFields.RAID_PROGRESSION,
           RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-        ])
-        .catch(e => e),
-    ]);
+        ]),
+      ].map(p => p.catch(e => e)),
+    );
 
     const character = new FormCharacter();
 
@@ -164,9 +167,6 @@ export class SubmissionService {
 
     const [mainCharacter, ...altCharacters] = characters;
 
-    console.table(characters);
-
-    // This does not properly delegate error handling.
     const formCharacters = await Promise.all([
       this.buildFormCharacter(mainCharacter, true),
       ...altCharacters.map(alt => this.buildFormCharacter(alt)),
@@ -175,6 +175,8 @@ export class SubmissionService {
     const submission = await this.formSubRepository.save({ formId, answers, characters: formCharacters, author });
 
     submission.justSubmitted = true;
+
+    await this.queue.add('newApplication', submission);
 
     return submission;
   }
@@ -319,8 +321,6 @@ export class SubmissionService {
         'submission.formId',
         'author.id',
         'author.nickname',
-        'author.avatar',
-        'author.customAvatar',
         'author.battletag',
         'character.id',
         'character.name',

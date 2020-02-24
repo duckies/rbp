@@ -17,7 +17,7 @@ import { Character } from '../character/character.entity';
 import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
-import moment = require('moment');
+import moment from 'moment';
 import { ProfileKnownCharacter } from '../blizzard/interfaces/profile/account-profile/account-profile-summary.interface';
 
 @Entity('user')
@@ -27,12 +27,6 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   nickname: string;
-
-  @Column({ nullable: true })
-  avatar: string;
-
-  @Column({ default: false })
-  customAvatar: boolean;
 
   @Column({ nullable: true })
   battletag: string;

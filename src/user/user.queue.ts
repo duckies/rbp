@@ -1,9 +1,8 @@
+import { Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Process, Processor } from 'nest-bull';
-import { User } from './user.entity';
 import { UserService } from './user.service';
 
-@Processor({ name: 'user' })
+@Processor('user')
 export class UserQueue {
   private readonly logger: Logger = new Logger(UserQueue.name);
 

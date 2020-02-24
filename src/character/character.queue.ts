@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from 'nest-bull';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
@@ -14,7 +14,7 @@ export interface GuildUpdateResult {
   ignored: number;
 }
 
-@Processor({ name: 'character' })
+@Processor('character')
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
 
