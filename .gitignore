@@ -5,6 +5,13 @@
 # Environment
 .gitignore
 
+<<<<<<< HEAD
+=======
+# Configuration
+.configrc
+ormconfig.json
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 # Logs
 logs
 *.log

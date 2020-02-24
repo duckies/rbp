@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 import { Logger } from '@nestjs/common';
 import { Process, Processor } from 'nest-bull';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
 @Processor({ name: 'user' })
+=======
+import { Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { UserService } from './user.service';
+
+@Processor('user')
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 export class UserQueue {
   private readonly logger: Logger = new Logger(UserQueue.name);
 

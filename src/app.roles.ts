@@ -1,6 +1,7 @@
 import { RolesBuilder } from 'nest-access-control';
 
 export enum Roles {
+<<<<<<< HEAD
   GuildMaster = 'Guild Master',
   Officer = 'Officer',
   OfficerAlt = 'Officer Alt',
@@ -10,13 +11,28 @@ export enum Roles {
   Fan = 'Fan',
   PlayerAlt = 'Player Alt',
   Guest = 'Guest',
+=======
+  GuildMaster = 'Rank0',
+  Officer = 'Rank1',
+  OfficerAlt = 'Rank2',
+  RaiderBank = 'Rank3',
+  Raider = 'Rank4',
+  Recruit = 'Rank5',
+  Fan = 'Rank6',
+  PlayerAlt = 'Rank7',
+  Guest = 'Rank8',
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 }
 
 export const roleBuilder: RolesBuilder = new RolesBuilder();
 
 roleBuilder
   .grant(Roles.Guest)
+<<<<<<< HEAD
   .updateOwn('user', ['displayname', 'avatar'])
+=======
+  .updateOwn('user', ['nickname', 'avatar'])
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   .updateOwn('form-submission')
   .deleteOwn('user')
   .grant(Roles.Fan)

@@ -10,7 +10,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+<<<<<<< HEAD
 import { File } from '../file/file.entity';
+=======
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 import { FormCharacter } from '../form-character/form-character.entity';
 import { Form } from '../form/form.entity';
 import { User } from '../user/user.entity';
@@ -30,6 +33,7 @@ export class FormSubmission extends BaseEntity {
   @Column({ type: 'jsonb' })
   answers: Answers;
 
+<<<<<<< HEAD
   @OneToMany(
     () => File,
     file => file.submission,
@@ -37,6 +41,9 @@ export class FormSubmission extends BaseEntity {
   files: File[];
 
   @CreateDateColumn()
+=======
+  @CreateDateColumn({ type: 'timestamptz' })
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   createdAt: Date;
 
   @Column()
@@ -60,6 +67,12 @@ export class FormSubmission extends BaseEntity {
   )
   characters: FormCharacter[];
 
+<<<<<<< HEAD
+=======
+  @Column()
+  authorId: number;
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   @ManyToOne(
     () => User,
     user => user.formSubmissions,
@@ -89,7 +102,11 @@ export class FormSubmission extends BaseEntity {
   seen?: boolean;
 
   @AfterLoad()
+<<<<<<< HEAD
   setSeen() {
+=======
+  setSeen(): void {
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     this.seen = !!(this.readFormSubmissions && this.readFormSubmissions.length);
   }
 }

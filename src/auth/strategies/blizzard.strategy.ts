@@ -20,6 +20,7 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   }
 
   // Blizzard does not provide refresh tokens.
+<<<<<<< HEAD
   async validate(req, accessToken, refreshToken, profile): Promise<User> {
     if (!req.user) {
       this.logger.log(`Logging in or creating ${profile.battletag}`);
@@ -31,6 +32,20 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
         profile,
         Provider.BLIZZARD,
       );
+=======
+  async validate(req, accessToken, refreshToken, profile) {
+    if (!req.user) {
+      this.logger.log(`Logging in or creating ${profile.battletag}`);
+
+      console.log(profile);
+      // return await this.authService.validateOAuthLogin(
+      //   profile.id,
+      //   accessToken,
+      //   refreshToken,
+      //   profile,
+      //   Provider.BLIZZARD,
+      // );
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     }
 
     this.logger.log(`User ${req.user.id} is already logged in.`);

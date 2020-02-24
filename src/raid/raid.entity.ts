@@ -11,16 +11,27 @@ export class Raid extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+<<<<<<< HEAD
   @Column()
+=======
+  @Column({ nullable: true })
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   name: string;
 
   @Column({ unique: true })
   slug: string;
 
+<<<<<<< HEAD
   @Column({ type: 'enum', enum: Expansion })
   expansion: Expansion;
 
   @Column()
+=======
+  @Column({ type: 'enum', enum: Expansion, nullable: true })
+  expansion: Expansion;
+
+  @Column({ nullable: true })
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   background: string;
 
   @Column({ type: 'decimal' })
@@ -56,6 +67,15 @@ export class Raid extends BaseEntity {
   @Column({ default: false })
   isFeatured: boolean;
 
+<<<<<<< HEAD
+=======
+  @Column({ default: 0 })
+  order: number;
+
+  @Column({ default: false })
+  locked: boolean;
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   @UpdateDateColumn()
   updatedAt: Date;
 }

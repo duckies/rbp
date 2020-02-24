@@ -9,6 +9,10 @@ import { JWTGuard } from './guards/jwt.guard';
 import { OptionalAuthGuard } from './guards/optional.guard';
 import { BlizzardStrategy } from './strategies/blizzard.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+<<<<<<< HEAD
+=======
+import { DiscordStrategy } from './strategies/discord.strategy';
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 
 @Global()
 @Module({
@@ -16,6 +20,10 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [
     JwtStrategy,
     BlizzardStrategy,
+<<<<<<< HEAD
+=======
+    DiscordStrategy,
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     AuthService,
     JWTGuard,
     ACGuard,

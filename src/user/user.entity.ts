@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
+<<<<<<< HEAD
 import { KnownCharacter } from '../blizzard/interfaces/profile/known-characters.interface';
 import { Character } from '../character/character.entity';
 import { File } from '../file/file.entity';
@@ -20,6 +21,14 @@ import { FormSubmissionRead } from '../form-submission-seen/form-submission-read
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
 import moment = require('moment');
+=======
+import { Character } from '../character/character.entity';
+import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
+import { FormSubmission } from '../form-submission/form-submission.entity';
+
+import moment from 'moment';
+import { ProfileKnownCharacter } from '../blizzard/interfaces/profile/account-profile/account-profile-summary.interface';
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -27,6 +36,7 @@ export class User extends BaseEntity {
   id: number;
 
   @Column({ nullable: true })
+<<<<<<< HEAD
   displayname: string;
 
   @Column({ nullable: true })
@@ -36,6 +46,11 @@ export class User extends BaseEntity {
   customAvatar: boolean;
 
   @Column({ nullable: false })
+=======
+  nickname: string;
+
+  @Column({ nullable: true })
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   battletag: string;
 
   @Column({ nullable: true, select: false })
@@ -47,6 +62,27 @@ export class User extends BaseEntity {
   @Column({ nullable: true, select: false })
   blizzardTokenExpiration: Date;
 
+<<<<<<< HEAD
+=======
+  @Column()
+  discord_id?: string;
+
+  @Column({ nullable: true })
+  discord_username?: string;
+
+  @Column({ nullable: true })
+  discord_discriminator?: string;
+
+  @Column({ nullable: true, select: false })
+  discord_access_token?: string;
+
+  @Column({ nullable: true, select: false })
+  discord_refresh_token?: string;
+
+  @Column({ nullable: true })
+  discord_avatar?: string;
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   @Column({ type: 'enum', enum: Roles, default: [Roles.Guest], array: true })
   roles: Roles[];
 
@@ -69,12 +105,15 @@ export class User extends BaseEntity {
   // @OneToMany(() => Comment, comment => comment.author)
   // comments: Comment[];
 
+<<<<<<< HEAD
   @OneToMany(
     () => File,
     file => file.owner,
   )
   files: File[];
 
+=======
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   @OneToOne(() => Character, { eager: false })
   @JoinColumn()
   mainCharacter: Character;
@@ -89,7 +128,11 @@ export class User extends BaseEntity {
   characters: Character[];
 
   @Column({ type: 'jsonb', nullable: true, select: false })
+<<<<<<< HEAD
   knownCharacters: KnownCharacter[];
+=======
+  knownCharacters: ProfileKnownCharacter[];
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 
   @Column({ nullable: true, select: false })
   knownCharactersLastUpdated: Date;

@@ -53,7 +53,11 @@ export class RaidService {
    */
   async findAllFeatured(take = 4, skip = 0): Promise<{ result: Raid[]; total: number }> {
     const [result, total] = await this.repository.findAndCount({
+<<<<<<< HEAD
       order: { id: 'DESC' },
+=======
+      order: { order: 'ASC' },
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
       where: { isFeatured: true },
       take,
       skip,

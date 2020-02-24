@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -5,6 +6,15 @@ import { User } from './user.entity';
 import { Provider } from '../auth/auth.service';
 import { JWTPayload } from '../auth/dto/jwt.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+=======
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Provider, DiscordProfile } from '../auth/auth.service';
+import { JWTPayload } from '../auth/dto/jwt.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './user.entity';
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 
 @Injectable()
 export class UserService {
@@ -13,11 +23,20 @@ export class UserService {
     private readonly repository: Repository<User>,
   ) {}
 
+<<<<<<< HEAD
   create(blizzardid: number, battletag: string, blizzardtoken: string): Promise<User> {
     return this.repository.save({
       blizzardid,
       battletag,
       blizzardtoken,
+=======
+  create(discord_id: string, access_token: string, refresh_token: string, profile: DiscordProfile): Promise<User> {
+    return this.repository.save({
+      discord_id,
+      discord_access_token: access_token,
+      discord_refresh_token: refresh_token,
+      discord_avatar: profile.avatar,
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     });
   }
 
@@ -51,9 +70,15 @@ export class UserService {
     return user;
   }
 
+<<<<<<< HEAD
   async findOneByProviderId(thirdPartyId: number, provider: Provider): Promise<User> {
     if (provider === Provider.BLIZZARD) {
       const user = await this.repository
+=======
+  async findOneByProviderId(thirdPartyId: number | string, provider: Provider): Promise<User> {
+    if (provider === Provider.BLIZZARD) {
+      return this.repository
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
         .createQueryBuilder('user')
         .select(['user.id'])
         .addSelect([
@@ -65,8 +90,18 @@ export class UserService {
         ])
         .where('user.blizzardid = :id', { id: thirdPartyId })
         .getOne();
+<<<<<<< HEAD
 
       return user;
+=======
+    } else if (provider === Provider.DISCORD) {
+      return this.repository
+        .createQueryBuilder('user')
+        .select(['user.id'])
+        .addSelect(['user.discord_id'])
+        .where('user.discord_id = :id', { id: thirdPartyId })
+        .getOne();
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     }
 
     throw new BadRequestException();

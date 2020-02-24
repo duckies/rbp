@@ -1,11 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
+<<<<<<< HEAD
 import { LessThan, Repository } from 'typeorm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileApiService } from '../blizzard/profile-api.service';
 import { ConfigService } from '../config/config.service';
 import { KnownCharacter } from '../blizzard/interfaces/profile/known-characters.interface';
+=======
+import { In, LessThan, Repository } from 'typeorm';
+import { BattleNetService } from '../blizzard/battle.net.service';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { ProfileService } from '../blizzard/profile.service';
+import { ConfigService } from '../config/config.service';
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 import { User } from '../user/user.entity';
 import { Character } from './character.entity';
 
@@ -21,7 +29,12 @@ export class CharacterService {
   constructor(
     @InjectRepository(Character)
     private readonly repository: Repository<Character>,
+<<<<<<< HEAD
     private readonly blizzardService: ProfileApiService,
+=======
+    private readonly battleNetService: BattleNetService,
+    private readonly profileService: ProfileService,
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     private readonly configService: ConfigService,
   ) {}
 
@@ -36,8 +49,13 @@ export class CharacterService {
     // If the profile request(s) fail, there is no point in updating so let the error propagate.
     let [character, profileCharacter, profileMedia] = await Promise.all([
       this.repository.findOne(findCharacterDto),
+<<<<<<< HEAD
       this.blizzardService.getCharacter(findCharacterDto),
       this.blizzardService.getCharacterMedia(findCharacterDto),
+=======
+      this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterMediaSummary(findCharacterDto),
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     ]);
 
     // We do not support underaged characters.
@@ -79,6 +97,7 @@ export class CharacterService {
    * @param ranks
    */
   findRoster(ranks: number[] = [0, 1, 3, 4, 5]): Promise<Character[]> {
+<<<<<<< HEAD
     return this.repository
       .createQueryBuilder('character')
       .where('character.rank IN (:...ranks)', {
@@ -89,6 +108,12 @@ export class CharacterService {
         'character.name': 'ASC',
       })
       .getMany();
+=======
+    return this.repository.find({
+      where: { guild_rank: In(ranks) },
+      order: { guild_rank: 'ASC', name: 'ASC' },
+    });
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   }
 
   findAllInGuild(): Promise<Character[]> {
@@ -144,7 +169,11 @@ export class CharacterService {
     if (!user.tokenExpired() && (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))) {
       console.log('Attempting to download characters.');
       try {
+<<<<<<< HEAD
         await this.blizzardService.checkToken(user);
+=======
+        await this.battleNetService.checkToken(user);
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
         await this.syncUserCharacters(user);
       } catch (error) {
         // We should handle authentication errors.
@@ -162,11 +191,17 @@ export class CharacterService {
   }
 
   async syncUserCharacters(user: User): Promise<Partial<User>> {
+<<<<<<< HEAD
     const knownCharacters = await this.blizzardService.getUserCharacters(user.blizzardtoken);
 
     const characters = knownCharacters.characters
       .filter(c => c.level >= this.minimumCharacterLevel)
       .sort((a, b) => b.level - a.level);
+=======
+    const profile = await this.profileService.getAccountProfileSummary(user);
+
+    const characters = profile.wow_accounts.map(a => a.characters).flat();
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 
     user.knownCharacters = characters;
     user.knownCharactersLastUpdated = new Date();

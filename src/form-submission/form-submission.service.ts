@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +8,20 @@ import { ProfileCharacter, ProfileEquipment, ProfileMedia } from '../blizzard/in
 import { ProfileApiService } from '../blizzard/profile-api.service';
 import { FormCharacter } from '../form-character/form-character.entity';
 import { FormSubmissionReadService } from '../form-submission-seen/form-submission-read.service';
+=======
+import { InjectQueue } from '@nestjs/bull';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
+import { Repository } from 'typeorm';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { GameDataService } from '../blizzard/game-data.service';
+import { ProfileService } from '../blizzard/profile.service';
+import { RateLimiter } from '../blizzard/rate-limiter.service';
+import { FormCharacter } from '../form-character/form-character.entity';
+import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
+import { RaiderIOService } from '../raiderIO/raiderIO.service';
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 import { User } from '../user/user.entity';
 import { CreateFormSubmissionDto, UpdateFormSubmissionDto } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
@@ -17,9 +32,17 @@ export class SubmissionService {
   constructor(
     @InjectRepository(FormSubmission)
     private readonly formSubRepository: Repository<FormSubmission>,
+<<<<<<< HEAD
     private readonly formSubmissionReadService: FormSubmissionReadService,
     private readonly profileApiService: ProfileApiService,
     private readonly gameDataService: GameDataService,
+=======
+    private readonly profileService: ProfileService,
+    private readonly gameDataService: GameDataService,
+    private readonly raiderIOService: RaiderIOService,
+    private readonly rateLimiter: RateLimiter,
+    @InjectQueue('form') private readonly queue: Queue,
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   ) {}
 
   /**
@@ -27,6 +50,7 @@ export class SubmissionService {
    * @param findCharacterDto FindCharacterDto
    * @param isMain Boolean determining if this is a main character.
    */
+<<<<<<< HEAD
   async buildFormCharacter({ name, realm, region }: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
     // There are promise.all() issues with Typescript 3.7, check on this later.
     const [data, media, equipment]: [
@@ -44,6 +68,27 @@ export class SubmissionService {
     character.name = name;
     character.realm = realm;
     character.region = region;
+=======
+  async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
+    const [data, specs, media, equipment, raiderIO] = await Promise.all(
+      [
+        this.profileService.getCharacterProfileSummary(findCharacterDto),
+        this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
+        this.profileService.getCharacterMediaSummary(findCharacterDto),
+        this.profileService.getCharacterEquipmentSummary(findCharacterDto),
+        this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+          RaiderIOCharacterFields.RAID_PROGRESSION,
+          RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+        ]),
+      ].map(p => p.catch(e => e)),
+    );
+
+    const character = new FormCharacter();
+
+    character.name = findCharacterDto.name;
+    character.realm = findCharacterDto.realm;
+    character.region = findCharacterDto.region;
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     character.isMain = isMain || false;
 
     if (!(data instanceof Error)) {
@@ -60,6 +105,15 @@ export class SubmissionService {
       character.render_url = media.render_url;
     }
 
+<<<<<<< HEAD
+=======
+    if (!(specs instanceof Error)) {
+      character.specialization_id = specs.active_specialization.id;
+      character.specialization_name = specs.active_specialization.name;
+      character.specializations = specs.specializations;
+    }
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     if (!(equipment instanceof Error)) {
       character.equipment = equipment.equipped_items;
 
@@ -69,6 +123,71 @@ export class SubmissionService {
       );
     }
 
+<<<<<<< HEAD
+=======
+    if (!(raiderIO instanceof Error)) {
+      character.raiderIO = raiderIO;
+    }
+
+    return character;
+  }
+
+  // TODO: Abstract a generic character builder function.
+  async getFormCharacterData(findCharacterDto: FindCharacterDto): Promise<FormCharacter> {
+    const [data, specs, media, equipment, raiderIO] = await Promise.all([
+      this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
+      this.profileService.getCharacterMediaSummary(findCharacterDto),
+      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
+      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+        RaiderIOCharacterFields.RAID_PROGRESSION,
+        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+      ]),
+    ]);
+
+    const character = new FormCharacter();
+
+    character.name = findCharacterDto.name;
+    character.realm = findCharacterDto.realm;
+    character.region = findCharacterDto.region;
+    character.isMain = false;
+
+    if (!(data instanceof Error)) {
+      character.race_id = data.race.id;
+      character.race_name = data.race.name;
+      character.class_id = data.character_class.id;
+      character.class_name = data.character_class.name;
+      character.gender = data.gender.name;
+    }
+
+    if (!(media instanceof Error)) {
+      character.avatar_url = media.avatar_url;
+      character.bust_url = media.bust_url;
+      character.render_url = media.render_url;
+    }
+
+    if (!(specs instanceof Error)) {
+      character.specialization_id = specs.active_specialization.id;
+      character.specialization_name = specs.active_specialization.name;
+      character.specializations = specs.specializations;
+    }
+
+    if (!(equipment instanceof Error)) {
+      character.equipment = await Promise.all(
+        equipment.equipped_items.map(async slot => {
+          const assets = (await this.gameDataService.getGameItemMedia(slot.item.id, true)).assets;
+
+          slot.media.assets = assets[0];
+          return slot;
+        }),
+      );
+    }
+
+    if (!(raiderIO instanceof Error)) {
+      character.raiderIO = raiderIO;
+    }
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     return character;
   }
 
@@ -79,6 +198,7 @@ export class SubmissionService {
    * @param createSubmissionDto CreateSubmissionDto
    */
   async create(author: User, { formId, answers, characters }: CreateFormSubmissionDto): Promise<FormSubmission> {
+<<<<<<< HEAD
     const openForm = await this.formSubRepository
       .createQueryBuilder('submission')
       .leftJoinAndSelect('submission.author', 'user', 'user.id = :id', { id: author.id })
@@ -90,6 +210,18 @@ export class SubmissionService {
     //     'You already have an open form. Please wait for your other application to be processed or cancel it.',
     //   );
     // }
+=======
+    const openForm = await this.formSubRepository.find({
+      where: { status: FormSubmissionStatus.Open, authorId: author.id },
+      select: ['author'],
+    });
+
+    if (openForm.length) {
+      throw new BadRequestException(
+        'You already have an open form. Please wait for your other application to be processed or cancel it.',
+      );
+    }
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
 
     const [mainCharacter, ...altCharacters] = characters;
 
@@ -102,6 +234,11 @@ export class SubmissionService {
 
     submission.justSubmitted = true;
 
+<<<<<<< HEAD
+=======
+    await this.queue.add('newApplication', submission);
+
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     return submission;
   }
 
@@ -109,10 +246,80 @@ export class SubmissionService {
    * Finds an individual form submission.
    * @param id Form submission id.
    */
+<<<<<<< HEAD
   findOne(id: number): Promise<FormSubmission> {
     return this.formSubRepository.findOneOrFail(id, {
       relations: ['form', 'author', 'characters', 'seenFormSubmissions'],
     });
+=======
+  async findOne(id: number): Promise<FormSubmission> {
+    const data = await this.formSubRepository.query(
+      `WITH characters AS
+            (
+                SELECT char.id,
+                      char.name,
+                      char.realm,
+                      char.region,
+                      char."isMain",
+                      char.avatar_url,
+                      char.bust_url,
+                      char.render_url,
+                      char.race_id,
+                      char.race_name,
+                      char.class_id,
+                      char.class_name,
+                      char.gender,
+                      char.specializations,
+                      char.specialization_id,
+                      char.specialization_name,
+                      jsonb_agg(jsonb_insert(slot, '{
+                        media,
+                        assets
+                      }', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment,
+                      char."raiderIO",
+                      char."updatedAt"
+                FROM form_character char,
+                    jsonb_array_elements(char.equipment) slot
+                        JOIN wow_assets asset on asset.id = (slot -> 'item' -> 'id')::integer
+                WHERE char."submissionId" = $1
+                GROUP BY char.id
+                ORDER BY char.id
+            )
+      SELECT s.id,
+          s.answers,
+          s."formId",
+          s."authorId",
+          s.status,
+          s."createdAt",
+          json_build_object(
+                  'id', u.id,
+                  'discord_id', u."discord_id",
+                  'discord_avatar', u."discord_avatar",
+                  'discord_username', u."discord_username",
+                  'discord_discriminator', u."discord_discriminator"
+              ) as author,
+          json_build_object(
+                  'id', f.id,
+                  'questions', json_agg(DISTINCT q.*)
+              )                           as form,
+          json_agg(DISTINCT characters.*) as characters
+      FROM characters,
+        form_submission s
+            JOIN form f ON s."formId" = f.id
+            JOIN form_question q ON q."formId" = f.id
+            JOIN "user" u on s."authorId" = u.id
+      WHERE s.id = $1
+      GROUP BY s.id, f.id, u.id;
+    `,
+      [id],
+    );
+
+    if (data.length === 0) {
+      throw new NotFoundException();
+    }
+
+    return data[0];
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   }
 
   /**
@@ -181,9 +388,13 @@ export class SubmissionService {
         'submission.createdAt',
         'submission.formId',
         'author.id',
+<<<<<<< HEAD
         'author.displayname',
         'author.avatar',
         'author.customAvatar',
+=======
+        'author.nickname',
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
         'author.battletag',
         'character.id',
         'character.name',
@@ -201,7 +412,11 @@ export class SubmissionService {
     // Currently cannot add computed selectors to TypeORM. Depression!
     // .addSelect('(seen.id) IS NOT NULL', 'submission.seen')
     if (user) {
+<<<<<<< HEAD
       query = query.leftJoinAndSelect('submission.seenFormSubmissions', 'seen', 'seen.userId = :uId', { uId: user.id });
+=======
+      query = query.leftJoinAndSelect('submission.readFormSubmissions', 'read', 'read.userId = :uId', { uId: user.id });
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     }
 
     query
@@ -283,11 +498,19 @@ export class SubmissionService {
   // findOneCharacter(id: number): Promise<FormCharacter> {
   //   return this.repository.query(
   //     `
+<<<<<<< HEAD
   //   SELECT c.id, c.name, c.realm, c.region, jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_array(jsonb_build_object('key', asset.type, 'value', asset.value)))) AS equipment
   //   FROM form_character c, jsonb_array_elements(c.equipment) slot
   //   JOIN wow_assets asset on asset.id = (slot->'item'->'id')::integer
   //   WHERE c.id = $1
   //   GROUP BY c.id;
+=======
+  // SELECT c.id, c.name, c.realm, c.region, jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_array(jsonb_build_object('key', asset.type, 'value', asset.value)))) AS equipment
+  // FROM form_character c, jsonb_array_elements(c.equipment) slot
+  // JOIN wow_assets asset on asset.id = (slot->'item'->'id')::integer
+  // WHERE c.id = $1
+  // GROUP BY c.id;
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
   //   `,
   //     [id],
   //   );

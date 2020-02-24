@@ -18,6 +18,10 @@ module.exports = {
     // 'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
     // 'class-methods-use-this': 'off',
     // 'no-plusplus': 'off',
+<<<<<<< HEAD
+=======
+    '@typescript-eslint/camelcase': 'off',
+>>>>>>> e48f288102f35f9231847af734197ed6d73ac028
     'prefer-const': ['error', { destructuring: 'all' }],
     // 'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*spec.ts'] }],
     // 'no-useless-constructor': 'off',
