@@ -127,6 +127,14 @@ export default class SubmissionStore extends VuexModule {
     this.statusCategory = status
   }
 
+  @Mutation setMainCharacter(index: number): void {
+    this.characters.unshift(this.characters.splice(index, 1)[0])
+  }
+
+  @Mutation removeCharacter(index: number): void {
+    this.characters.splice(index, 1)
+  }
+
   @Action({ commit: 'setSubmission', rawError: true })
   async create(id: number): Promise<void> {
     try {

@@ -75,14 +75,16 @@
             <v-form @submit.prevent="handleSubmit(submit)">
               <character-picker />
               <character-panel
-                v-for="character in characters"
-                :key="character.name"
+                v-for="(character, i) in characters"
+                :key="character.name + ' ' + character.realm"
                 :name="character.name"
                 :realm="character.realm"
                 :realm-name="character.realm_name"
                 :region="character.region"
                 :blizzard="character.blizzard"
                 :raider-i-o="character.raiderIO"
+                :applying="true"
+                :order="i"
               />
               <form-field v-for="question in questions" :key="question.id" :question="question" />
               <v-btn :loading="formLoading || submissionLoading" type="submit">
