@@ -11,7 +11,8 @@
 
       <v-row>
         <v-col>
-          <validation-provider v-slot="{ errors }" :rules="{ oneOf: realmSlugs }">
+          <!--  :rules="{ oneOf: realmSlugs, required: false }" does not check individual realm validity -->
+          <validation-provider v-slot="{ errors }" vid="realm">
             <v-autocomplete
               v-model="realm"
               label="Realm"
@@ -48,7 +49,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { ValidationProvider } from 'vee-validate'
-import { characterStore, authStore, submissionStore } from '../../store'
+import { characterStore, userStore, submissionStore } from '../../store'
 import { FormCharacterIdentity } from '@/store/submission'
 import { RealmSlugs, RealmList } from '@/interfaces/realms'
 
@@ -74,7 +75,7 @@ export default class CharacterPicker extends Vue {
   }
 
   async mounted(): Promise<void> {
-    if (authStore.loggedIn) {
+    if (userStore.loggedIn) {
       await characterStore.getKnownCharacters()
     }
   }

@@ -53,7 +53,7 @@ const NuxtConfiguration: Partial<Configuration> = {
         dark: true,
         themes: {
           dark: {
-            primary: '#cddc39'
+            primary: '#854feb'
           }
         }
       }
@@ -61,39 +61,18 @@ const NuxtConfiguration: Partial<Configuration> = {
   },
 
   axios: {
-    https: process.env.BACKEND_HTTPS || false,
-    host: process.env.BACKEND_HOST || '127.0.0.1',
-    port: process.env.BACKEND_PORT || 3000
+    baseURL: 'http://localhost:3000'
   },
 
   auth: {
-    rewriteRedirects: true,
-    redirect: {
-      callback: '/auth'
-    },
-    strategies: {
-      battlenet: {
-        _scheme: 'oauth2',
-        authorization_endpoint: 'https://us.battle.net/oauth/authorize',
-        token_endpoint: 'http://localhost:3000/battlenet/callback',
-        userinfo_endpoint: '/me',
-        scope: ['wow.profile'],
-        client_id: '032ed041ad3446efbc559dfa954a9783',
-        grant_type: 'authorization_code',
-        response_type: 'code',
-        token_key: 'code'
-      },
-      discord: {
-        _scheme: 'oauth2',
-        authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
-        token_endpoint: 'http://localhost:3000/auth/discord/callback',
-        userinfo_endpoint: '/me',
-        scope: ['identify'],
-        client_id: '678486837626404885',
-        grant_type: 'authorization_code',
-        response_type: 'code'
-      }
-    }
+    redirectPath: '/callback',
+    tokenEndpoint: 'http://localhost:3000/auth/discord/callback',
+    authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
+    redirect_uri: 'http://localhost:3030/callback',
+    scope: ['identify'],
+    client_id: '678486837626404885',
+    grant_type: 'authorization_code',
+    response_type: 'code'
   },
 
   webfontloader: {

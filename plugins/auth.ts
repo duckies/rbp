@@ -1,45 +1,34 @@
-import nanoid from 'nanoid'
 import { Context, Plugin } from '@nuxt/types'
-import { merge } from 'lodash'
+import nanoid from 'nanoid'
 import { $axios } from '../utils/axios'
+import config from '../nuxt.config'
 import Storage from './storage'
 import { encodeQuery } from './utils'
-import { authStore } from '@/store'
+import { userStore } from '@/store'
 
-/* eslint-disable @typescript-eslint/camelcase */
+/**
+ * Auth plugin derived from @nuxtjs/auth without store.
+ * Use until this issue is fixed: https://github.com/championswimmer/vuex-module-decorators/issues/227
+ */
 
 interface AuthOptions {
   redirectPath: string
-  authorization_endpoint: string
   tokenEndpoint: string
-  response_type: string
-  client_id: string
+  authorization_endpoint: string
   redirect_uri: string
   scope: string[]
-}
-
-const defaults = {
-  redirectPath: '/callback',
-  tokenEndpoint: 'http://localhost:3000/auth/discord/callback',
-  authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
-  redirect_uri: 'http://localhost:3030/callback',
-  response_type: 'code',
-  client_id: '678486837626404885',
-  scope: ['identify']
-  // authorization_endpoint: 'https://us.battle.net/oauth/authorize',
-  // tokenEndpoint: 'http://localhost:3000/auth/blizzard/callback',
-  // client_id: '032ed041ad3446efbc559dfa954a9783',
-  // redirect_uri: 'http://localhost:3030/callback',
-  // scope: ['wow.profile'],
+  client_id: string
+  grant_type: string
+  response_type: string
 }
 
 export class Auth {
   private readonly ctx: Context
   private readonly options: AuthOptions
 
-  constructor(ctx: Context, options: Partial<AuthOptions>) {
+  constructor(ctx: Context, options: AuthOptions) {
     this.ctx = ctx
-    this.options = merge({}, defaults, options)
+    this.options = options
   }
 
   /**
@@ -79,7 +68,7 @@ export class Auth {
   logout(): void {
     this.ctx.$storage.removeCookie('token')
     this._clearToken()
-    authStore.clearUser()
+    userStore.clearUser()
   }
 
   private async _handleCallback(): Promise<boolean> {
@@ -142,7 +131,7 @@ export class Auth {
 
   private async _fetchUserOnce(): Promise<void> {
     try {
-      await authStore.fetchUser()
+      await userStore.fetchUser()
     } catch (error) {
       console.error(error)
     }
@@ -152,11 +141,12 @@ export class Auth {
 }
 
 const authPlugin: Plugin = (ctx, inject) => {
-  const $auth = new Auth(ctx, {})
+  const $auth = new Auth(ctx, config.auth)
   const $storage = new Storage(ctx, {})
 
   inject('storage', $storage)
   inject('auth', $auth)
+
   ctx.$storage = $storage
   ctx.$auth = $auth
 

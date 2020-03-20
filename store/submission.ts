@@ -4,6 +4,7 @@ import { Action, Module, Mutation, VuexModule } from 'vuex-module-decorators'
 import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
 import { $axios } from '../utils/axios'
 import { FormCharacter } from './character'
+import { User } from './user'
 
 export type AnswerData = string | string[] | boolean
 
@@ -53,6 +54,16 @@ export interface FormCharacterIdentity {
   raiderIO?: CharacterRaiderIO
 }
 
+export interface FileUpload {
+  id: number
+  filename: string
+  mimetype: string
+  path: string
+  sizE: number
+  author: User
+  immune: boolean
+}
+
 @Module({ namespaced: true, name: 'submission', stateFactory: true })
 export default class SubmissionStore extends VuexModule {
   public status = 'unloaded'
@@ -65,6 +76,7 @@ export default class SubmissionStore extends VuexModule {
   public openSubmission: OpenSubmission | null = null
   public totalSubmissions = 0
   public statusCategory = ''
+  public files: FileUpload[] = []
   public pagination: Pagination = {
     current: 1,
     total: 0
@@ -135,6 +147,10 @@ export default class SubmissionStore extends VuexModule {
     this.characters.splice(index, 1)
   }
 
+  @Mutation setFiles(files: FileUpload[]): void {
+    this.files = files
+  }
+
   @Action({ commit: 'setSubmission', rawError: true })
   async create(id: number): Promise<void> {
     try {
@@ -148,6 +164,7 @@ export default class SubmissionStore extends VuexModule {
       const data = await $axios.$post('/submission', {
         formId: id,
         answers: this.answers,
+        files: [...this.files.map(file => file.id)],
         characters
       })
       this.context.commit('setStatus', { status: 'success' })

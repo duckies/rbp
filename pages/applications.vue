@@ -57,10 +57,7 @@
                   :to="`/applications/${submission.id}`"
                 >
                   <v-list-item-avatar>
-                    <v-img
-                      v-if="submission.characters && submission.characters[0]"
-                      :src="defaultingAvatar(submission.characters[0])"
-                    ></v-img>
+                    <v-img :src="avatar(submission.characters[0])" />
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title v-if="submission">{{ defaultingTitle(submission) }}</v-list-item-title>
@@ -99,7 +96,7 @@ import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
 import { FormCharacter } from '../store/character'
 import Hero from '@/components/Hero.vue'
-import { submissionStore, formStore } from '@/store'
+import { submissionStore, formStore, userStore } from '@/store'
 import { FormSubmission, Pagination } from '@/store/submission'
 import { Question } from '@/store/form'
 
@@ -189,16 +186,22 @@ export default class Applications extends Vue {
     }
   }
 
-  defaultingAvatar(character?: FormCharacter): string {
+  avatar(character?: FormCharacter): string {
     if (character && character.avatar_url) {
       return character.avatar_url
+    } else if (userStore.avatars) {
+      if (userStore.avatars.gif) {
+        return userStore.avatars.gif
+      } else if (userStore.avatars.png) {
+        return userStore.avatars.png
+      }
     } else if (character && character.race_id && character.gender) {
       return `https://render-us.worldofwarcraft.com/shadow/avatar/${character.race_id}-${
         character.gender === 'Female' ? 1 : 0
       }.jpg`
-    } else {
-      return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
     }
+
+    return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
   }
 
   defaultingCharSubtitle(character?: FormCharacter): string {

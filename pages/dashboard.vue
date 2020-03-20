@@ -34,9 +34,9 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { User } from '../store/auth'
+import { User } from '../store/user'
 import Hero from '@/components/Hero.vue'
-import { authStore } from '@/store'
+import { userStore } from '@/store'
 
 @Component({
   components: {
@@ -49,7 +49,7 @@ export default class Dashboard extends Vue {
   background = 'https://cdnassets.raider.io/images/login/backgrounds/bfa/nazjatar2.jpg'
 
   get user(): User | null {
-    return authStore.user
+    return userStore.user
   }
 }
 </script>

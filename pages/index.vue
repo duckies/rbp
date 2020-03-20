@@ -37,7 +37,7 @@ import { slideStore, blogStore, raidStore, discordStore, raiderIOStore } from '@
       blogStore.getArticles(),
       discordStore.getDiscord(),
       raiderIOStore.getRaiderIO()
-    ]).catch(e => e)
+    ])
   }
 })
 export default class Index extends Vue {

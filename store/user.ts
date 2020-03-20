@@ -38,8 +38,8 @@ export const Ranks: string[] = [
   'Player Alt'
 ]
 
-@Module({ namespaced: true, name: 'auth', stateFactory: true })
-export default class AuthModule extends VuexModule {
+@Module({ namespaced: true, name: 'user', stateFactory: true })
+export default class UserModule extends VuexModule {
   public status = 'unloaded'
   public user: User | null = null
 

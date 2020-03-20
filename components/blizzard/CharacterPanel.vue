@@ -30,12 +30,7 @@
           <v-col cols="auto" class="character--bg__clear ma-7">
             <v-row class="flex-column fill-height" no-gutters align="center" justify="center">
               <div>
-                <v-img
-                  :src="blizzard.avatar_url"
-                  height="84"
-                  width="84"
-                  :class="`thumbnail class-color-${blizzard.class_id}`"
-                />
+                <v-img :src="avatar" height="84" width="84" :class="`thumbnail class-color-${blizzard.class_id}`" />
               </div>
 
               <h2 class="character--name mt-2">{{ name }}</h2>
@@ -69,7 +64,7 @@
                   </svg>
                 </a>
                 <a :href="`https://www.warcraftlogs.com/character/${region}/${realm}/${name}`" target="_blank">
-                  <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px;"></v-img>
+                  <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px;" />
                 </a>
               </div>
             </v-row>
@@ -227,6 +222,18 @@ export default class CharacterPanel extends Vue {
     }
 
     return raids
+  }
+
+  get avatar(): string {
+    if (this.blizzard && this.blizzard.avatar_url) {
+      return this.blizzard.avatar_url
+    } else if (this.blizzard && this.blizzard.race_id && this.blizzard.gender) {
+      return `https://render-us.worldofwarcraft.com/shadow/avatar/${this.blizzard.race_id}-${
+        this.blizzard.gender === 'Female' ? 1 : 0
+      }.jpg`
+    } else {
+      return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
+    }
   }
 
   iconFailure(thing: unknown): void {

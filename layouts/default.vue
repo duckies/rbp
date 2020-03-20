@@ -102,11 +102,11 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { User } from '../store/auth'
+import { User } from '../store/user'
 import Footer from '@/components/Footer.vue'
 import SkullLogo from '@/components/svg/SkullLogo.vue'
 import DiscordLogo from '@/components/svg/discord.vue'
-import { authStore } from '@/store'
+import { userStore } from '@/store'
 
 export interface Link {
   icon?: string
@@ -165,20 +165,20 @@ export default class DefaultLayout extends Vue {
   }
 
   get isAuthenticated(): boolean {
-    return authStore.loggedIn
+    return userStore.loggedIn
   }
 
   get user(): User | null {
-    return authStore.user
+    return userStore.user
   }
 
   get avatar(): string | undefined {
-    if (!authStore.avatars) return undefined
+    if (!userStore.avatars) return undefined
 
-    if (authStore.avatars.gif) {
-      return authStore.avatars.gif
+    if (userStore.avatars.gif) {
+      return userStore.avatars.gif
     } else {
-      return authStore.avatars.png
+      return userStore.avatars.png
     }
   }
 }

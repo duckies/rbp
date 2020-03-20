@@ -4,7 +4,7 @@ import { ProfileEquipment } from '../interfaces/profile/profile-equipment.interf
 import { ProfileSpecializations } from '../interfaces/profile/profile-specializations.interface'
 import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
 import { RaiderIOCharacter } from './raiderIO'
-import { User } from './auth'
+import { User } from './user'
 
 const FIFTEEN_MINUTES = 1000 * 60 * 16
 
@@ -189,6 +189,6 @@ export default class CharacterModule extends VuexModule {
 
   @Action({ rawError: true })
   getCharacterData({ name, realm, region }: FindCharacterDto): Promise<FormCharacter> {
-    return $axios.$get(`/submission/character/${region}/${realm}/${name.toLowerCase()}`)
+    return $axios.$get(`/form-character/${region}/${realm}/${name}`)
   }
 }

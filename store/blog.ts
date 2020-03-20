@@ -1,6 +1,6 @@
 import { Module, Mutation, VuexModule, Action } from 'vuex-module-decorators'
 import { $axios } from '../utils/axios'
-import { User } from './auth'
+import { User } from './user'
 
 export interface Article {
   id: number

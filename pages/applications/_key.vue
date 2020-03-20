@@ -34,7 +34,7 @@
             <v-row>
               <v-col cols="auto">
                 <v-avatar>
-                  <v-img :src="authorAvatar"></v-img>
+                  <v-img :src="authorAvatar" />
                 </v-avatar>
               </v-col>
               <v-col>
@@ -98,6 +98,24 @@
         <form-field v-for="question in formQuestions" :key="question.id" :question="question" :read-only="true" />
       </v-col>
     </v-row>
+
+    <!-- Image Dialog -->
+    <v-dialog v-model="lightbox" max-width="900">
+      <v-img :src="lightbox_image" aspect-ratio="1.7778" @click="lightbox = !lightbox" />
+    </v-dialog>
+
+    <!-- Images -->
+    <v-row v-if="submission.files && submission.files.length">
+      <v-col v-for="file in submission.files" :key="file.id" md="4">
+        <v-card>
+          <v-img
+            :src="file.path.replace('uploads', 'http://localhost:3000/')"
+            aspect-ratio="1.7778"
+            @click="createLightbox(file)"
+          />
+        </v-card>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -107,10 +125,10 @@ import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
 import FormField from '@/components/fields/FormField.vue'
 import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
-import { formStore, submissionStore, discordStore, authStore, raidStore } from '@/store'
+import { formStore, submissionStore, discordStore, userStore, raidStore } from '@/store'
 import { FormCharacter } from '@/store/character'
 import { Question } from '@/store/form'
-import { FormSubmission, SubmissionStatus } from '@/store/submission'
+import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission'
 
 @Component({
   components: {
@@ -143,9 +161,9 @@ import { FormSubmission, SubmissionStatus } from '@/store/submission'
 })
 export default class ApplicationKey extends Vue {
   private dialog = false
-
+  private lightbox = false
+  private lightbox_image = ''
   private dialogType: SubmissionStatus = SubmissionStatus.Cancelled
-
   private readonly dialogTexts = {
     cancelled:
       'Cancelling an application is irreversible. However, you may submit another application after this one is cancelled.',
@@ -154,12 +172,12 @@ export default class ApplicationKey extends Vue {
   }
 
   get loggedIn(): boolean {
-    return authStore.loggedIn
+    return userStore.loggedIn
   }
 
   get isAuthor(): boolean {
     return (
-      !!authStore.user && !!this.submission && this.submission.author && authStore.user.id === this.submission.author.id
+      !!userStore.user && !!this.submission && this.submission.author && userStore.user.id === this.submission.author.id
     )
   }
 
@@ -203,6 +221,11 @@ export default class ApplicationKey extends Vue {
 
   get formQuestions(): Question[] {
     return formStore.questions
+  }
+
+  createLightbox(file: FileUpload): void {
+    this.lightbox_image = file.path.replace('uploads', 'http://localhost:3000/')
+    this.lightbox = true
   }
 
   openDialog(status: SubmissionStatus): void {

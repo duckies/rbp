@@ -10,17 +10,21 @@
               <v-col md="8" sm="12">
                 <v-card-title>Application Process</v-card-title>
                 <v-card-text>
-                  <v-alert dismissible color="secondary">
+                  <v-alert dismissible color="info">
                     Our site is still under construction, if you encounter any issues contact Duckies#1999 on Discord.
+                    Apologies for the lack of polish and any missing information.
                   </v-alert>
-                  Thoroughly read through our about us page to learn more about how we operate as a guild before
-                  applying. Our current recruitment goals are often posted where we advertise, but anyone who thinks
-                  they have the skill or determination to raid with us should apply. We only ask that you fill out your
-                  application completely or it will reflect poorly on you're desire to join us. After submitting your
-                  application, you will be redirected to your submitted application so you may respond to comments or
-                  questions asked by officers. You will be notified of any status updates or comments made to your
-                  application through email. We'd prefer you add a comment to your application asking for a status
-                  update instead of trying to contact someone in-game.
+                  <p>
+                    Our current recruitment goals are often posted where we advertise, but anyone who thinks they have
+                    the skill or determination to raid with us should apply. We only ask that you fill out your
+                    application completely or it will reflect poorly on you're desire to join us. After submitting your
+                    application, you will be redirected to your submitted application.
+                  </p>
+                  <p>
+                    Currently, notification support is not available, however you may check back on your application to
+                    see its status or join our Discord and ask us directly. If approved, or further discussion is
+                    warranted, we will contact you through Discord.
+                  </p>
                 </v-card-text>
               </v-col>
               <v-col>
@@ -71,7 +75,7 @@
 
       <v-row v-else>
         <v-col>
-          <validation-observer v-slot="{ invalid, handleSubmit }">
+          <validation-observer ref="form" v-slot="{ invalid, handleSubmit }">
             <v-form @submit.prevent="handleSubmit(submit)">
               <character-picker />
               <character-panel
@@ -87,7 +91,17 @@
                 :order="i"
               />
               <form-field v-for="question in questions" :key="question.id" :question="question" />
-              <v-btn :loading="formLoading || submissionLoading" type="submit">
+
+              <dropzone
+                id="drop"
+                ref="drop"
+                v-model="files"
+                :options="dropOptions"
+                :destroy-dropzone="true"
+                @vdropzone-success="uploadSuccess"
+              />
+
+              <v-btn :loading="formLoading || submissionLoading" type="submit" x-large color="primary">
                 Submit
               </v-btn>
             </v-form>
@@ -102,13 +116,17 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { ValidationObserver } from 'vee-validate'
-import { formStore, submissionStore, discordStore, authStore, raidStore } from '@/store'
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
+import Dropzone from 'nuxt-dropzone'
+import 'nuxt-dropzone/dropzone.css'
+import { formStore, submissionStore, discordStore, userStore, raidStore } from '@/store'
 import Hero from '@/components/Hero.vue'
 import { Question } from '@/store/form'
 import FormField from '@/components/fields/FormField.vue'
 import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
 import CharacterPicker from '@/components/blizzard/CharacterPicker.vue'
-import { FormCharacterIdentity } from '@/store/submission'
+import { FormCharacterIdentity, FileUpload } from '@/store/submission'
 
 @Component({
   components: {
@@ -116,12 +134,13 @@ import { FormCharacterIdentity } from '@/store/submission'
     ValidationObserver,
     FormField,
     CharacterPicker,
-    CharacterPanel
+    CharacterPanel,
+    Dropzone
   },
   async fetch(): Promise<void> {
     const promises: Promise<unknown>[] = [discordStore.getDiscord(), formStore.getForm(1)]
 
-    if (authStore.loggedIn) {
+    if (userStore.loggedIn) {
       promises.push(submissionStore.getOpen())
     }
 
@@ -135,11 +154,21 @@ import { FormCharacterIdentity } from '@/store/submission'
 export default class Apply extends Vue {
   title = 'Really Bad Application'
   caption = 'Interested in joining our guild?'
-  // background = 'https://cdnassets.raider.io/images/login/backgrounds/bfa/froggo-loa.jpg'
   background = '/images/backgrounds/bastion.jpg'
+  files = []
+  dropOptions = {
+    url: 'http://localhost:3000/submission/upload',
+    maxFiles: 5,
+    headers: { Authorization: `Bearer ${this.$storage.getCookie('token')}` },
+    duplicateCheck: true
+  }
+
+  $refs!: {
+    form: InstanceType<typeof ValidationObserver>
+  }
 
   get loggedIn(): boolean {
-    return authStore.loggedIn
+    return userStore.loggedIn
   }
 
   get formLoading(): boolean {
@@ -176,7 +205,17 @@ export default class Apply extends Vue {
     }
   }
 
+  uploadSuccess(file: unknown, response: FileUpload[]): void {
+    submissionStore.setFiles(response)
+  }
+
   async submit(): Promise<void> {
+    console.log()
+    if (!this.characters.length) {
+      return this.$refs.form.setErrors({
+        realm: 'You must select at least one main character.'
+      })
+    }
     await submissionStore.create(1)
 
     if (submissionStore.status === 'success' && submissionStore.submission) {

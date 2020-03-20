@@ -61,7 +61,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
-import { Ranks } from '@/store/auth'
+import { Ranks } from '@/store/user'
 import { Character } from '@/store/character'
 
 @Component
