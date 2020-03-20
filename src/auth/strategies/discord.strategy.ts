@@ -20,9 +20,6 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: DiscordProfile): Promise<User> {
-    console.log(accessToken, refreshToken, profile);
-    this.logger.log(`Logging in or creating ${profile.username}`);
-
     return await this.authService.validateDiscordLogin(accessToken, refreshToken, profile);
   }
 }

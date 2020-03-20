@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-bnet';
 import { ConfigService } from '../../config/config.service';
 import { User } from '../../user/user.entity';
-import { AuthService, Provider } from '../auth.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
@@ -20,18 +20,11 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   }
 
   // Blizzard does not provide refresh tokens.
-  async validate(req, accessToken, refreshToken, profile) {
+  async validate(req, accessToken, refreshToken, profile): Promise<void | User> {
     if (!req.user) {
       this.logger.log(`Logging in or creating ${profile.battletag}`);
 
-      console.log(profile);
-      // return await this.authService.validateOAuthLogin(
-      //   profile.id,
-      //   accessToken,
-      //   refreshToken,
-      //   profile,
-      //   Provider.BLIZZARD,
-      // );
+      return await this.authService.validateDiscordLogin(accessToken, refreshToken, profile);
     }
 
     this.logger.log(`User ${req.user.id} is already logged in.`);

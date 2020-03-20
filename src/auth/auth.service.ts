@@ -46,6 +46,7 @@ export class AuthService {
     const user = await this.userService.findOneByProviderId(profile.id, profile.provider);
 
     if (!user) {
+      console.info('User was not found, creating.');
       return await this.userService.create(profile.id, accessToken, refreshToken, profile);
     }
 
@@ -55,6 +56,6 @@ export class AuthService {
     user.discord_username = profile.username;
     user.discord_discriminator = profile.discriminator;
 
-    return user.save();
+    return await user.save();
   }
 }

@@ -20,7 +20,7 @@ export class CharacterService {
 
   constructor(
     @InjectRepository(Character)
-    private readonly repository: Repository<Character>,
+    private readonly characterRepository: Repository<Character>,
     private readonly battleNetService: BattleNetService,
     private readonly profileService: ProfileService,
     private readonly configService: ConfigService,
@@ -31,12 +31,12 @@ export class CharacterService {
    *
    * @param characterLookupDto Character name, region, realm.
    * @param rank Guild rank passed when doing a guild roster update.
+   * @param id Optional id used to lookup a character.
    * @param user User to associate the character with.
    */
-  async upsert(findCharacterDto: FindCharacterDto, rank: number, user?: User): Promise<Character> {
-    // If the profile request(s) fail, there is no point in updating so let the error propagate.
+  async upsert(findCharacterDto: FindCharacterDto, rank: number, user?: User) {
     let [character, profileCharacter, profileMedia] = await Promise.all([
-      this.repository.findOne(findCharacterDto),
+      this.findOne(findCharacterDto),
       this.profileService.getCharacterProfileSummary(findCharacterDto),
       this.profileService.getCharacterMediaSummary(findCharacterDto),
     ]);
@@ -79,17 +79,25 @@ export class CharacterService {
    * Rank first and name alphabetized.
    * @param ranks
    */
-  findRoster(ranks: number[] = [0, 1, 3, 4, 5]): Promise<Character[]> {
-    return this.repository.find({
+  findRoster(ranks: number[] = [0, 1, 3, 4, 5]) {
+    return this.characterRepository.find({
       where: { guild_rank: In(ranks) },
       order: { guild_rank: 'ASC', name: 'ASC' },
     });
   }
 
-  findAllInGuild(): Promise<Character[]> {
-    return this.repository.find({
+  findAllInGuild() {
+    return this.characterRepository.find({
       where: { guild: 'Really Bad Players' },
     });
+  }
+
+  /**
+   * Finds a character from their id.
+   * @param id
+   */
+  findById(id: number) {
+    return this.characterRepository.findOne({ id });
   }
 
   /**
@@ -97,8 +105,8 @@ export class CharacterService {
    * This is a case-sensitive lookup!
    * @param characterLookupDto
    */
-  findOne({ name, region, realm }: FindCharacterDto): Promise<Character> {
-    return this.repository
+  findOne({ name, region, realm }: FindCharacterDto) {
+    return this.characterRepository
       .createQueryBuilder()
       .where('LOWER(name) = LOWER(:name)', { name })
       .andWhere('realm = :realm', { realm })
@@ -106,7 +114,7 @@ export class CharacterService {
       .getOne();
   }
 
-  async setMain(user: User, findCharacterDto: FindCharacterDto): Promise<User> {
+  async setMain(user: User, findCharacterDto: FindCharacterDto) {
     const character = await this.upsert(findCharacterDto, null, user);
 
     user.mainCharacter = character;
@@ -119,10 +127,10 @@ export class CharacterService {
     return user;
   }
 
-  async delete(findCharacterDto: FindCharacterDto): Promise<Character> {
-    const character = await this.repository.findOneOrFail(findCharacterDto);
+  async delete(findCharacterDto: FindCharacterDto) {
+    const character = await this.characterRepository.findOneOrFail(findCharacterDto);
 
-    return this.repository.remove(character);
+    return this.characterRepository.remove(character);
   }
 
   /**
@@ -134,10 +142,9 @@ export class CharacterService {
    * @param user User
    * @param sync Boolean
    */
-  async fetchKnownCharacters(user: User, sync?: boolean): Promise<Partial<User>> {
+  async fetchKnownCharacters(user: User, sync?: boolean) {
     // Update for a potentially valid token and we're either forcing an update or not throttled.
     if (!user.tokenExpired() && (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))) {
-      console.log('Attempting to download characters.');
       try {
         await this.battleNetService.checkToken(user);
         await this.syncUserCharacters(user);
@@ -156,7 +163,7 @@ export class CharacterService {
     };
   }
 
-  async syncUserCharacters(user: User): Promise<Partial<User>> {
+  async syncUserCharacters(user: User) {
     const profile = await this.profileService.getAccountProfileSummary(user);
 
     const characters = profile.wow_accounts.map(a => a.characters).flat();
@@ -188,7 +195,7 @@ export class CharacterService {
       .subtract(7, 'days')
       .toDate();
 
-    const deleteResults = await this.repository
+    const deleteResults = await this.characterRepository
       .createQueryBuilder()
       .delete()
       .from(Character)
@@ -196,7 +203,7 @@ export class CharacterService {
       .returning('id')
       .execute();
 
-    const updateResults = await this.repository
+    const updateResults = await this.characterRepository
       .createQueryBuilder()
       .update(Character)
       .set({ isDeleted: true })

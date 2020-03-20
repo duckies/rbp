@@ -12,8 +12,6 @@ export class UserQueue {
   // private async updateUserRoles(): Promise<User[]> {
   //   const users = await this.userService.findAllWithGuildCharacters();
 
-  //   console.log(users);
-
   //   const promises = [];
   //   for (const user of users) {
   //     // The highest rank is actually the lowest in the game.

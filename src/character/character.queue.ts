@@ -7,6 +7,8 @@ import { Region } from '../blizzard/enum/region.enum';
 import { ProfileService } from '../blizzard/profile.service';
 import { ConfigService } from '../config/config.service';
 import { CharacterService, PurgeResult } from './character.service';
+import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 
 export interface GuildUpdateResult {
   success: number;
@@ -18,7 +20,11 @@ export interface GuildUpdateResult {
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
 
-  private guildLookup: FindGuildDto = { name: 'really-bad-players', realm: RealmSlug.Area52, region: Region.US };
+  private guildLookup: FindGuildDto = {
+    name: 'really-bad-players',
+    realm: RealmSlug.Area52,
+    region: Region.US,
+  };
 
   private minimumCharacterLevel: number;
 
@@ -27,51 +33,58 @@ export class CharacterQueue {
     private readonly profileService: ProfileService,
     private readonly configService: ConfigService,
   ) {
-    this.minimumCharacterLevel = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
+    this.minimumCharacterLevel = Math.max(
+      parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10),
+      10,
+    );
   }
 
+  /**
+   * Recurring guild roster update process.
+   *
+   * Downloads the guild roster and attempts to perform character upserts.
+   * In the event of a broken character, it is deleted.
+   */
   @Process({ name: 'updateGuildRoster', concurrency: 1 })
   private async updateGuildRoster(job: Job<number>): Promise<GuildUpdateResult> {
-    let progress = 0;
-    let success = 0;
-    let failed = 0;
-    let ignored = 0;
+    let progress = 0,
+      success = 0,
+      failed = 0,
+      ignored = 0;
 
-    const guild = await this.profileService.getGuildRoster(this.guildLookup);
+    // Note that this fails without explanation.
+    const guild = await this.profileService.getGuildRoster(this.guildLookup, this.minimumCharacterLevel);
 
-    // Do not include characters not meeting threshold.
-    guild.members.filter(m => m.character.level >= this.minimumCharacterLevel);
+    await Promise.all(
+      guild.members.map(async member => {
+        const findCharacterDto = new FindCharacterDto(member.character.name);
 
-    // Characters below level 10 do not work on the API.
-    // guild.members = guild.members.filter(m => m.character.level > 10);
+        try {
+          const character = await this.characterService.upsert(findCharacterDto, member.rank);
 
-    const promises = guild.members.map(async member => {
-      try {
-        const character = await this.characterService.upsert(
-          { name: member.character.name, realm: RealmSlug.Area52, region: Region.US },
-          member.rank,
-        );
+          if (character.notUpdated) {
+            ignored++;
+          } else {
+            success++;
+          }
 
-        if (character.notUpdated) {
-          ignored++;
-        } else {
-          success++;
+          return character;
+        } catch (error) {
+          // Delete the conflicted character then attempt reinsertion.
+          if (error instanceof CharacterConflictException) {
+            await this.characterService.delete(findCharacterDto);
+            await this.characterService.upsert(findCharacterDto, member.rank);
+          } else if (error.message && error.message.error) {
+            this.logger.error(error.message.error);
+          } else {
+            this.logger.error(`${error}`);
+          }
+          failed++;
+        } finally {
+          job.progress(++progress / guild.members.length);
         }
-
-        return character;
-      } catch (error) {
-        if (error.message && error.message.error) {
-          this.logger.error(error.message.error);
-        } else {
-          this.logger.error(error);
-        }
-        failed++;
-      } finally {
-        job.progress(++progress / promises.length);
-      }
-    });
-
-    await Promise.all(promises);
+      }),
+    );
 
     return Promise.resolve({ success, failed, ignored });
   }
@@ -108,7 +121,7 @@ export class CharacterQueue {
 
   @OnQueueError()
   private onError(_job: Job<number>, error: Error): void {
-    this.logger.error(error);
+    this.logger.error('Global Error: ' + error);
   }
 
   @OnQueueCompleted()
@@ -130,6 +143,6 @@ export class CharacterQueue {
 
   @OnQueueFailed()
   private onFailed(_job: Job<number>, error: Error): void {
-    this.logger.error(`erroryerror${error}`);
+    this.logger.error(`${error}`);
   }
 }

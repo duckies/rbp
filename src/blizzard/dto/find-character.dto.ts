@@ -11,4 +11,10 @@ export class FindCharacterDto {
 
   @IsEnum(Region)
   readonly region: Region = Region.US;
+
+  constructor(name: string, realm: RealmSlug = RealmSlug.Area52, region: Region = Region.US) {
+    this.name = name;
+    this.realm = realm;
+    this.region = region;
+  }
 }

@@ -8,7 +8,6 @@ import { AxiosError } from 'axios';
 export class BlizzardFilter implements ExceptionFilter {
   catch(exception: AxiosError, host: ArgumentsHost): Response {
     const ctx = host.switchToHttp();
-    const request = ctx.getRequest();
     const response = ctx.getResponse();
 
     if (

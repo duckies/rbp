@@ -124,8 +124,6 @@ export class GameDataService {
 
     const uri = `https://us.api.blizzard.com/data/wow${endpoint}/${param}?namespace=static-us&locale=en_US`;
 
-    // console.log(uri);
-
     return (await this.http.get(uri).toPromise()).data;
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../user/user.entity';
 import { FindCharacterDto } from './dto/find-character.dto';
 import { ProfileEndpoints } from './enum/profile-api.enum';
+import { GameDataService } from './game-data.service';
 import * as Profile from './interfaces/profile';
 import { RateLimiter } from './rate-limiter.service';
 
@@ -14,7 +15,7 @@ export interface ProfileParams {
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly rateLimiter: RateLimiter) {}
+  constructor(private readonly rateLimiter: RateLimiter, private readonly gameDataService: GameDataService) {}
 
   async getAccountProfileSummary(user: User): Promise<Profile.AccountProfileSummary> {
     return this.rateLimiter.getBlizzard('https://us.api.blizzard.com/profile/user/wow', user);
@@ -113,14 +114,38 @@ export class ProfileService {
     );
   }
 
-  async getCharacterEquipmentSummary({ name, realm }: FindCharacterDto): Promise<Profile.CharacterEquipmentSummary> {
-    return this.rateLimiter.getBlizzard(
+  async getCharacterEquipmentSummary(
+    { name, realm }: FindCharacterDto,
+    cache = true,
+  ): Promise<Profile.CharacterEquipmentSummary> {
+    const data: Profile.CharacterEquipmentSummary = await this.rateLimiter.getBlizzard(
       'https://us.api.blizzard.com' +
         ProfileEndpoints.CharacterEquipmentSummary.replace('{realmSlug}', realm).replace(
           '{characterName}',
           name.toLowerCase(),
         ),
     );
+
+    if (cache) {
+      data.equipped_items = await Promise.all(
+        data.equipped_items.map(async slot => {
+          try {
+            const media = await this.gameDataService.getGameItemMedia(slot.item.id, true);
+
+            slot.media.assets = {
+              key: media.assets[0].key,
+              value: media.assets[0].value,
+            };
+
+            return slot;
+          } catch (error) {
+            return slot;
+          }
+        }),
+      );
+    }
+
+    return data;
   }
 
   async getCharacterHunterPetsSummary({ name, realm }: FindCharacterDto): Promise<Profile.CharacterHunterPetsSummary> {
@@ -280,28 +305,34 @@ export class ProfileService {
   async getGuild({ name, realm }: FindCharacterDto): Promise<Profile.Guild> {
     return this.rateLimiter.getBlizzard(
       'https://us.api.blizzard.com' +
-        ProfileEndpoints.Guild.replace('{realmSlug}', realm).replace('{characterName}', name.toLowerCase()),
+        ProfileEndpoints.Guild.replace('{realmSlug}', realm).replace('{nameSlug}', name.toLowerCase()),
     );
   }
 
   async getGuildActivity({ name, realm }: FindCharacterDto): Promise<Profile.GuildActivity> {
     return this.rateLimiter.getBlizzard(
       'https://us.api.blizzard.com' +
-        ProfileEndpoints.GuildActivity.replace('{realmSlug}', realm).replace('{characterName}', name.toLowerCase()),
+        ProfileEndpoints.GuildActivity.replace('{realmSlug}', realm).replace('{nameSlug}', name.toLowerCase()),
     );
   }
 
   async getGuildAchievements({ name, realm }: FindCharacterDto): Promise<Profile.GuildAchievements> {
     return this.rateLimiter.getBlizzard(
       'https://us.api.blizzard.com' +
-        ProfileEndpoints.GuildAchievements.replace('{realmSlug}', realm).replace('{characterName}', name.toLowerCase()),
+        ProfileEndpoints.GuildAchievements.replace('{realmSlug}', realm).replace('{nameSlug}', name.toLowerCase()),
     );
   }
 
-  async getGuildRoster({ name, realm }: FindCharacterDto): Promise<Profile.GuildRoster> {
-    return this.rateLimiter.getBlizzard(
+  async getGuildRoster({ name, realm }: FindCharacterDto, minLevel?: number): Promise<Profile.GuildRoster> {
+    const data: Profile.GuildRoster = await this.rateLimiter.getBlizzard(
       'https://us.api.blizzard.com' +
-        ProfileEndpoints.GuildRoster.replace('{realmSlug}', realm).replace('{characterName}', name.toLowerCase()),
+        ProfileEndpoints.GuildRoster.replace('{realmSlug}', realm).replace('{nameSlug}', name.toLowerCase()),
     );
+
+    if (minLevel) {
+      data.members = data.members.filter(m => m.character.level >= minLevel);
+    }
+
+    return data;
   }
 }

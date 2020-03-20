@@ -1,15 +1,10 @@
 import { InjectQueue } from '@nestjs/bull';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bull';
 import { Repository } from 'typeorm';
-import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { GameDataService } from '../blizzard/game-data.service';
-import { ProfileService } from '../blizzard/profile.service';
-import { RateLimiter } from '../blizzard/rate-limiter.service';
-import { FormCharacter } from '../form-character/form-character.entity';
-import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
-import { RaiderIOService } from '../raiderIO/raiderIO.service';
+import { FileService } from '../file/file.service';
+import { FormCharacterService } from '../form-character/form-character.service';
 import { User } from '../user/user.entity';
 import { CreateFormSubmissionDto, UpdateFormSubmissionDto } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
@@ -20,132 +15,10 @@ export class SubmissionService {
   constructor(
     @InjectRepository(FormSubmission)
     private readonly formSubRepository: Repository<FormSubmission>,
-    private readonly profileService: ProfileService,
-    private readonly gameDataService: GameDataService,
-    private readonly raiderIOService: RaiderIOService,
-    private readonly rateLimiter: RateLimiter,
+    private readonly formCharacterService: FormCharacterService,
+    private readonly fileService: FileService,
     @InjectQueue('form') private readonly queue: Queue,
   ) {}
-
-  /**
-   * Uses various profile media endpoints to build the initial character application information.
-   * @param findCharacterDto FindCharacterDto
-   * @param isMain Boolean determining if this is a main character.
-   */
-  async buildFormCharacter(findCharacterDto: FindCharacterDto, isMain?: boolean): Promise<FormCharacter> {
-    const [data, specs, media, equipment, raiderIO] = await Promise.all(
-      [
-        this.profileService.getCharacterProfileSummary(findCharacterDto),
-        this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
-        this.profileService.getCharacterMediaSummary(findCharacterDto),
-        this.profileService.getCharacterEquipmentSummary(findCharacterDto),
-        this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
-          RaiderIOCharacterFields.RAID_PROGRESSION,
-          RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-        ]),
-      ].map(p => p.catch(e => e)),
-    );
-
-    const character = new FormCharacter();
-
-    character.name = findCharacterDto.name;
-    character.realm = findCharacterDto.realm;
-    character.region = findCharacterDto.region;
-    character.isMain = isMain || false;
-
-    if (!(data instanceof Error)) {
-      character.race_id = data.race.id;
-      character.race_name = data.race.name;
-      character.class_id = data.character_class.id;
-      character.class_name = data.character_class.name;
-      character.gender = data.gender.name;
-    }
-
-    if (!(media instanceof Error)) {
-      character.avatar_url = media.avatar_url;
-      character.bust_url = media.bust_url;
-      character.render_url = media.render_url;
-    }
-
-    if (!(specs instanceof Error)) {
-      character.specialization_id = specs.active_specialization.id;
-      character.specialization_name = specs.active_specialization.name;
-      character.specializations = specs.specializations;
-    }
-
-    if (!(equipment instanceof Error)) {
-      character.equipment = equipment.equipped_items;
-
-      // This may be faster running it immediately after `getCharacterMedia` completes.
-      await Promise.all(
-        equipment.equipped_items.map(slot => this.gameDataService.getGameItemMedia(slot.item.id, true)),
-      );
-    }
-
-    if (!(raiderIO instanceof Error)) {
-      character.raiderIO = raiderIO;
-    }
-
-    return character;
-  }
-
-  // TODO: Abstract a generic character builder function.
-  async getFormCharacterData(findCharacterDto: FindCharacterDto): Promise<FormCharacter> {
-    const [data, specs, media, equipment, raiderIO] = await Promise.all([
-      this.profileService.getCharacterProfileSummary(findCharacterDto),
-      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
-      this.profileService.getCharacterMediaSummary(findCharacterDto),
-      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
-      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
-        RaiderIOCharacterFields.RAID_PROGRESSION,
-        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-      ]),
-    ]);
-
-    const character = new FormCharacter();
-
-    character.name = findCharacterDto.name;
-    character.realm = findCharacterDto.realm;
-    character.region = findCharacterDto.region;
-    character.isMain = false;
-
-    if (!(data instanceof Error)) {
-      character.race_id = data.race.id;
-      character.race_name = data.race.name;
-      character.class_id = data.character_class.id;
-      character.class_name = data.character_class.name;
-      character.gender = data.gender.name;
-    }
-
-    if (!(media instanceof Error)) {
-      character.avatar_url = media.avatar_url;
-      character.bust_url = media.bust_url;
-      character.render_url = media.render_url;
-    }
-
-    if (!(specs instanceof Error)) {
-      character.specialization_id = specs.active_specialization.id;
-      character.specialization_name = specs.active_specialization.name;
-      character.specializations = specs.specializations;
-    }
-
-    if (!(equipment instanceof Error)) {
-      character.equipment = await Promise.all(
-        equipment.equipped_items.map(async slot => {
-          const assets = (await this.gameDataService.getGameItemMedia(slot.item.id, true)).assets;
-
-          slot.media.assets = assets[0];
-          return slot;
-        }),
-      );
-    }
-
-    if (!(raiderIO instanceof Error)) {
-      character.raiderIO = raiderIO;
-    }
-
-    return character;
-  }
 
   /**
    * Creates a new form submission for a user with associated
@@ -153,7 +26,9 @@ export class SubmissionService {
    * @param author Form submission author.
    * @param createSubmissionDto CreateSubmissionDto
    */
-  async create(author: User, { formId, answers, characters }: CreateFormSubmissionDto): Promise<FormSubmission> {
+  async create(author: User, { formId, answers, files, characters }: CreateFormSubmissionDto) {
+    const formSubmission = new FormSubmission();
+
     const openForm = await this.formSubRepository.find({
       where: { status: FormSubmissionStatus.Open, authorId: author.id },
       select: ['author'],
@@ -165,14 +40,36 @@ export class SubmissionService {
       );
     }
 
-    const [mainCharacter, ...altCharacters] = characters;
+    if (files && files.length) {
+      const fileUploads = await this.fileService.find(files);
 
-    const formCharacters = await Promise.all([
-      this.buildFormCharacter(mainCharacter, true),
-      ...altCharacters.map(alt => this.buildFormCharacter(alt)),
-    ]);
+      for (const upload of fileUploads) {
+        if (upload.author && upload.author.id !== author.id) {
+          throw new UnauthorizedException('Cannot reference unauthored file.');
+        }
+      }
 
-    const submission = await this.formSubRepository.save({ formId, answers, characters: formCharacters, author });
+      formSubmission.files = fileUploads;
+    }
+
+    const formCharacters = await Promise.all(
+      characters.map(character =>
+        this.formCharacterService.create({
+          name: character.name,
+          realm: character.realm,
+          region: character.region,
+        }),
+      ),
+    );
+
+    formSubmission.formId = formId;
+    formSubmission.characters = formCharacters;
+    formSubmission.author = author;
+    formSubmission.answers = answers;
+
+    formCharacters[0].isMain = true;
+
+    const submission = await this.formSubRepository.save(formSubmission);
 
     submission.justSubmitted = true;
 
@@ -185,80 +82,25 @@ export class SubmissionService {
    * Finds an individual form submission.
    * @param id Form submission id.
    */
-  async findOne(id: number): Promise<FormSubmission> {
-    const data = await this.formSubRepository.query(
-      `WITH characters AS
-            (
-                SELECT char.id,
-                      char.name,
-                      char.realm,
-                      char.region,
-                      char."isMain",
-                      char.avatar_url,
-                      char.bust_url,
-                      char.render_url,
-                      char.race_id,
-                      char.race_name,
-                      char.class_id,
-                      char.class_name,
-                      char.gender,
-                      char.specializations,
-                      char.specialization_id,
-                      char.specialization_name,
-                      jsonb_agg(jsonb_insert(slot, '{
-                        media,
-                        assets
-                      }', jsonb_build_object('key', asset.type, 'value', asset.value))) as equipment,
-                      char."raiderIO",
-                      char."updatedAt"
-                FROM form_character char,
-                    jsonb_array_elements(char.equipment) slot
-                        JOIN wow_assets asset on asset.id = (slot -> 'item' -> 'id')::integer
-                WHERE char."submissionId" = $1
-                GROUP BY char.id
-                ORDER BY char.id
-            )
-      SELECT s.id,
-          s.answers,
-          s."formId",
-          s."authorId",
-          s.status,
-          s."createdAt",
-          json_build_object(
-                  'id', u.id,
-                  'discord_id', u."discord_id",
-                  'discord_avatar', u."discord_avatar",
-                  'discord_username', u."discord_username",
-                  'discord_discriminator', u."discord_discriminator"
-              ) as author,
-          json_build_object(
-                  'id', f.id,
-                  'questions', json_agg(DISTINCT q.*)
-              )                           as form,
-          json_agg(DISTINCT characters.*) as characters
-      FROM characters,
-        form_submission s
-            JOIN form f ON s."formId" = f.id
-            JOIN form_question q ON q."formId" = f.id
-            JOIN "user" u on s."authorId" = u.id
-      WHERE s.id = $1
-      GROUP BY s.id, f.id, u.id;
-    `,
-      [id],
-    );
-
-    if (data.length === 0) {
-      throw new NotFoundException();
-    }
-
-    return data[0];
+  async findOne(id: number) {
+    return this.formSubRepository
+      .createQueryBuilder('submission')
+      .select()
+      .leftJoinAndSelect('submission.author', 'author')
+      .leftJoinAndSelect('submission.characters', 'characters')
+      .leftJoinAndSelect('submission.files', 'files')
+      .leftJoinAndSelect('submission.form', 'form')
+      .leftJoinAndSelect('form.questions', 'questions')
+      .where('submission.id = :id', { id })
+      .orderBy('questions.order')
+      .getOne();
   }
 
   /**
    * Retrieves the first available form submission for a given status.
    * @param status FormSubmissionStatus
    */
-  findFirstByStatus(status: FormSubmissionStatus): Promise<FormSubmission> {
+  findFirstByStatus(status: FormSubmissionStatus) {
     // This intentionally does not fail so it does not pass the 404 error.
     return this.formSubRepository.findOneOrFail(
       { status },
@@ -275,7 +117,7 @@ export class SubmissionService {
    * Retrieves all forms created by an author regardless of status.
    * @param user Form submission author.
    */
-  findByUser(user: User): Promise<FormSubmission[]> {
+  findByUser(user: User) {
     return this.formSubRepository
       .createQueryBuilder('submission')
       .select(['submission.id', 'submission.status'])
@@ -305,13 +147,7 @@ export class SubmissionService {
    * @param take Number of submissions to retrieve.
    * @param skip Number of submissions to skip.
    */
-  findAll(
-    take: number,
-    skip: number,
-    status?: FormSubmissionStatus,
-    id?: number,
-    user?: User,
-  ): Promise<[FormSubmission[], number]> {
+  findAll(take: number, skip: number, status?: FormSubmissionStatus, id?: number, user?: User) {
     let query = this.formSubRepository
       .createQueryBuilder('submission')
       .select([
@@ -321,8 +157,10 @@ export class SubmissionService {
         'submission.formId',
         'author.id',
         'author.nickname',
-        'author.battletag',
-        'character.id',
+        'author.discord_id',
+        'author.discord_username',
+        'author.discord_discriminator',
+        'author.discord_avatar',
         'character.name',
         'character.realm',
         'character.avatar_url',
@@ -338,7 +176,9 @@ export class SubmissionService {
     // Currently cannot add computed selectors to TypeORM. Depression!
     // .addSelect('(seen.id) IS NOT NULL', 'submission.seen')
     if (user) {
-      query = query.leftJoinAndSelect('submission.readFormSubmissions', 'read', 'read.userId = :uId', { uId: user.id });
+      query = query.leftJoinAndSelect('submission.readFormSubmissions', 'read', 'read.userId = :uId', {
+        uId: user.id,
+      });
     }
 
     query
@@ -376,7 +216,7 @@ export class SubmissionService {
    * @param id Form submission id.
    * @param updateFormSubmissionDto UpdateFormSubmissionDto
    */
-  async update(id: number, updateFormSubmissionDto: UpdateFormSubmissionDto): Promise<FormSubmission> {
+  async update(id: number, updateFormSubmissionDto: UpdateFormSubmissionDto) {
     const formSubmission = await this.formSubRepository.findOneOrFail(id);
 
     this.formSubRepository.merge(formSubmission, updateFormSubmissionDto);
@@ -391,11 +231,7 @@ export class SubmissionService {
    * @param user Form submission author.
    * @param updateFormSubmissionDto UpdateFormSubmissionDto
    */
-  async updateOwn(
-    id: number,
-    user: User,
-    updateFormSubmissionDto: UpdateFormSubmissionDto,
-  ): Promise<Partial<FormSubmission>> {
+  async updateOwn(id: number, user: User, updateFormSubmissionDto: UpdateFormSubmissionDto) {
     if (updateFormSubmissionDto.status && updateFormSubmissionDto.status !== FormSubmissionStatus.Cancelled) {
       throw new ForbiddenException('Can only cancel owned applications.');
     }

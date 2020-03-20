@@ -1,5 +1,5 @@
-import { IsBoolean, IsBooleanString } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsBoolean } from 'class-validator';
 
 export class PutSeenFormSubmissionDto {
   @Type(() => Boolean)

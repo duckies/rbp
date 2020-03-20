@@ -10,12 +10,13 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { FileUpload } from '../file/file.entity';
 import { FormCharacter } from '../form-character/form-character.entity';
+import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 import { Form } from '../form/form.entity';
 import { User } from '../user/user.entity';
 import { Answers } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
-import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 
 @Entity()
 export class FormSubmission extends BaseEntity {
@@ -49,7 +50,7 @@ export class FormSubmission extends BaseEntity {
   @OneToMany(
     () => FormCharacter,
     formCharacter => formCharacter.submission,
-    { eager: true, cascade: true },
+    { eager: true, cascade: ['insert'] },
   )
   characters: FormCharacter[];
 
@@ -73,6 +74,14 @@ export class FormSubmission extends BaseEntity {
   )
   @JoinTable()
   readFormSubmissions: FormSubmissionRead[];
+
+  @OneToMany(
+    () => FileUpload,
+    file => file.submission,
+    { eager: true, cascade: true },
+  )
+  @JoinTable()
+  files: FileUpload[];
 
   /**
    * Just Submitted.

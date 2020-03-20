@@ -1,4 +1,4 @@
-import { HttpService, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { HttpService, Injectable, Logger, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 
 export interface Token {
@@ -16,26 +16,28 @@ export class TokenService {
 
   constructor(private readonly configService: ConfigService, private readonly http: HttpService) {}
 
-  async getToken(): Promise<void> {
+  async getToken() {
     if (TokenService.token !== null && TokenService.token.expires >= new Date().getTime()) return;
 
     this.logger.log('Retrieving new auth token...');
 
     try {
-      const resp = (await this.http
-        .request({
-          url: 'https://us.battle.net/oauth/token',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          method: 'POST',
-          data: 'grant_type=client_credentials',
-          auth: {
-            username: this.configService.get('BLIZZARD_CLIENTID'),
-            password: this.configService.get('BLIZZARD_SECRET'),
-          },
-        })
-        .toPromise()).data;
+      const resp = (
+        await this.http
+          .request({
+            url: 'https://us.battle.net/oauth/token',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            method: 'POST',
+            data: 'grant_type=client_credentials',
+            auth: {
+              username: this.configService.get('BLIZZARD_CLIENTID'),
+              password: this.configService.get('BLIZZARD_SECRET'),
+            },
+          })
+          .toPromise()
+      ).data;
 
-      // TODO: Investigate why optional chaining is not working with the linter.
+      // TODO: Replace once optional chaining is available.
       // if (resp?.access_token && resp?.expires_in && resp?.token_type === 'bearer') {
       if (resp && resp.access_token && resp.expires_in && resp.token_type === 'bearer') {
         TokenService.token = resp;
@@ -47,6 +49,7 @@ export class TokenService {
     } catch (error) {
       this.logger.error(error);
       TokenService.token = null;
+      throw new InternalServerErrorException(error);
     }
   }
 

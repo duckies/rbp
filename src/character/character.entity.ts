@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/camelcase */
-
-import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { BaseEntity, Column, Entity, Index, ManyToOne, PrimaryColumn, Unique } from 'typeorm';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
-import { CharacterProfileSummary, CharacterMediaSummary } from '../blizzard/interfaces/profile';
+import { CharacterMediaSummary, CharacterProfileSummary } from '../blizzard/interfaces/profile';
 import { User } from '../user/user.entity';
 
 @Entity('character')
@@ -12,11 +10,8 @@ import { User } from '../user/user.entity';
 @Index('lower_char_index', { synchronize: false })
 @Index('character_realm_enum', { synchronize: false })
 export class Character extends BaseEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: number;
-
-  @Column({ unique: true })
-  character_id: number;
 
   @Column()
   region: string;
@@ -132,7 +127,7 @@ export class Character extends BaseEntity {
 
   doesNotMatch(data: CharacterProfileSummary): boolean {
     // Characters are no longer valid if their id changes.
-    if (data.id !== this.character_id) {
+    if (data.id !== this.id) {
       return true;
     }
 
@@ -154,7 +149,7 @@ export class Character extends BaseEntity {
   }
 
   mergeProfileIndex(data: CharacterProfileSummary): Character {
-    if (this.character_id && this.character_id !== data.id) {
+    if (this.id && this.id !== data.id) {
       throw new CharacterConflictException(this.name, this.realm);
     }
 
@@ -162,7 +157,7 @@ export class Character extends BaseEntity {
     this.realm = RealmSlug.Area52;
     this.region = Region.US;
 
-    this.character_id = data.id;
+    this.id = data.id;
 
     // Check for players not in the guild anymore.
     this.guild_id = data.guild.id;

@@ -1,12 +1,13 @@
 import {
+  BadRequestException,
   HttpService,
   Injectable,
-  NotFoundException,
-  BadRequestException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { RaiderIOCharacterFieldsDto, RaiderIOCharacterFields } from './dto/char-fields.dto';
+import { RaiderIOCharacterFields } from './dto/char-fields.dto';
+import { RaiderIOCharacter } from './interfaces/raider-io-character.interface';
 import { RaiderIOGuild } from './raiderIO.interface';
 
 export enum GuildRaiderIOFields {
@@ -71,7 +72,7 @@ export class RaiderIOService {
   async getCharacterRaiderIO<K extends RaiderIOCharacterFields>(
     { name, realm, region }: FindCharacterDto,
     fields: K[],
-  ): Promise<any> {
+  ): Promise<RaiderIOCharacter> {
     try {
       const api = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${name}${
         fields.length ? `&fields=${fields}` : ''

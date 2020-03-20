@@ -91,5 +91,5 @@ export enum GameDataEndpoint {
   TitlesIndex = '/title/index',
   Title = '/title/{titleId}',
   // WoW Token API (CN Not Supported)
-  WoWTokenIndex = '/token/index'
+  WoWTokenIndex = '/token/index',
 }

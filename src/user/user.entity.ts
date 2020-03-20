@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {
   BaseEntity,
   BeforeInsert,
@@ -13,12 +14,11 @@ import {
 } from 'typeorm';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
+import { ProfileKnownCharacter } from '../blizzard/interfaces/profile/account-profile/account-profile-summary.interface';
 import { Character } from '../character/character.entity';
+import { FileUpload } from '../file/file.entity';
 import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
-
-import moment from 'moment';
-import { ProfileKnownCharacter } from '../blizzard/interfaces/profile/account-profile/account-profile-summary.interface';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -104,6 +104,12 @@ export class User extends BaseEntity {
     formSubmission => formSubmission.author,
   )
   formSubmissions: FormSubmission[];
+
+  @OneToMany(
+    () => FileUpload,
+    fileUpload => fileUpload.author,
+  )
+  files: FileUpload[];
 
   /**
    * Notification or "Seen" Relations

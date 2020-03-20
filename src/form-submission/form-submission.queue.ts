@@ -10,7 +10,7 @@ export class FormSubmissionQueue {
   constructor(private readonly http: HttpService, private readonly config: ConfigService) {}
 
   @Process({ name: 'newApplication', concurrency: 1 })
-  private async sendSubmissionWebhook(submission: FormSubmission): Promise<void> {
+  private async sendSubmissionWebhook(submission: FormSubmission) {
     this.http
       .post(this.config.get('DISCORD_APP_WEBHOOK'), {
         embeds: [

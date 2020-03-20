@@ -6,12 +6,12 @@ export class FindAllFormSubmissionsDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  take: number = 12;
+  take = 12;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  skip: number = 0;
+  skip = 0;
 
   @IsOptional()
   @IsEnum(FormSubmissionStatus)

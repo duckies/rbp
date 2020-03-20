@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
 import { CharacterModule } from './character/character.module';
 import { ConfigModule } from './config/config.module';
+import { FormCharacterModule } from './form-character/form-character.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
 import { RaidModule } from './raid/raid.module';
@@ -30,6 +31,7 @@ import { UserModule } from './user/user.module';
     ArticleModule,
     RaidModule,
     FormModule,
+    FormCharacterModule,
     FormSubmissionModule,
     BlizzardModule,
     CharacterModule,

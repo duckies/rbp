@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, ValidateNested, IsDefined } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsDefined,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { FindCharacterDto } from '../../blizzard/dto/find-character.dto';
 
 export interface Answers {
@@ -12,6 +20,11 @@ export class CreateFormSubmissionDto {
 
   @IsNotEmpty()
   answers: Answers;
+
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsOptional()
+  files?: number[];
 
   @IsDefined()
   @ValidateNested({ each: true })
