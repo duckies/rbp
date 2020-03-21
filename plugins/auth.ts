@@ -1,7 +1,6 @@
 import { Context, Plugin } from '@nuxt/types'
 import nanoid from 'nanoid'
 import { $axios } from '../utils/axios'
-import config from '../nuxt.config'
 import Storage from './storage'
 import { encodeQuery } from './utils'
 import { userStore } from '@/store'
@@ -141,7 +140,17 @@ export class Auth {
 }
 
 const authPlugin: Plugin = (ctx, inject) => {
-  const $auth = new Auth(ctx, config.auth)
+  const options = {
+    redirectPath: '/callback',
+    tokenEndpoint: ctx.env.tokenEndpoint,
+    authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
+    redirect_uri: ctx.env.redirectURL,
+    scope: ['identify'],
+    client_id: '678486837626404885',
+    grant_type: 'authorization_code',
+    response_type: 'code'
+  }
+  const $auth = new Auth(ctx, options)
   const $storage = new Storage(ctx, {})
 
   inject('storage', $storage)

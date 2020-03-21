@@ -5,8 +5,15 @@ require('dotenv').config()
 const NuxtConfiguration: Partial<Configuration> = {
   mode: 'universal',
 
+  env: {
+    fileUploadURL: process.env.FRONTEND_FILE_UPLOAD_URL || 'http://localhost:3000/submission/upload',
+    localBaseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000',
+    browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000',
+    tokenEndpoint: process.env.TOKEN_ENDPOINT || 'http://localhost:3000/auth/discord/callback',
+    redirectURL: process.env.REDIRECT_URL || 'http://localhost:3030/callback'
+  },
+
   server: {
-    // host: process.env.FRONTEND_HOST || '127.0.0.1',
     port: process.env.FRONTEND_PORT || 3030
   },
 
@@ -65,17 +72,6 @@ const NuxtConfiguration: Partial<Configuration> = {
   axios: {
     baseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000',
     browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000'
-  },
-
-  auth: {
-    redirectPath: '/callback',
-    tokenEndpoint: process.env.TOKEN_ENDPOINT || 'http://localhost:3000/auth/discord/callback',
-    authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
-    redirect_uri: process.env.REDIRECT_URL || 'http://localhost:3030/callback',
-    scope: ['identify'],
-    client_id: '678486837626404885',
-    grant_type: 'authorization_code',
-    response_type: 'code'
   },
 
   webfontloader: {

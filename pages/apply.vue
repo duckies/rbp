@@ -95,7 +95,6 @@
               <dropzone
                 id="drop"
                 ref="drop"
-                v-model="files"
                 :options="dropOptions"
                 :destroy-dropzone="true"
                 @vdropzone-success="uploadSuccess"
@@ -157,7 +156,8 @@ export default class Apply extends Vue {
   background = '/images/backgrounds/bastion.jpg'
   files = []
   dropOptions = {
-    url: 'http://localhost:3000/submission/upload',
+    whatever: process.env.FRONTEND_BASE_URL,
+    url: process.env.fileUploadURL,
     maxFiles: 5,
     headers: { Authorization: `Bearer ${this.$storage.getCookie('token')}` },
     duplicateCheck: true
@@ -210,7 +210,6 @@ export default class Apply extends Vue {
   }
 
   async submit(): Promise<void> {
-    console.log()
     if (!this.characters.length) {
       return this.$refs.form.setErrors({
         realm: 'You must select at least one main character.'
