@@ -29,7 +29,11 @@ const NuxtConfiguration: Partial<Configuration> = {
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: 'Gaming platform' }
+      {
+        hid: 'description',
+        name: 'description',
+        content: 'Gaming platform for the Really Bad Players World of Warcraft Horde guild on Area 52'
+      }
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }]
   },
