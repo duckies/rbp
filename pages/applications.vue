@@ -96,10 +96,10 @@ import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
 import { FormCharacter } from '../store/character'
 import Hero from '@/components/Hero.vue'
-import { submissionStore, formStore, userStore } from '@/store'
+import { submissionStore, formStore } from '@/store'
 import { FormSubmission, Pagination } from '@/store/submission'
 import { Question } from '@/store/form'
-import { User, Avatars } from '../store/user'
+import { User, Avatars } from '@/store/user'
 
 @Component({
   components: {
