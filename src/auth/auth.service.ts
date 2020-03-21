@@ -42,11 +42,14 @@ export class AuthService {
     return sign({ id: user.id }, this.configService.get('JWT_SECRET'));
   }
 
-  async validateDiscordLogin(accessToken: string, refreshToken: string, profile: DiscordProfile): Promise<User> {
+  async validateDiscordLogin(
+    accessToken: string,
+    refreshToken: string,
+    profile: DiscordProfile,
+  ): Promise<User> {
     const user = await this.userService.findOneByProviderId(profile.id, profile.provider);
 
     if (!user) {
-      console.info('User was not found, creating.');
       return await this.userService.create(profile.id, accessToken, refreshToken, profile);
     }
 

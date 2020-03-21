@@ -13,9 +13,16 @@ export class UserService {
     private readonly repository: Repository<User>,
   ) {}
 
-  create(discord_id: string, access_token: string, refresh_token: string, profile: DiscordProfile): Promise<User> {
+  create(
+    discord_id: string,
+    access_token: string,
+    refresh_token: string,
+    profile: DiscordProfile,
+  ): Promise<User> {
     return this.repository.save({
       discord_id,
+      discord_username: profile.username,
+      discord_descriminator: profile.discriminator,
       discord_access_token: access_token,
       discord_refresh_token: refresh_token,
       discord_avatar: profile.avatar,
