@@ -67,9 +67,9 @@ const NuxtConfiguration: Partial<Configuration> = {
 
   auth: {
     redirectPath: '/callback',
-    tokenEndpoint: 'http://localhost:3000/auth/discord/callback',
+    tokenEndpoint: `${process.env.BACKEND_BROWSER_BASE_URL}/auth/discord/callback`,
     authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
-    redirect_uri: 'http://localhost:3030/callback',
+    redirect_uri: `${process.env.FRONTEND_BASE_URL}/callback`,
     scope: ['identify'],
     client_id: '678486837626404885',
     grant_type: 'authorization_code',
