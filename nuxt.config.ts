@@ -61,7 +61,8 @@ const NuxtConfiguration: Partial<Configuration> = {
   },
 
   axios: {
-    baseURL: 'http://localhost:3000'
+    baseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000',
+    browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000'
   },
 
   auth: {
