@@ -2,6 +2,17 @@
 @import './blizzard/items.scss';
 @import '~vuetify/src/components/VGrid/_mixins';
 
+a {
+  text-decoration: none;
+}
+
+.page-enter-active, .page-leave-active {
+  transition: opacity 250ms;
+}
+.page-enter, .page-leave-to {
+  opacity: 0;
+}
+
 .v-app-bar {
   backdrop-filter: blur(5px);
   background-color: rgba(32, 33, 36, 0.7) !important;

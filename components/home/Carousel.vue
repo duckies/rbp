@@ -15,6 +15,8 @@
           </div>
         </div>
       </flickity>
+
+      <div slot="placeholder" class="flickity-placeholder"></div>
     </client-only>
   </div>
 </template>
@@ -43,9 +45,11 @@ export default class Carousel extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" global>
 @import '@/node_modules/flickity/dist/flickity.css';
+</style>
 
+<style lang="scss" scoped>
 .carousel {
   width: 100%;
   height: 600px !important;

@@ -13,6 +13,7 @@ export interface User {
   discord_id: string
   discord_avatar?: string
   discord_username: string
+  discord_discriminator: string
   roles: string[] // Replace with role enum.
   createdAt: Date
   updatedAt: Date
@@ -69,6 +70,12 @@ export default class UserModule extends VuexModule {
     }
 
     return avatars
+  }
+
+  get tag(): string | undefined {
+    return !!this.user && this.user.discord_username && this.user.discord_discriminator
+      ? `${this.user.discord_username}#${this.user.discord_discriminator}`
+      : undefined
   }
 
   @Mutation
