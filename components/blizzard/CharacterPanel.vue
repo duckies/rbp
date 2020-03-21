@@ -273,7 +273,8 @@ export default class CharacterPanel extends Vue {
     }
 
     if (item.sockets) {
-      str += `&gems=${item.sockets.map(s => s.item.id).join(':')}`
+      // This does not handle empty sockets yet.
+      str += `&gems=${item.sockets.map(s => (s.item ? s.item.id : '')).join(':')}`
     }
 
     return str
