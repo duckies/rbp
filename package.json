@@ -21,6 +21,7 @@
     "cookie": "^0.4.0",
     "cross-env": "^7.0.2",
     "date-fns": "^2.11.0",
+    "dotenv": "^8.2.0",
     "flickity-bg-lazyload": "^1.0.1",
     "lodash": "^4.17.15",
     "nanoid": "^2.1.11",

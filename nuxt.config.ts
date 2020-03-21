@@ -1,5 +1,7 @@
 import { Configuration } from '@nuxt/types'
 
+require('dotenv').config()
+
 const NuxtConfiguration: Partial<Configuration> = {
   mode: 'universal',
 
