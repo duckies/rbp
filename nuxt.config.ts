@@ -96,10 +96,14 @@ const NuxtConfiguration: Partial<Configuration> = {
     // Pulls css into files instead of injecting them in the header
     // for better cache support.
     // extractCSS: true,
-    cache: true,
     transpile: ['vee-validate/dist/rules'],
     babel: {
       plugins: ['@babel/plugin-proposal-optional-chaining']
+    },
+    extend: (config): void => {
+      config.node = {
+        fs: 'empty'
+      }
     }
   }
 }
