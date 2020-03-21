@@ -57,7 +57,7 @@
                   :to="`/applications/${submission.id}`"
                 >
                   <v-list-item-avatar>
-                    <v-img :src="avatar(submission.characters[0])" />
+                    <v-img :src="avatar(submission.author)" />
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title v-if="submission">{{ defaultingTitle(submission) }}</v-list-item-title>
@@ -99,6 +99,7 @@ import Hero from '@/components/Hero.vue'
 import { submissionStore, formStore, userStore } from '@/store'
 import { FormSubmission, Pagination } from '@/store/submission'
 import { Question } from '@/store/form'
+import { User, Avatars } from '../store/user'
 
 @Component({
   components: {
@@ -186,19 +187,21 @@ export default class Applications extends Vue {
     }
   }
 
-  avatar(character?: FormCharacter): string {
-    if (character && character.avatar_url) {
-      return character.avatar_url
-    } else if (userStore.avatars) {
-      if (userStore.avatars.gif) {
-        return userStore.avatars.gif
-      } else if (userStore.avatars.png) {
-        return userStore.avatars.png
+  avatar(user: User): string {
+    if (user.discord_avatar) {
+      const base = `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.discord_avatar}`
+
+      const avatars: Avatars = {
+        webp: `${base}.webp`,
+        png: `${base}.png`,
+        jpg: `${base}.jpg`
       }
-    } else if (character && character.race_id && character.gender) {
-      return `https://render-us.worldofwarcraft.com/shadow/avatar/${character.race_id}-${
-        character.gender === 'Female' ? 1 : 0
-      }.jpg`
+
+      if (user.discord_avatar.startsWith('a_')) {
+        avatars.gif = `${base}.gif`
+      }
+
+      return avatars.gif ? avatars.gif : avatars.png
     }
 
     return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
