@@ -108,11 +108,7 @@
     <v-row v-if="submission.files && submission.files.length">
       <v-col v-for="file in submission.files" :key="file.id" md="4">
         <v-card>
-          <v-img
-            :src="file.path.replace('uploads', 'http://localhost:3000/')"
-            aspect-ratio="1.7778"
-            @click="createLightbox(file)"
-          />
+          <v-img :src="baseFileURL + file.path" aspect-ratio="1.7778" @click="createLightbox(file)" />
         </v-card>
       </v-col>
     </v-row>
@@ -223,8 +219,12 @@ export default class ApplicationKey extends Vue {
     return formStore.questions
   }
 
+  get baseFileURL(): string {
+    return process.env.frontendBaseURL + '/'
+  }
+
   createLightbox(file: FileUpload): void {
-    this.lightbox_image = file.path.replace('uploads', 'http://localhost:3000/')
+    this.lightbox_image = this.baseFileURL + file.path
     this.lightbox = true
   }
 

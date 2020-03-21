@@ -10,7 +10,8 @@ const NuxtConfiguration: Partial<Configuration> = {
     localBaseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000',
     browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000',
     tokenEndpoint: process.env.TOKEN_ENDPOINT || 'http://localhost:3000/auth/discord/callback',
-    redirectURL: process.env.REDIRECT_URL || 'http://localhost:3030/callback'
+    redirectURL: process.env.REDIRECT_URL || 'http://localhost:3030/callback',
+    frontendBaseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3030'
   },
 
   server: {
