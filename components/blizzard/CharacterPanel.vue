@@ -4,9 +4,9 @@
       <v-card-title>Character Missing</v-card-title>
       <v-card-subtitle>Void lords have kidnapped your character.</v-card-subtitle>
       <v-card-text>
-        The character <strong>{{ name }} - {{ realmName }}</strong> was not found or was in error. Please check the
-        spelling and presence of any special characters. If the name and realm are correct, void lords may be assaulting
-        Blizzard servers. Our website will retry the download periodically.
+        The character <strong>{{ titledName }} - {{ realmName }}</strong> was not found or was in error. Please check
+        the spelling and presence of any special characters. If the name and realm are correct, void lords may be
+        assaulting Blizzard servers. Our website will retry the download periodically.
       </v-card-text>
 
       <v-layout>
@@ -33,10 +33,10 @@
                 <v-img :src="avatar" height="84" width="84" :class="`thumbnail class-color-${blizzard.class_id}`" />
               </div>
 
-              <h2 class="character--name mt-2">{{ name }}</h2>
-              <span v-if="hasSpecData" class="character--info mb-2"
-                >{{ blizzard.specialization_name }} {{ blizzard.class_name }}</span
-              >
+              <h2 class="character--name mt-2">{{ titledName }}</h2>
+              <span v-if="hasSpecData" class="character--info mb-2">
+                {{ blizzard.specialization_name }} {{ blizzard.class_name }}
+              </span>
               <span v-else class="character--info mb-2">{{ blizzard.race_name }} {{ blizzard.class_name }}</span>
 
               <div class="character--links">
@@ -179,6 +179,10 @@ export default class CharacterPanel extends Vue {
   @Prop() readonly raiderIO?: CharacterRaiderIO
   @Prop() readonly applying?: boolean
   @Prop() readonly order?: number
+
+  get titledName(): string {
+    return this.name.charAt(0).toUpperCase() + this.name.slice(1)
+  }
 
   get hasSpecData(): boolean {
     return Boolean(this.blizzard && this.blizzard.specialization_id)
