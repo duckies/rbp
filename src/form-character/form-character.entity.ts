@@ -111,6 +111,7 @@ export class FormCharacter extends BaseEntity {
       this.character_id = data.id;
     }
 
+    this.name = data.name;
     this.race_id = data.race.id;
     this.race_name = data.race.name;
     this.class_id = data.character_class.id;
