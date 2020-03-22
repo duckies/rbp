@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
-import { NestSchedule, Timeout } from 'nest-schedule';
+import { Cron, NestSchedule } from 'nest-schedule';
 
 @Injectable()
 export class CharacterScheduler extends NestSchedule {
@@ -12,8 +12,7 @@ export class CharacterScheduler extends NestSchedule {
     super();
   }
 
-  // @Cron('*/15 * * * *')
-  @Timeout(3000)
+  @Cron('0 * * * *')
   updateGuildRoster(): void {
     this.queue.add('updateGuildRoster');
   }

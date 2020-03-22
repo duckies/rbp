@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
-import { NestSchedule, Timeout } from 'nest-schedule';
+import { Cron, NestSchedule } from 'nest-schedule';
 
 @Injectable()
 export class FormCharacterScheduler extends NestSchedule {
@@ -12,7 +12,7 @@ export class FormCharacterScheduler extends NestSchedule {
     super();
   }
 
-  @Timeout(3000)
+  @Cron('0 * * * *')
   updateSubmissionCharacters() {
     this.queue.add('characterUpdate');
   }
