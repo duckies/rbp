@@ -178,7 +178,7 @@ export default class ApplicationKey extends Vue {
   }
 
   get isMod(): boolean {
-    return true
+    return userStore.isOfficer
   }
 
   get mainCharacter(): FormCharacter | undefined {

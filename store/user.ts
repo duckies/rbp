@@ -49,7 +49,7 @@ export default class UserModule extends VuexModule {
   }
 
   get isOfficer(): boolean {
-    return !!(this.user?.roles?.includes('Guild Master') || this.user?.roles?.includes('Officer'))
+    return !!(this.user?.roles?.includes('Rank0') || this.user?.roles?.includes('Rank1'))
   }
 
   get avatars(): Avatars | undefined {
