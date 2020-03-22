@@ -22,7 +22,7 @@ export class UserService {
     return this.repository.save({
       discord_id,
       discord_username: profile.username,
-      discord_descriminator: profile.discriminator,
+      discord_discriminator: profile.discriminator,
       discord_access_token: access_token,
       discord_refresh_token: refresh_token,
       discord_avatar: profile.avatar,

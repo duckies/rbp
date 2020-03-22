@@ -60,6 +60,12 @@ export class FormCharacter extends BaseEntity {
   @Column({ nullable: true })
   gender: string;
 
+  @Column({ nullable: true })
+  average_item_level: number;
+
+  @Column({ nullable: true })
+  equipped_item_level: number;
+
   /**
    * Optional Character Data Fields
    */
@@ -117,6 +123,8 @@ export class FormCharacter extends BaseEntity {
     this.class_id = data.character_class.id;
     this.class_name = data.character_class.name;
     this.gender = data.gender.name;
+    this.average_item_level = data.average_item_level;
+    this.equipped_item_level = data.equipped_item_level;
   }
 
   setCharacterSpecializationsSummary(data: ProfileAPI.CharacterSpecializationsSummary) {

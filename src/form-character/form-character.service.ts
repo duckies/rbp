@@ -18,7 +18,11 @@ export class FormCharacterService {
   ) {}
 
   async create(findCharacterDto: FindCharacterDto) {
-    const formCharacter = new FormCharacter(findCharacterDto.name, findCharacterDto.realm, findCharacterDto.region);
+    const formCharacter = new FormCharacter(
+      findCharacterDto.name,
+      findCharacterDto.realm,
+      findCharacterDto.region,
+    );
 
     const [summary, specs, media, equipment, raiderIO] = await Promise.all(
       [
@@ -27,6 +31,7 @@ export class FormCharacterService {
         this.profileService.getCharacterMediaSummary(findCharacterDto),
         this.profileService.getCharacterEquipmentSummary(findCharacterDto),
         this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+          RaiderIOCharacterFields.GEAR,
           RaiderIOCharacterFields.RAID_PROGRESSION,
           RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
         ]),
