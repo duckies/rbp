@@ -115,7 +115,7 @@
             </template>
 
             <v-list>
-              <v-list-item @click="$auth.logout()">
+              <v-list-item @click="$store.dispatch('user/logout')">
                 <v-list-item-title>Logout</v-list-item-title>
               </v-list-item>
               <!-- This could be explored later -->
