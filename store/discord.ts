@@ -1,5 +1,5 @@
-import { Action, Module, Mutation, VuexModule } from 'vuex-module-decorators'
-import { $axios } from '../utils/axios'
+import { ActionTree, GetterTree, MutationTree } from 'vuex'
+import { RootState } from '.'
 
 export interface Channel {
   position: number
@@ -37,46 +37,28 @@ export interface Discord {
   name: string
 }
 
-@Module({ namespaced: true, name: 'discord', stateFactory: true })
-export default class DiscordModule extends VuexModule {
-  status = 'unloaded'
-  discord: Discord | null = null
-  error: Error | null = null
+export const state = () => ({
+  discord: null as Discord | null,
+})
 
-  get channels(): Channel[] {
-    return this.discord ? this.discord.channels : []
-  }
+export type DiscordState = ReturnType<typeof state>
 
-  get onlineMembers(): number {
-    let count = 0
+export const getters: GetterTree<DiscordState, RootState> = {
+  channels: (state) => state?.discord?.channels || [],
+  online: (state) =>
+    state?.discord?.members.length ? state.discord.members.filter((m) => m.status === 'online').length : 0,
+}
 
-    if (!this.discord || !this.discord.members.length) {
-      return count
-    }
-
-    this.discord.members.forEach(member => {
-      if (member.status === 'online') count++
-    })
-
-    return count
-  }
-
-  @Mutation
-  setStatus(data: { status: string; error?: Error }): void {
-    this.status = data.status
-    this.error = data.error || null
-  }
-
-  @Mutation
-  setDiscord(discord: Discord): void {
-    this.discord = discord
+export const mutations: MutationTree<DiscordState> = {
+  setDiscord(state, discord: Discord) {
+    state.discord = discord
 
     // Order channels by their real positons.
-    this.discord.channels.sort((a, b) => a.position - b.position)
+    state.discord.channels.sort((a, b) => a.position - b.position)
 
-    this.discord.members.forEach(m => {
-      if (m.channel_id && this.discord) {
-        const channel = this.discord.channels.find(c => c.id === m.channel_id)
+    state.discord.members.forEach((m) => {
+      if (m.channel_id && state.discord) {
+        const channel = state.discord.channels.find((c) => c.id === m.channel_id)
 
         if (channel) {
           if (!channel.members) {
@@ -87,19 +69,13 @@ export default class DiscordModule extends VuexModule {
         }
       }
     })
-  }
+  },
+}
 
-  @Action({ commit: 'setDiscord' })
-  async getDiscord(): Promise<Discord | null> {
-    try {
-      this.context.commit('setStatus', { status: 'loading' })
-      const data = await $axios.$get('https://discordapp.com/api/servers/142372929961721856/embed.json')
+export const actions: ActionTree<DiscordState, RootState> = {
+  async getDiscord({ commit }) {
+    const resp = await this.$axios.$get('https://discordapp.com/api/servers/142372929961721856/embed.json')
 
-      this.context.commit('setStatus', { status: 'success' })
-      return data
-    } catch (error) {
-      this.context.commit('setStatus', { status: 'error', error })
-      return null
-    }
-  }
+    commit('setDiscord', resp)
+  },
 }

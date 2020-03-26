@@ -1,6 +1,5 @@
 @import './blizzard/classes.scss';
 @import './blizzard/items.scss';
-@import '~vuetify/src/components/VGrid/_mixins';
 
 a {
   text-decoration: none;
@@ -13,31 +12,6 @@ a {
   opacity: 0;
 }
 
-.v-app-bar {
-  backdrop-filter: blur(5px);
-  background-color: rgba(32, 33, 36, 0.7) !important;
-
-  .v-toolbar__content,
-  .v-toolbar__extension {
-    margin: 0 auto;
-    @include make-container-max-widths;
-  }
-
-  &.v-app-bar--is-scrolled {
-    background-color: #141517;
-  }
-}
-
-#page-title {
-  padding: 0;
-  margin-top: 5px;
-  text-transform: uppercase;
-  color: #fff;
-  font-weight: 900;
-  font-family: Khand, sans-serif !important;
-  font-size: 40px !important;
-}
-
 .justify-end-image-content {
   .v-responsive__content {
     display: flex;
@@ -46,22 +20,3 @@ a {
   }
 }
 
-.parallax-gradient {
-  overflow: hidden;
-
-  .v-parallax__image-container::after {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 400px;
-    background: repeat-x url('~assets/images/gradient.png');
-    content: '';
-    z-index: 5;
-  }
-}
-
-// AppBar Items
-.v-btn__content {
-  font-weight: 900;
-}

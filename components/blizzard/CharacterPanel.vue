@@ -73,7 +73,7 @@
           <v-col class="character--bg__clear pa-4">
             <h3 class="character--header" :class="`class-color-${blizzard.class_id}`">Raid Progression</h3>
             <div v-if="raiderIO && raids">
-              <div v-for="raid in trackedRaids" :key="raid.id">
+              <div v-for="raid in $store.state.raid.raids" :key="raid.id">
                 <div class="character--subheader">{{ raid.name }}</div>
                 <v-progress-linear
                   :class="`character--progress class-progress-${blizzard.class_id}`"
@@ -156,9 +156,7 @@ import { formatRelative, differenceInDays, format } from 'date-fns'
 import { Prop } from 'vue-property-decorator'
 import { EquippedItemsEntity } from '../../interfaces/profile/profile-equipment.interface'
 import { CharacterRaiderIO } from '../../interfaces/raiderIO/character.interface'
-import { raidStore, submissionStore } from '../../store'
-import { Raid } from '../../store/raid'
-import { FormCharacter } from '@/store/character'
+import { FormCharacter } from '../../store/roster'
 
 interface ComputedRaidList {
   [slug: string]: ComputedRaid
@@ -186,10 +184,6 @@ export default class CharacterPanel extends Vue {
 
   get hasSpecData(): boolean {
     return Boolean(this.blizzard && this.blizzard.specialization_id)
-  }
-
-  get trackedRaids(): Raid[] {
-    return raidStore.raids
   }
 
   get lastUpdated(): string {
@@ -220,8 +214,8 @@ export default class CharacterPanel extends Vue {
         [slug]: {
           // eslint-disable-next-line no-eval
           progress: eval(this.raiderIO.raid_progression[slug].summary.slice(0, -2)) * 100,
-          summary: this.raiderIO.raid_progression[slug].summary
-        }
+          summary: this.raiderIO.raid_progression[slug].summary,
+        },
       })
     }
 
@@ -246,13 +240,13 @@ export default class CharacterPanel extends Vue {
 
   setMain(): void {
     if (typeof this.order === 'number') {
-      submissionStore.setMainCharacter(this.order)
+      this.$store.state.submission.setMainCharacter(this.order)
     }
   }
 
   removeCharacter(): void {
     if (typeof this.order === 'number') {
-      submissionStore.removeCharacter(this.order)
+      this.$store.state.submission.removeCharacter(this.order)
     }
   }
 
@@ -269,16 +263,16 @@ export default class CharacterPanel extends Vue {
     }
 
     if (item.azerite_details && item.azerite_details.selected_powers) {
-      str += `&azerite-powers=${classId}:${item.azerite_details.selected_powers.map(p => p.id).join(':')}`
+      str += `&azerite-powers=${classId}:${item.azerite_details.selected_powers.map((p) => p.id).join(':')}`
     }
 
     if (item.enchantments) {
-      str += `&ench=${item.enchantments.map(e => e.enchantment_id).join(':')}`
+      str += `&ench=${item.enchantments.map((e) => e.enchantment_id).join(':')}`
     }
 
     if (item.sockets) {
       // This does not handle empty sockets yet.
-      str += `&gems=${item.sockets.map(s => (s.item ? s.item.id : '')).join(':')}`
+      str += `&gems=${item.sockets.map((s) => (s.item ? s.item.id : '')).join(':')}`
     }
 
     return str

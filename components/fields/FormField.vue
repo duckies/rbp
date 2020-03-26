@@ -27,14 +27,13 @@ import Checkbox from '@/components/fields/Checkbox.vue'
 import Select from '@/components/fields/Select.vue'
 import { Question } from '@/store/form'
 import { AnswerData } from '@/store/submission'
-import { submissionStore } from '@/store'
 
 export interface QuestionRules {
   required: boolean
 }
 
 @Component({
-  components: { TextArea, TextInput, Checkbox, Select, ValidationProvider }
+  components: { TextArea, TextInput, Checkbox, Select, ValidationProvider },
 })
 export default class FormField extends Vue {
   @Prop() readonly question!: Question
@@ -42,17 +41,17 @@ export default class FormField extends Vue {
 
   get rules(): QuestionRules {
     return {
-      required: this.question.required
+      required: this.question.required,
     }
   }
 
   get questionData(): AnswerData {
-    return submissionStore.answers[this.question.id]
+    return this.$store.state.submission.answers[this.question.id]
   }
 
   set questionData(value: AnswerData) {
     if (this.readOnly) return
-    submissionStore.setAnswer({ id: this.question.id, value })
+    this.$store.commit('submission/setAnswer', { id: this.question.id, value })
   }
 }
 </script>

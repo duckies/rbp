@@ -52,12 +52,12 @@
                 <h3>Application Status</h3>
                 <span class="status">{{ submission.status }}</span>
 
-                <template v-if="loggedIn && (isAuthor || isMod)">
+                <template v-if="$store.getters['user/isLoggedIn'] && (isAuthor || isMod)">
                   <h3>Application Control</h3>
                   <v-btn
                     v-if="isAuthor"
                     text
-                    :loading="submissionStoreLoading"
+                    :loading="$store.state.submission.isLoading"
                     @click="
                       dialogType = 'cancelled'
                       dialog = true
@@ -67,7 +67,7 @@
                   <v-btn
                     v-if="isMod"
                     text
-                    :loading="submissionStoreLoading"
+                    :loading="$store.state.submission.isLoading"
                     @click="
                       dialogType = 'approved'
                       dialog = true
@@ -77,7 +77,7 @@
                   <v-btn
                     v-if="isMod"
                     text
-                    :loading="submissionStoreLoading"
+                    :loading="$store.state.submission.isLoading"
                     @click="
                       dialogType = 'rejected'
                       dialog = true
@@ -95,7 +95,12 @@
     <!-- Submission Answers -->
     <v-row>
       <v-col>
-        <form-field v-for="question in formQuestions" :key="question.id" :question="question" :read-only="true" />
+        <form-field
+          v-for="question in $store.getters['form/questions']"
+          :key="question.id"
+          :question="question"
+          :read-only="true"
+        />
       </v-col>
     </v-row>
 
@@ -105,7 +110,7 @@
     </v-dialog>
 
     <!-- Images -->
-    <v-row v-if="submission.files && submission.files.length">
+    <v-row v-if="submission && submission.files && submission.files.length">
       <v-col v-for="file in submission.files" :key="file.id" md="4">
         <v-card>
           <v-img :src="baseFileURL + file.path" aspect-ratio="1.7778" @click="createLightbox(file)" />
@@ -121,39 +126,37 @@ import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
 import FormField from '@/components/fields/FormField.vue'
 import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
-import { formStore, submissionStore, discordStore, userStore, raidStore } from '@/store'
-import { FormCharacter } from '@/store/character'
-import { Question } from '@/store/form'
+import { FormCharacter } from '@/store/roster'
+import { Question } from '~/store/form'
 import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission'
 
 @Component({
   components: {
     FormField,
-    CharacterPanel
+    CharacterPanel,
   },
   validate({ params }) {
     return /^(\d+|open|approved|rejected|cancelled)$/.test(params.key)
   },
-  async fetch({ redirect, params }) {
+  async fetch({ redirect, params, store }) {
     const id = parseInt(params.key, 10)
     const param = id ? { id } : { status: params.key }
     const promises: Promise<unknown>[] = [
-      discordStore.getDiscord(),
-      submissionStore.getSubmissions({ take: 6, skip: 0, ...param }),
-      submissionStore.getSubmission(param)
+      store.dispatch('submission/getSubmissions', { take: 6, skip: 0, ...param }),
+      store.dispatch('submission/getSubmission', param),
     ]
 
-    if (!raidStore.raids || !raidStore.raids.length) {
-      promises.push(raidStore.getRaids())
+    if (!store.state.raid?.raids.length) {
+      promises.push(store.dispatch('raid/getRaids'))
     }
 
     await Promise.all(promises)
 
     // TODO: Fix double download this kind of redirect causes.
-    if (param.status && submissionStore.submission && submissionStore.submission.id) {
-      redirect(302, `/applications/${submissionStore.submission.id}`)
+    if (param.status && store.state.submission.submission && store.state.submission.submission.id) {
+      redirect(302, `/applications/${store.state.submission.submission.id}`)
     }
-  }
+  },
 })
 export default class ApplicationKey extends Vue {
   private dialog = false
@@ -164,33 +167,28 @@ export default class ApplicationKey extends Vue {
     cancelled:
       'Cancelling an application is irreversible. However, you may submit another application after this one is cancelled.',
     approved: 'Are you sure you want to approve this application?',
-    rejected: 'Are you sure you want to reject this application?'
-  }
-
-  get loggedIn(): boolean {
-    return userStore.loggedIn
+    rejected: 'Are you sure you want to reject this application?',
   }
 
   get isAuthor(): boolean {
     return (
-      !!userStore.user && !!this.submission && this.submission.author && userStore.user.id === this.submission.author.id
+      !!this.$store.state.user.user &&
+      !!this.$store.state.submission.submission &&
+      this.$store.state.submission.submission.author &&
+      this.$store.state.user.user.id === this.$store.state.submission.submission.author.id
     )
   }
 
   get isMod(): boolean {
-    return userStore.isOfficer
+    return this.$store.state.user.isOfficer
   }
 
   get mainCharacter(): FormCharacter | undefined {
-    return submissionStore.mainCharacter
+    return this.$store.state.submission.mainCharacter
   }
 
   get submission(): FormSubmission | null {
-    return submissionStore.submission
-  }
-
-  get submissionStoreLoading(): boolean {
-    return submissionStore.status === 'loading'
+    return this.$store.state.submission.submission
   }
 
   get authorAvatar(): string {
@@ -216,11 +214,11 @@ export default class ApplicationKey extends Vue {
   }
 
   get formQuestions(): Question[] {
-    return formStore.questions
+    return this.$store.state?.form.questions
   }
 
   get baseFileURL(): string {
-    return process.env.frontendBaseURL + '/'
+    return process.env.FRONTEND_BASE_URL + '/'
   }
 
   createLightbox(file: FileUpload): void {
@@ -242,17 +240,16 @@ export default class ApplicationKey extends Vue {
   }
 
   async changeStatus(status: SubmissionStatus): Promise<void> {
-    console.log('Changing submission status..')
     if (!this.submission || !this.submission.id) return
 
-    await submissionStore.updateSubmission({ status })
+    await this.$store.dispatch('submission/updateSubmission', { status })
 
-    if (submissionStore.status === 'success') {
+    if (this.$store.state.submission.status === 'success') {
       this.dialog = false
 
       await Promise.all([
-        submissionStore.getSubmissions({ take: 6, skip: 0, status }),
-        submissionStore.getSubmission({ status })
+        this.$store.dispatch('submission/getSubmissions', { take: 6, skip: 0, status }),
+        this.$store.dispatch('submission/getSubmission', { status }),
       ])
     }
   }

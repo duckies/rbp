@@ -16,7 +16,6 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import { Question } from '@/store/form'
-import { submissionStore } from '@/store'
 import { AnswerData } from '@/store/submission'
 
 @Component
@@ -26,13 +25,13 @@ export default class Select extends Vue {
   @Prop() readonly errors?: Error[]
 
   get questionData(): AnswerData {
-    return submissionStore.answers[this.question.id]
+    return this.$store.state.submission.answers[this.question.id]
   }
 
   set questionData(value) {
-    submissionStore.setAnswer({
+    this.$store.commit('submission/setAnswer', {
       id: this.question.id,
-      value
+      value,
     })
   }
 }

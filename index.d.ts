@@ -1,27 +1,25 @@
-import { NuxtAxiosInstance } from '@nuxtjs/axios'
-import { Context } from '@nuxt/types'
-import { Auth } from './plugins/auth'
-import Storage from './plugins/storage'
-
-// declare module 'nuxt-dropzone'
+import { NuxtCookies } from 'cookie-universal-nuxt'
+import { Auth } from '~/plugins/auth'
 
 declare module 'vue/types/vue' {
   interface Vue {
     $auth: Auth
-    $storage: Storage
   }
 }
 
 declare module '@nuxt/types' {
   interface Context {
-    $storage: Storage
+    $auth: Auth
+  }
+
+  interface NuxtAppOptions {
     $auth: Auth
   }
 }
 
-declare module 'vuex-module-decorators/dist/types/' {
-  interface VuexModule {
-    $axios: NuxtAxiosInstance
-    $nuxt: Context
+declare module 'vuex/types/index' {
+  interface Store<S> {
+    $auth: Auth
+    $cookies: NuxtCookies
   }
 }

@@ -1,5 +1,5 @@
-import { Module, Mutation, VuexModule, Action } from 'vuex-module-decorators'
-import { $axios } from '../utils/axios'
+import { GetterTree, MutationTree, ActionTree } from 'vuex'
+import { RootState } from '~/store'
 
 export interface User {
   id: number
@@ -14,11 +14,10 @@ export interface User {
   discord_avatar?: string
   discord_username: string
   discord_discriminator: string
-  roles: string[] // Replace with role enum.
+  roles: string[]
   createdAt: Date
   updatedAt: Date
   lastLogin?: Date
-  // knownCharacters?:
 }
 
 export interface Avatars {
@@ -36,70 +35,59 @@ export const Ranks: string[] = [
   'Raider',
   'Recruit',
   'Fan',
-  'Player Alt'
+  'Player Alt',
 ]
 
-@Module({ namespaced: true, name: 'user', stateFactory: true })
-export default class UserModule extends VuexModule {
-  public status = 'unloaded'
-  public user: User | null = null
+export const state = () => ({
+  status: 'unloaded',
+  user: null as User | null,
+  token: null as string | null,
+})
 
-  get loggedIn(): boolean {
-    return !!this.user && Object.keys(this.user).length > 0
-  }
+export type UserState = ReturnType<typeof state>
 
-  get isOfficer(): boolean {
-    return !!(this.user?.roles?.includes('Rank0') || this.user?.roles?.includes('Rank1'))
-  }
-
-  get avatars(): Avatars | undefined {
-    if (!this.user || !this.user.discord_avatar) {
-      return undefined
+export const getters: GetterTree<UserState, RootState> = {
+  isLoggedIn: (state) => state.user != null,
+  isOfficer: (state) => !!(state?.user?.roles.includes('Rank0') || state?.user?.roles.includes('Rank1')),
+  avatar: (state) => {
+    if (state?.user?.discord_avatar) {
+      return `https://cdn.discordapp.com/avatars/${state.user.discord_id}/${state.user.discord_avatar}${
+        state.user.discord_avatar.includes('a_') ? '.gif' : '.png'
+      }`
     }
+  },
+  tag: (state) => (state.user == null ? null : `${state.user.discord_username}#${state.user.discord_discriminator}`),
+}
 
-    const base = `https://cdn.discordapp.com/avatars/${this.user.discord_id}/${this.user.discord_avatar}`
+export const mutations: MutationTree<UserState> = {
+  setStatus(state, status: string) {
+    state.status = status
+  },
+  setUser(state, user: User | null) {
+    state.user = user ? Object.assign({}, user) : null
+  },
+  setToken(state, token: string | null) {
+    state.token = token
+  },
+}
 
-    const avatars: Avatars = {
-      webp: `${base}.webp`,
-      png: `${base}.png`,
-      jpg: `${base}.jpg`
+export const actions: ActionTree<UserState, RootState> = {
+  logout({ commit }) {
+    commit('setUser', null)
+    commit('setToken', null)
+    this.$cookies.remove('rbp.token')
+  },
+  async getProfile({ commit }) {
+    try {
+      commit('setStatus', 'loading')
+
+      const resp = await this.app.$axios.$get('/user/me')
+
+      commit('setStatus', 'success')
+      commit('setUser', resp)
+    } catch (error) {
+      commit('setStatus', 'error')
+      console.error(error)
     }
-
-    if (this.user.discord_avatar.startsWith('a_')) {
-      avatars.gif = `${base}.gif`
-    }
-
-    return avatars
-  }
-
-  get tag(): string | undefined {
-    return !!this.user && this.user.discord_username && this.user.discord_discriminator
-      ? `${this.user.discord_username}#${this.user.discord_discriminator}`
-      : undefined
-  }
-
-  @Mutation
-  setStatus(status: string): void {
-    this.status = status
-  }
-
-  @Mutation
-  setUser(user: User): void {
-    this.user = Object.assign({}, user)
-  }
-
-  @Mutation
-  clearUser(): void {
-    this.user = Object.assign({})
-  }
-
-  @Action({ commit: 'setUser', rawError: true })
-  async fetchUser(): Promise<User> {
-    this.context.commit('setStatus', 'loading')
-
-    const resp = await $axios.$get('/user/me')
-
-    this.context.commit('setStatus', 'success')
-    return resp
-  }
+  },
 }

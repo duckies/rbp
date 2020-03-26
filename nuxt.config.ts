@@ -6,22 +6,21 @@ const NuxtConfiguration: Partial<Configuration> = {
   mode: 'universal',
 
   env: {
-    fileUploadURL: process.env.FRONTEND_FILE_UPLOAD_URL || 'http://localhost:3000/submission/upload',
-    localBaseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000',
-    browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000',
-    tokenEndpoint: process.env.TOKEN_ENDPOINT || 'http://localhost:3000/auth/discord/callback',
-    redirectURL: process.env.REDIRECT_URL || 'http://localhost:3030/callback',
-    frontendBaseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3030'
+    FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL || 'http://localhost:3030',
+    FRONTEND_FILE_UPLOAD_URL: process.env.FRONTEND_FILE_UPLOAD_URL || 'http://localhost:3000/submission/upload',
+    BACKEND_SERVER_BASE_URL: process.env.BACKEND_SERVER_BASE_URL || 'http://localhost:3000/',
+    BACKEND_CLIENT_BASE_URL: process.env.BACKEND_CLIENT_BASE_URL || 'http://localhost:3000/',
+    REDIRECT_URL: process.env.REDIRECT_URL || 'http://localhost:3030/callback',
   },
 
   server: {
-    port: process.env.FRONTEND_PORT || 3030
+    port: process.env.FRONTEND_PORT || 3030,
   },
 
   typescript: {
     typeCheck: {
-      eslint: true
-    }
+      eslint: true,
+    },
   },
 
   head: {
@@ -32,81 +31,72 @@ const NuxtConfiguration: Partial<Configuration> = {
       {
         hid: 'description',
         name: 'description',
-        content: 'Gaming platform for the Really Bad Players World of Warcraft Horde guild on Area 52'
-      }
+        content: 'Gaming platform for the Really Bad Players World of Warcraft Horde guild on Area 52',
+      },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }]
+    link: [
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Khand:700,900' },
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900' },
+    ],
   },
 
-  loading: { color: '#854feb' },
+  loading: { color: '#854feb', continuous: true },
 
   css: ['~/assets/style/global.scss'],
 
-  plugins: [
-    { src: '~/plugins/flickity', ssr: false },
-    { src: '~/plugins/vee-validate' },
-    { src: '~/plugins/axios-accessor' },
-    { src: '~/plugins/auth' }
-  ],
+  plugins: ['~/plugins/auth', '~/plugins/axios', '~/plugins/vee-validate', { src: '~/plugins/flickity', ssr: false }],
 
-  modules: ['@nuxtjs/axios', 'nuxt-webfontloader'],
+  modules: ['@nuxtjs/axios', 'cookie-universal-nuxt'],
 
   vuetify: {
     customVariables: ['~/assets/styles/vuetify.scss'],
-    progressiveImages: true,
     icons: {
-      iconfont: 'mdiSvg'
-      // values: {
-      //   discord: {
-      //     component: DiscordLogoSVG
-      //   }
-      // }
+      iconfont: 'mdiSvg',
     },
     frameworkOptions: {
       theme: {
         dark: true,
         themes: {
           dark: {
-            primary: '#854feb'
-          }
-        }
-      }
-    }
+            primary: '#854feb',
+          },
+        },
+      },
+    },
   },
 
   axios: {
-    baseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000',
-    browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000'
-  },
-
-  webfontloader: {
-    google: {
-      families: ['Roboto:300,400,500,700', 'Khand:300,400,500,700', 'Roboto+Mono:400', 'Montserrat:400,500,700']
-    }
+    baseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000/',
+    browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000/',
   },
 
   vue: {
     config: {
-      productionTip: false
-    }
+      productionTip: false,
+    },
   },
+
+  router: {
+    middleware: 'callback',
+  },
+
+  modern: process.env.NODE_ENV === 'production',
 
   buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
 
   build: {
-    // Pulls css into files instead of injecting them in the header
-    // for better cache support.
-    extractCSS: true,
+    extractCSS: process.env.NODE_ENV === 'production',
     transpile: ['vee-validate/dist/rules'],
     babel: {
-      plugins: ['@babel/plugin-proposal-optional-chaining']
+      plugins: ['@babel/plugin-proposal-optional-chaining'],
     },
     extend: (config): void => {
       config.node = {
-        fs: 'empty'
+        fs: 'empty',
       }
-    }
-  }
+    },
+  },
 }
 
 export default NuxtConfiguration

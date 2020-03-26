@@ -74,42 +74,42 @@ import Discord from '@/components/Discord.vue'
 
 @Component({
   components: {
-    Discord
-  }
+    Discord,
+  },
 })
 export default class Footer extends Vue {
   navItems = [
     {
       title: 'Home',
-      link: '/'
+      link: '/',
     },
     {
       title: 'About',
-      link: '/about'
+      link: '/about',
     },
     {
       title: 'Application',
-      link: '/apply'
+      link: '/apply',
     },
     {
       title: 'Roster',
-      link: '/roster'
-    }
+      link: '/roster',
+    },
   ]
 
   private readonly resources = [
     {
       title: 'WarcraftLogs',
-      link: 'https://www.warcraftlogs.com/guild/calendar/500023/'
+      link: 'https://www.warcraftlogs.com/guild/calendar/500023/',
     },
     {
       title: 'WoWProgress',
-      link: 'https://www.wowprogress.com/guild/us/area-52/Really+Bad+Players'
+      link: 'https://www.wowprogress.com/guild/us/area-52/Really+Bad+Players',
     },
     {
       title: 'RaiderIO',
-      link: 'https://raider.io/guilds/us/area-52/Really%20Bad%20Players'
-    }
+      link: 'https://raider.io/guilds/us/area-52/Really%20Bad%20Players',
+    },
   ]
 }
 </script>

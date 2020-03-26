@@ -25,7 +25,7 @@ const WoWRaces: Record<number, string> = {
   31: 'Zandalari Troll',
   32: 'Kul Tiran',
   34: 'Dark Iron Dwarf',
-  36: "Mag'har Orc"
+  36: "Mag'har Orc",
 }
 
 export default WoWRaces

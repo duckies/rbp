@@ -19,8 +19,8 @@ import Hero from '@/components/Hero.vue'
 
 @Component({
   components: {
-    Hero
-  }
+    Hero,
+  },
 })
 export default class ErrorLayout extends Vue {
   @Prop() error!: Error

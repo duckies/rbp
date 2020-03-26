@@ -1,13 +1,13 @@
-import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
-import { $axios } from '../utils/axios'
-import { AnswerData } from './submission'
+import { ActionTree, GetterTree, MutationTree } from 'vuex'
+import { Answers } from './submission'
+import { RootState } from '~/store'
 
 export enum FieldType {
   TEXTINPUT = 'TextInput',
   TEXTAREA = 'TextArea',
   CHECKBOX = 'Checkbox',
   DIALOG = 'Dialog',
-  UPLOAD = 'Upload'
+  UPLOAD = 'Upload',
 }
 
 export interface Question {
@@ -32,51 +32,47 @@ export interface Form {
   lastUpdated: Date
 }
 
-@Module({ namespaced: true, name: 'form', stateFactory: true })
-export default class FormStore extends VuexModule {
-  public status = 'unloaded'
-  public fields: Question[] = []
-  public form?: Form = undefined
-  public error?: Error = undefined
+export const state = () => ({
+  status: 'unloaded',
+  error: null as Error | null,
+  fields: [] as Question[],
+  form: null as Form | null,
+})
 
-  get questions(): Question[] {
-    return this.form && this.form.questions ? this.form.questions : []
-  }
+export type FormState = ReturnType<typeof state>
 
-  @Mutation
-  setStatus(data: { status: string; error?: Error }): void {
-    this.status = data.status
-    this.error = data.error
-  }
+export const getters: GetterTree<FormState, RootState> = {
+  isLoading: (state) => state.status === 'loading',
+  questions: (state) => (state.form?.questions ? state.form.questions : []),
+}
 
-  @Mutation
-  setError(error: Error): void {
-    this.error = error
-  }
+export const mutations: MutationTree<FormState> = {
+  setStatus(state, data: { status: string; error: Error }) {
+    state.status = data.status
+    state.error = data.error || null
+  },
+  setForm(state, form: Form) {
+    state.form = form
+  },
+}
 
-  @Mutation
-  setForm(form: Form): void {
-    this.form = form
-  }
-
-  @Action({ commit: 'setForm' })
-  async getForm(id: number): Promise<Form | undefined> {
+export const actions: ActionTree<FormState, RootState> = {
+  async getForm({ commit }, id: number) {
     try {
-      this.context.commit('setStatus', { status: 'loading' })
+      commit('setStatus', { status: 'loading' })
 
-      const resp = await $axios.$get('/form/' + id)
+      const resp = await this.$axios.$get('/form/' + id)
 
-      // This may need to go elsewhere depending on future logic.
-      const answers: Record<string, AnswerData | null> = {}
+      const answers: Answers = {}
       resp.questions.forEach((q: Question) => {
         answers[q.id] = null
       })
-      this.context.commit('submission/setAnswers', answers, { root: true })
 
-      this.context.commit('setStatus', { status: 'success' })
-      return resp
+      commit('submission/setAnswers', answers, { root: true })
+      commit('setForm', resp)
+      commit('setStatus', { status: 'success' })
     } catch (error) {
-      this.context.commit('setStatus', { status: 'failure', error })
+      commit('setStatus', { status: 'error', error })
     }
-  }
+  },
 }

@@ -7,984 +7,984 @@ export const RealmSlugs: RealmList[] = [
   { name: 'Aegwynn', slug: 'aegwynn' },
   {
     name: 'Aerie Peak',
-    slug: 'aerie-peak'
+    slug: 'aerie-peak',
   },
   {
     name: 'Agamaggan',
-    slug: 'agamaggan'
+    slug: 'agamaggan',
   },
   {
     name: 'Aggramar',
-    slug: 'aggramar'
+    slug: 'aggramar',
   },
   {
     name: 'Akama',
-    slug: 'akama'
+    slug: 'akama',
   },
   {
     name: 'Alexstrasza',
-    slug: 'alexstrasza'
+    slug: 'alexstrasza',
   },
   {
     name: 'Alleria',
-    slug: 'alleria'
+    slug: 'alleria',
   },
   {
     name: 'Altar of Storms',
-    slug: 'altar-of-storms'
+    slug: 'altar-of-storms',
   },
   {
     name: 'Alterac Mountains',
-    slug: 'alterac-mountains'
+    slug: 'alterac-mountains',
   },
   {
     name: "Aman'Thul",
-    slug: 'amanthul'
+    slug: 'amanthul',
   },
   {
     name: 'Andorhal',
-    slug: 'andorhal'
+    slug: 'andorhal',
   },
   {
     name: 'Anetheron',
-    slug: 'anetheron'
+    slug: 'anetheron',
   },
   {
     name: 'Antonidas',
-    slug: 'antonidas'
+    slug: 'antonidas',
   },
   {
     name: "Anub'arak",
-    slug: 'anubarak'
+    slug: 'anubarak',
   },
   {
     name: 'Anvilmar',
-    slug: 'anvilmar'
+    slug: 'anvilmar',
   },
   {
     name: 'Arathor',
-    slug: 'arathor'
+    slug: 'arathor',
   },
   {
     name: 'Archimonde',
-    slug: 'archimonde'
+    slug: 'archimonde',
   },
   {
     name: 'Area 52',
-    slug: 'area-52'
+    slug: 'area-52',
   },
   {
     name: 'Argent Dawn',
-    slug: 'argent-dawn'
+    slug: 'argent-dawn',
   },
   {
     name: 'Arthas',
-    slug: 'arthas'
+    slug: 'arthas',
   },
   {
     name: 'Arygos',
-    slug: 'arygos'
+    slug: 'arygos',
   },
   {
     name: 'Auchindoun',
-    slug: 'auchindoun'
+    slug: 'auchindoun',
   },
   {
     name: 'Azgalor',
-    slug: 'azgalor'
+    slug: 'azgalor',
   },
   {
     name: 'Azjol-Nerub',
-    slug: 'azjolnerub'
+    slug: 'azjolnerub',
   },
   {
     name: 'Azralon',
-    slug: 'azralon'
+    slug: 'azralon',
   },
   {
     name: 'Azshara',
-    slug: 'azshara'
+    slug: 'azshara',
   },
   {
     name: 'Azuremyst',
-    slug: 'azuremyst'
+    slug: 'azuremyst',
   },
   {
     name: 'Baelgun',
-    slug: 'baelgun'
+    slug: 'baelgun',
   },
   {
     name: 'Balnazzar',
-    slug: 'balnazzar'
+    slug: 'balnazzar',
   },
   {
     name: 'Barthilas',
-    slug: 'barthilas'
+    slug: 'barthilas',
   },
   {
     name: 'Black Dragonflight',
-    slug: 'black-dragonflight'
+    slug: 'black-dragonflight',
   },
   {
     name: 'Blackhand',
-    slug: 'blackhand'
+    slug: 'blackhand',
   },
   {
     name: 'Blackrock',
-    slug: 'blackrock'
+    slug: 'blackrock',
   },
   {
     name: 'Blackwater Raiders',
-    slug: 'blackwater-raiders'
+    slug: 'blackwater-raiders',
   },
   {
     name: 'Blackwing Lair',
-    slug: 'blackwing-lair'
+    slug: 'blackwing-lair',
   },
   {
     name: "Blade's Edge",
-    slug: 'blades-edge'
+    slug: 'blades-edge',
   },
   {
     name: 'Bladefist',
-    slug: 'bladefist'
+    slug: 'bladefist',
   },
   {
     name: 'Bleeding Hollow',
-    slug: 'bleeding-hollow'
+    slug: 'bleeding-hollow',
   },
   {
     name: 'Blood Furnace',
-    slug: 'blood-furnace'
+    slug: 'blood-furnace',
   },
   {
     name: 'Bloodhoof',
-    slug: 'bloodhoof'
+    slug: 'bloodhoof',
   },
   {
     name: 'Bloodscalp',
-    slug: 'bloodscalp'
+    slug: 'bloodscalp',
   },
   {
     name: 'Bonechewer',
-    slug: 'bonechewer'
+    slug: 'bonechewer',
   },
   {
     name: 'Borean Tundra',
-    slug: 'borean-tundra'
+    slug: 'borean-tundra',
   },
   {
     name: 'Boulderfist',
-    slug: 'boulderfist'
+    slug: 'boulderfist',
   },
   {
     name: 'Bronzebeard',
-    slug: 'bronzebeard'
+    slug: 'bronzebeard',
   },
   {
     name: 'Burning Blade',
-    slug: 'burning-blade'
+    slug: 'burning-blade',
   },
   {
     name: 'Burning Legion',
-    slug: 'burning-legion'
+    slug: 'burning-legion',
   },
   {
     name: 'Caelestrasz',
-    slug: 'caelestrasz'
+    slug: 'caelestrasz',
   },
   {
     name: 'Cairne',
-    slug: 'cairne'
+    slug: 'cairne',
   },
   {
     name: 'Cenarion Circle',
-    slug: 'cenarion-circle'
+    slug: 'cenarion-circle',
   },
   {
     name: 'Cenarius',
-    slug: 'cenarius'
+    slug: 'cenarius',
   },
   {
     name: "Cho'gall",
-    slug: 'chogall'
+    slug: 'chogall',
   },
   {
     name: 'Chromaggus',
-    slug: 'chromaggus'
+    slug: 'chromaggus',
   },
   {
     name: 'Coilfang',
-    slug: 'coilfang'
+    slug: 'coilfang',
   },
   {
     name: 'Crushridge',
-    slug: 'crushridge'
+    slug: 'crushridge',
   },
   {
     name: 'Daggerspine',
-    slug: 'daggerspine'
+    slug: 'daggerspine',
   },
   {
     name: 'Dalaran',
-    slug: 'dalaran'
+    slug: 'dalaran',
   },
   {
     name: 'Dalvengyr',
-    slug: 'dalvengyr'
+    slug: 'dalvengyr',
   },
   {
     name: 'Dark Iron',
-    slug: 'dark-iron'
+    slug: 'dark-iron',
   },
   {
     name: 'Darkspear',
-    slug: 'darkspear'
+    slug: 'darkspear',
   },
   {
     name: 'Darrowmere',
-    slug: 'darrowmere'
+    slug: 'darrowmere',
   },
   {
     name: "Dath'Remar",
-    slug: 'dathremar'
+    slug: 'dathremar',
   },
   {
     name: 'Dawnbringer',
-    slug: 'dawnbringer'
+    slug: 'dawnbringer',
   },
   {
     name: 'Deathwing',
-    slug: 'deathwing'
+    slug: 'deathwing',
   },
   {
     name: 'Demon Soul',
-    slug: 'demon-soul'
+    slug: 'demon-soul',
   },
   {
     name: 'Dentarg',
-    slug: 'dentarg'
+    slug: 'dentarg',
   },
   {
     name: 'Destromath',
-    slug: 'destromath'
+    slug: 'destromath',
   },
   {
     name: 'Dethecus',
-    slug: 'dethecus'
+    slug: 'dethecus',
   },
   {
     name: 'Detheroc',
-    slug: 'detheroc'
+    slug: 'detheroc',
   },
   {
     name: 'Doomhammer',
-    slug: 'doomhammer'
+    slug: 'doomhammer',
   },
   {
     name: 'Draenor',
-    slug: 'draenor'
+    slug: 'draenor',
   },
   {
     name: 'Dragonblight',
-    slug: 'dragonblight'
+    slug: 'dragonblight',
   },
   {
     name: 'Dragonmaw',
-    slug: 'dragonmaw'
+    slug: 'dragonmaw',
   },
   {
     name: "Drak'Tharon",
-    slug: 'draktharon'
+    slug: 'draktharon',
   },
   {
     name: "Drak'thul",
-    slug: 'drakthul'
+    slug: 'drakthul',
   },
   {
     name: 'Draka',
-    slug: 'draka'
+    slug: 'draka',
   },
   {
     name: 'Drakkari',
-    slug: 'drakkari'
+    slug: 'drakkari',
   },
   {
     name: 'Dreadmaul',
-    slug: 'dreadmaul'
+    slug: 'dreadmaul',
   },
   {
     name: 'Drenden',
-    slug: 'drenden'
+    slug: 'drenden',
   },
   {
     name: 'Dunemaul',
-    slug: 'dunemaul'
+    slug: 'dunemaul',
   },
   {
     name: 'Durotan',
-    slug: 'durotan'
+    slug: 'durotan',
   },
   {
     name: 'Duskwood',
-    slug: 'duskwood'
+    slug: 'duskwood',
   },
   {
     name: 'Earthen Ring',
-    slug: 'earthen-ring'
+    slug: 'earthen-ring',
   },
   {
     name: 'Echo Isles',
-    slug: 'echo-isles'
+    slug: 'echo-isles',
   },
   {
     name: 'Eitrigg',
-    slug: 'eitrigg'
+    slug: 'eitrigg',
   },
   {
     name: "Eldre'Thalas",
-    slug: 'eldrethalas'
+    slug: 'eldrethalas',
   },
   {
     name: 'Elune',
-    slug: 'elune'
+    slug: 'elune',
   },
   {
     name: 'Emerald Dream',
-    slug: 'emerald-dream'
+    slug: 'emerald-dream',
   },
   {
     name: 'Eonar',
-    slug: 'eonar'
+    slug: 'eonar',
   },
   {
     name: 'Eredar',
-    slug: 'eredar'
+    slug: 'eredar',
   },
   {
     name: 'Executus',
-    slug: 'executus'
+    slug: 'executus',
   },
   {
     name: 'Exodar',
-    slug: 'exodar'
+    slug: 'exodar',
   },
   {
     name: 'Farstriders',
-    slug: 'farstriders'
+    slug: 'farstriders',
   },
   {
     name: 'Feathermoon',
-    slug: 'feathermoon'
+    slug: 'feathermoon',
   },
   {
     name: 'Fenris',
-    slug: 'fenris'
+    slug: 'fenris',
   },
   {
     name: 'Firetree',
-    slug: 'firetree'
+    slug: 'firetree',
   },
   {
     name: 'Fizzcrank',
-    slug: 'fizzcrank'
+    slug: 'fizzcrank',
   },
   {
     name: 'Frostmane',
-    slug: 'frostmane'
+    slug: 'frostmane',
   },
   {
     name: 'Frostmourne',
-    slug: 'frostmourne'
+    slug: 'frostmourne',
   },
   {
     name: 'Frostwolf',
-    slug: 'frostwolf'
+    slug: 'frostwolf',
   },
   {
     name: 'Galakrond',
-    slug: 'galakrond'
+    slug: 'galakrond',
   },
   {
     name: 'Gallywix',
-    slug: 'gallywix'
+    slug: 'gallywix',
   },
   {
     name: 'Garithos',
-    slug: 'garithos'
+    slug: 'garithos',
   },
   {
     name: 'Garona',
-    slug: 'garona'
+    slug: 'garona',
   },
   {
     name: 'Garrosh',
-    slug: 'garrosh'
+    slug: 'garrosh',
   },
   {
     name: 'Ghostlands',
-    slug: 'ghostlands'
+    slug: 'ghostlands',
   },
   {
     name: 'Gilneas',
-    slug: 'gilneas'
+    slug: 'gilneas',
   },
   {
     name: 'Gnomeregan',
-    slug: 'gnomeregan'
+    slug: 'gnomeregan',
   },
   {
     name: 'Goldrinn',
-    slug: 'goldrinn'
+    slug: 'goldrinn',
   },
   {
     name: 'Gorefiend',
-    slug: 'gorefiend'
+    slug: 'gorefiend',
   },
   {
     name: 'Gorgonnash',
-    slug: 'gorgonnash'
+    slug: 'gorgonnash',
   },
   {
     name: 'Greymane',
-    slug: 'greymane'
+    slug: 'greymane',
   },
   {
     name: 'Grizzly Hills',
-    slug: 'grizzly-hills'
+    slug: 'grizzly-hills',
   },
   {
     name: "Gul'dan",
-    slug: 'guldan'
+    slug: 'guldan',
   },
   {
     name: 'Gundrak',
-    slug: 'gundrak'
+    slug: 'gundrak',
   },
   {
     name: 'Gurubashi',
-    slug: 'gurubashi'
+    slug: 'gurubashi',
   },
   {
     name: 'Hakkar',
-    slug: 'hakkar'
+    slug: 'hakkar',
   },
   {
     name: 'Haomarush',
-    slug: 'haomarush'
+    slug: 'haomarush',
   },
   {
     name: 'Hellscream',
-    slug: 'hellscream'
+    slug: 'hellscream',
   },
   {
     name: 'Hydraxis',
-    slug: 'hydraxis'
+    slug: 'hydraxis',
   },
   {
     name: 'Hyjal',
-    slug: 'hyjal'
+    slug: 'hyjal',
   },
   {
     name: 'Icecrown',
-    slug: 'icecrown'
+    slug: 'icecrown',
   },
   {
     name: 'Illidan',
-    slug: 'illidan'
+    slug: 'illidan',
   },
   {
     name: 'Jaedenar',
-    slug: 'jaedenar'
+    slug: 'jaedenar',
   },
   {
     name: "Jubei'Thos",
-    slug: 'jubeithos'
+    slug: 'jubeithos',
   },
   {
     name: "Kael'thas",
-    slug: 'kaelthas'
+    slug: 'kaelthas',
   },
   {
     name: 'Kalecgos',
-    slug: 'kalecgos'
+    slug: 'kalecgos',
   },
   {
     name: 'Kargath',
-    slug: 'kargath'
+    slug: 'kargath',
   },
   {
     name: "Kel'Thuzad",
-    slug: 'kelthuzad'
+    slug: 'kelthuzad',
   },
   {
     name: 'Khadgar',
-    slug: 'khadgar'
+    slug: 'khadgar',
   },
   {
     name: 'Khaz Modan',
-    slug: 'khaz-modan'
+    slug: 'khaz-modan',
   },
   {
     name: "Khaz'goroth",
-    slug: 'khazgoroth'
+    slug: 'khazgoroth',
   },
   {
     name: "Kil'jaeden",
-    slug: 'kiljaeden'
+    slug: 'kiljaeden',
   },
   {
     name: 'Kilrogg',
-    slug: 'kilrogg'
+    slug: 'kilrogg',
   },
   {
     name: 'Kirin Tor',
-    slug: 'kirin-tor'
+    slug: 'kirin-tor',
   },
   {
     name: 'Korgath',
-    slug: 'korgath'
+    slug: 'korgath',
   },
   {
     name: 'Korialstrasz',
-    slug: 'korialstrasz'
+    slug: 'korialstrasz',
   },
   {
     name: 'Kul Tiras',
-    slug: 'kul-tiras'
+    slug: 'kul-tiras',
   },
   {
     name: 'Laughing Skull',
-    slug: 'laughing-skull'
+    slug: 'laughing-skull',
   },
   {
     name: 'Lethon',
-    slug: 'lethon'
+    slug: 'lethon',
   },
   {
     name: 'Lightbringer',
-    slug: 'lightbringer'
+    slug: 'lightbringer',
   },
   {
     name: "Lightning's Blade",
-    slug: 'lightnings-blade'
+    slug: 'lightnings-blade',
   },
   {
     name: 'Lightninghoof',
-    slug: 'lightninghoof'
+    slug: 'lightninghoof',
   },
   {
     name: 'Llane',
-    slug: 'llane'
+    slug: 'llane',
   },
   {
     name: 'Lothar',
-    slug: 'lothar'
+    slug: 'lothar',
   },
   {
     name: 'Madoran',
-    slug: 'madoran'
+    slug: 'madoran',
   },
   {
     name: 'Maelstrom',
-    slug: 'maelstrom'
+    slug: 'maelstrom',
   },
   {
     name: 'Magtheridon',
-    slug: 'magtheridon'
+    slug: 'magtheridon',
   },
   {
     name: 'Maiev',
-    slug: 'maiev'
+    slug: 'maiev',
   },
   {
     name: "Mal'Ganis",
-    slug: 'malganis'
+    slug: 'malganis',
   },
   {
     name: 'Malfurion',
-    slug: 'malfurion'
+    slug: 'malfurion',
   },
   {
     name: 'Malorne',
-    slug: 'malorne'
+    slug: 'malorne',
   },
   {
     name: 'Malygos',
-    slug: 'malygos'
+    slug: 'malygos',
   },
   {
     name: 'Mannoroth',
-    slug: 'mannoroth'
+    slug: 'mannoroth',
   },
   {
     name: 'Medivh',
-    slug: 'medivh'
+    slug: 'medivh',
   },
   {
     name: 'Misha',
-    slug: 'misha'
+    slug: 'misha',
   },
   {
     name: "Mok'Nathal",
-    slug: 'moknathal'
+    slug: 'moknathal',
   },
   {
     name: 'Moon Guard',
-    slug: 'moon-guard'
+    slug: 'moon-guard',
   },
   {
     name: 'Moonrunner',
-    slug: 'moonrunner'
+    slug: 'moonrunner',
   },
   {
     name: "Mug'thol",
-    slug: 'mugthol'
+    slug: 'mugthol',
   },
   {
     name: 'Muradin',
-    slug: 'muradin'
+    slug: 'muradin',
   },
   {
     name: 'Nagrand',
-    slug: 'nagrand'
+    slug: 'nagrand',
   },
   {
     name: 'Nathrezim',
-    slug: 'nathrezim'
+    slug: 'nathrezim',
   },
   {
     name: 'Nazgrel',
-    slug: 'nazgrel'
+    slug: 'nazgrel',
   },
   {
     name: 'Nazjatar',
-    slug: 'nazjatar'
+    slug: 'nazjatar',
   },
   {
     name: 'Nemesis',
-    slug: 'nemesis'
+    slug: 'nemesis',
   },
   {
     name: "Ner'zhul",
-    slug: 'nerzhul'
+    slug: 'nerzhul',
   },
   {
     name: 'Nesingwary',
-    slug: 'nesingwary'
+    slug: 'nesingwary',
   },
   {
     name: 'Nordrassil',
-    slug: 'nordrassil'
+    slug: 'nordrassil',
   },
   {
     name: 'Norgannon',
-    slug: 'norgannon'
+    slug: 'norgannon',
   },
   {
     name: 'Onyxia',
-    slug: 'onyxia'
+    slug: 'onyxia',
   },
   {
     name: 'Perenolde',
-    slug: 'perenolde'
+    slug: 'perenolde',
   },
   {
     name: 'Proudmoore',
-    slug: 'proudmoore'
+    slug: 'proudmoore',
   },
   {
     name: "Quel'Thalas",
-    slug: 'quelthalas'
+    slug: 'quelthalas',
   },
   {
     name: "Quel'dorei",
-    slug: 'queldorei'
+    slug: 'queldorei',
   },
   {
     name: 'Ragnaros',
-    slug: 'ragnaros'
+    slug: 'ragnaros',
   },
   {
     name: 'Ravencrest',
-    slug: 'ravencrest'
+    slug: 'ravencrest',
   },
   {
     name: 'Ravenholdt',
-    slug: 'ravenholdt'
+    slug: 'ravenholdt',
   },
   {
     name: 'Rexxar',
-    slug: 'rexxar'
+    slug: 'rexxar',
   },
   {
     name: 'Rivendare',
-    slug: 'rivendare'
+    slug: 'rivendare',
   },
   {
     name: 'Runetotem',
-    slug: 'runetotem'
+    slug: 'runetotem',
   },
   {
     name: 'Sargeras',
-    slug: 'sargeras'
+    slug: 'sargeras',
   },
   {
     name: 'Saurfang',
-    slug: 'saurfang'
+    slug: 'saurfang',
   },
   {
     name: 'Scarlet Crusade',
-    slug: 'scarlet-crusade'
+    slug: 'scarlet-crusade',
   },
   {
     name: 'Scilla',
-    slug: 'scilla'
+    slug: 'scilla',
   },
   {
     name: "Sen'jin",
-    slug: 'senjin'
+    slug: 'senjin',
   },
   {
     name: 'Sentinels',
-    slug: 'sentinels'
+    slug: 'sentinels',
   },
   {
     name: 'Shadow Council',
-    slug: 'shadow-council'
+    slug: 'shadow-council',
   },
   {
     name: 'Shadowmoon',
-    slug: 'shadowmoon'
+    slug: 'shadowmoon',
   },
   {
     name: 'Shadowsong',
-    slug: 'shadowsong'
+    slug: 'shadowsong',
   },
   {
     name: 'Shandris',
-    slug: 'shandris'
+    slug: 'shandris',
   },
   {
     name: 'Shattered Halls',
-    slug: 'shattered-halls'
+    slug: 'shattered-halls',
   },
   {
     name: 'Shattered Hand',
-    slug: 'shattered-hand'
+    slug: 'shattered-hand',
   },
   {
     name: "Shu'halo",
-    slug: 'shuhalo'
+    slug: 'shuhalo',
   },
   {
     name: 'Silver Hand',
-    slug: 'silver-hand'
+    slug: 'silver-hand',
   },
   {
     name: 'Silvermoon',
-    slug: 'silvermoon'
+    slug: 'silvermoon',
   },
   {
     name: 'Sisters of Elune',
-    slug: 'sisters-of-elune'
+    slug: 'sisters-of-elune',
   },
   {
     name: 'Skullcrusher',
-    slug: 'skullcrusher'
+    slug: 'skullcrusher',
   },
   {
     name: 'Skywall',
-    slug: 'skywall'
+    slug: 'skywall',
   },
   {
     name: 'Smolderthorn',
-    slug: 'smolderthorn'
+    slug: 'smolderthorn',
   },
   {
     name: 'Spinebreaker',
-    slug: 'spinebreaker'
+    slug: 'spinebreaker',
   },
   {
     name: 'Spirestone',
-    slug: 'spirestone'
+    slug: 'spirestone',
   },
   {
     name: 'Staghelm',
-    slug: 'staghelm'
+    slug: 'staghelm',
   },
   {
     name: 'Steamwheedle Cartel',
-    slug: 'steamwheedle-cartel'
+    slug: 'steamwheedle-cartel',
   },
   {
     name: 'Stonemaul',
-    slug: 'stonemaul'
+    slug: 'stonemaul',
   },
   {
     name: 'Stormrage',
-    slug: 'stormrage'
+    slug: 'stormrage',
   },
   {
     name: 'Stormreaver',
-    slug: 'stormreaver'
+    slug: 'stormreaver',
   },
   {
     name: 'Stormscale',
-    slug: 'stormscale'
+    slug: 'stormscale',
   },
   {
     name: 'Suramar',
-    slug: 'suramar'
+    slug: 'suramar',
   },
   {
     name: 'Tanaris',
-    slug: 'tanaris'
+    slug: 'tanaris',
   },
   {
     name: 'Terenas',
-    slug: 'terenas'
+    slug: 'terenas',
   },
   {
     name: 'Terokkar',
-    slug: 'terokkar'
+    slug: 'terokkar',
   },
   {
     name: 'Thaurissan',
-    slug: 'thaurissan'
+    slug: 'thaurissan',
   },
   {
     name: 'The Forgotten Coast',
-    slug: 'the-forgotten-coast'
+    slug: 'the-forgotten-coast',
   },
   {
     name: 'The Scryers',
-    slug: 'the-scryers'
+    slug: 'the-scryers',
   },
   {
     name: 'The Underbog',
-    slug: 'the-underbog'
+    slug: 'the-underbog',
   },
   {
     name: 'The Venture Co',
-    slug: 'the-venture-co'
+    slug: 'the-venture-co',
   },
   {
     name: 'Thorium Brotherhood',
-    slug: 'thorium-brotherhood'
+    slug: 'thorium-brotherhood',
   },
   {
     name: 'Thrall',
-    slug: 'thrall'
+    slug: 'thrall',
   },
   {
     name: 'Thunderhorn',
-    slug: 'thunderhorn'
+    slug: 'thunderhorn',
   },
   {
     name: 'Thunderlord',
-    slug: 'thunderlord'
+    slug: 'thunderlord',
   },
   {
     name: 'Tichondrius',
-    slug: 'tichondrius'
+    slug: 'tichondrius',
   },
   {
     name: 'Tol Barad',
-    slug: 'tol-barad'
+    slug: 'tol-barad',
   },
   {
     name: 'Tortheldrin',
-    slug: 'tortheldrin'
+    slug: 'tortheldrin',
   },
   {
     name: 'Trollbane',
-    slug: 'trollbane'
+    slug: 'trollbane',
   },
   {
     name: 'Turalyon',
-    slug: 'turalyon'
+    slug: 'turalyon',
   },
   {
     name: 'Twisting Nether',
-    slug: 'twisting-nether'
+    slug: 'twisting-nether',
   },
   {
     name: 'Uldaman',
-    slug: 'uldaman'
+    slug: 'uldaman',
   },
   {
     name: 'Uldum',
-    slug: 'uldum'
+    slug: 'uldum',
   },
   {
     name: 'Undermine',
-    slug: 'undermine'
+    slug: 'undermine',
   },
   {
     name: 'Ursin',
-    slug: 'ursin'
+    slug: 'ursin',
   },
   {
     name: 'Uther',
-    slug: 'uther'
+    slug: 'uther',
   },
   {
     name: 'Vashj',
-    slug: 'vashj'
+    slug: 'vashj',
   },
   {
     name: "Vek'nilash",
-    slug: 'veknilash'
+    slug: 'veknilash',
   },
   {
     name: 'Velen',
-    slug: 'velen'
+    slug: 'velen',
   },
   {
     name: 'Warsong',
-    slug: 'warsong'
+    slug: 'warsong',
   },
   {
     name: 'Whisperwind',
-    slug: 'whisperwind'
+    slug: 'whisperwind',
   },
   {
     name: 'Wildhammer',
-    slug: 'wildhammer'
+    slug: 'wildhammer',
   },
   {
     name: 'Windrunner',
-    slug: 'windrunner'
+    slug: 'windrunner',
   },
   {
     name: 'Winterhoof',
-    slug: 'winterhoof'
+    slug: 'winterhoof',
   },
   {
     name: 'Wyrmrest Accord',
-    slug: 'wyrmrest-accord'
+    slug: 'wyrmrest-accord',
   },
   {
     name: 'Ysera',
-    slug: 'ysera'
+    slug: 'ysera',
   },
   {
     name: 'Ysondre',
-    slug: 'ysondre'
+    slug: 'ysondre',
   },
   {
     name: 'Zangarmarsh',
-    slug: 'zangarmarsh'
+    slug: 'zangarmarsh',
   },
   {
     name: "Zul'jin",
-    slug: 'zuljin'
+    slug: 'zuljin',
   },
   {
     name: 'Zuluhed',
-    slug: 'zuluhed'
-  }
+    slug: 'zuluhed',
+  },
 ]
 
 const Realms: string[] = [
@@ -1233,7 +1233,7 @@ const Realms: string[] = [
   "Dath'Remar",
   "Jubei'Thos",
   'Gundrak',
-  'Saurfang'
+  'Saurfang',
 ]
 
 export default Realms

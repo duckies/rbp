@@ -1,165 +1,77 @@
-import { Context, Plugin } from '@nuxt/types'
+import { Plugin, Context } from '@nuxt/types'
 import nanoid from 'nanoid'
-import { $axios } from '../utils/axios'
-import Storage from './storage'
-import { encodeQuery } from './utils'
-import { userStore } from '@/store'
 
-/**
- * Auth plugin derived from @nuxtjs/auth without store.
- * Use until this issue is fixed: https://github.com/championswimmer/vuex-module-decorators/issues/227
- */
-
-interface AuthOptions {
-  redirectPath: string
-  tokenEndpoint: string
-  authorization_endpoint: string
-  redirect_uri: string
-  scope: string[]
-  client_id: string
-  grant_type: string
-  response_type: string
+export const encodeQuery = (queryObject: object): string => {
+  return Object.entries(queryObject)
+    .filter((tuple) => typeof Object.values(tuple)[0] !== 'undefined')
+    .map(([key, value]) => encodeURIComponent(key) + (value != null ? '=' + encodeURIComponent(value) : ''))
+    .join('&')
 }
 
 export class Auth {
   private readonly ctx: Context
-  private readonly options: AuthOptions
 
-  constructor(ctx: Context, options: AuthOptions) {
+  constructor(ctx: Context) {
     this.ctx = ctx
-    this.options = options
   }
 
-  /**
-   * Initializes the authentication module.
-   */
-  async init(): Promise<void> {
-    const token = this.ctx.$storage.getCookie('token')
-
-    if (token && typeof token === 'string') {
-      this._setToken(token)
-    }
-
-    await this._handleCallback()
-
-    if (token) {
-      return this._fetchUserOnce()
-    }
-  }
-
-  login(): void {
+  public login() {
+    const authorization_endpoint = 'https://discordapp.com/api/oauth2/authorize'
     const opts = {
-      client_id: this.options.client_id,
-      scope: this.options.scope,
+      response_type: 'code',
+      client_id: '678486837626404885',
+      scope: ['identify'],
+      redirect_uri: process.env.REDIRECT_URL,
       state: nanoid(),
-      redirect_uri: this.options.redirect_uri,
-      response_type: this.options.response_type
+      prompt: 'none',
     }
 
-    this.ctx.$storage.setCookie('state', opts.state)
-    this.ctx.$storage.setCookie('redirect', this.ctx.route.fullPath)
+    this.ctx.app.$cookies.set('rbp.state', opts.state)
+    this.ctx.app.$cookies.set('rbp.redirect', this.ctx.app.context.route.path)
 
-    const url = this.options.authorization_endpoint + '?' + encodeQuery(opts)
+    const url = authorization_endpoint + '?' + encodeQuery(opts)
 
-    window.location.assign(url)
+    window.location.href = url
   }
 
-  logout(): void {
-    this.ctx.$storage.removeCookie('token')
-    this._clearToken()
-    userStore.clearUser()
-  }
+  public async handleCallback() {
+    if (this.ctx.route.path !== '/callback' || !this.ctx.route.query.code) return
 
-  private async _handleCallback(): Promise<boolean> {
-    if (this.ctx.route.path !== this.options.redirectPath) {
-      return false
-    }
+    const state = this.ctx.app.$cookies.get('rbp.state')
+    this.ctx.app.$cookies.set('rbp.state', null)
 
-    // Callback flow is not supported on static sites.
-    if (process.server && process.static) {
-      return false
-    }
-
-    const parsedQuery = Object.assign({}, this.ctx.route.query, this.ctx.route.hash)
-
-    const state = this.ctx.$storage.getCookie('state')
-    this.ctx.$storage.removeCookie('state')
-
-    if (!state || parsedQuery.state !== state) {
-      return false
-    }
+    if (!state || this.ctx.route.query.state !== state) return
 
     try {
-      const data = await $axios.$get(this.options.tokenEndpoint, {
-        params: { code: parsedQuery.code }
+      const resp = await this.ctx.app.$axios.$get('/auth/discord/callback', {
+        params: { code: this.ctx.route.query.code },
+        baseURL: process.server ? process.env.BACKEND_SERVER_BASE_URL : process.env.BACKEND_CLIENT_BASE_URL,
       })
 
-      // Send token to auth
-      if (data.token) {
-        this._setToken(data.token)
-        this.ctx.$storage.setCookie('token', data.token)
+      if (resp.token) {
+        this.ctx.app.$cookies.set('rbp.token', resp.token)
+        this.ctx.app.$axios.setHeader('Authorization', `Bearer ${resp.token}`)
       }
 
-      const redirect = this.ctx.$storage.getCookie('redirect')
-      this.ctx.$storage.removeCookie('redirect')
+      const redirect = this.ctx.app.$cookies.get('rbp.redirect')
+      this.ctx.app.$cookies.set('rbp.redirect', false)
 
-      if (redirect && typeof redirect === 'string') {
-        this.redirect(redirect)
+      if (redirect) {
+        this.ctx.redirect(redirect)
       }
-
-      return true
     } catch (error) {
-      console.error(error)
-      return false
-    }
-  }
-
-  public redirect(path: string): void {
-    this.ctx.redirect(path)
-  }
-
-  // Sets the Authorization header for all axios requests.
-  private _setToken(token: string): void {
-    $axios.setHeader('Authorization', 'Bearer ' + token)
-  }
-
-  // Removes the Authorization header for all axios requests.
-  private _clearToken(): void {
-    $axios.setHeader('Authorization', false)
-  }
-
-  private async _fetchUserOnce(): Promise<void> {
-    try {
-      await userStore.fetchUser()
-    } catch (error) {
+      this.ctx.app.$store.state.auth.setUser(null)
+      this.ctx.app.$axios.setHeader('Authorization', false)
       console.error(error)
     }
-
-    return Promise.resolve()
   }
 }
 
-const authPlugin: Plugin = (ctx, inject) => {
-  const options = {
-    redirectPath: '/callback',
-    tokenEndpoint: ctx.env.tokenEndpoint,
-    authorization_endpoint: 'https://discordapp.com/api/oauth2/authorize',
-    redirect_uri: ctx.env.redirectURL,
-    scope: ['identify'],
-    client_id: '678486837626404885',
-    grant_type: 'authorization_code',
-    response_type: 'code'
-  }
-  const $auth = new Auth(ctx, options)
-  const $storage = new Storage(ctx, {})
+const AuthPlugin: Plugin = (ctx, inject) => {
+  const $auth = new Auth(ctx)
 
-  inject('storage', $storage)
   inject('auth', $auth)
-
-  ctx.$storage = $storage
   ctx.$auth = $auth
-
-  return $auth.init()
 }
 
-export default authPlugin
+export default AuthPlugin

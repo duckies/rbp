@@ -27,25 +27,25 @@ export default {
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     subtitle: {
       type: String,
-      required: true
+      required: true,
     },
     background: {
       type: String,
-      required: true
+      required: true,
     },
     buttonLink: {
       type: String,
-      required: true
+      required: true,
     },
     buttonText: {
       type: String,
-      required: true
-    }
-  }
+      required: true,
+    },
+  },
 }
 </script>
 

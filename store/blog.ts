@@ -1,6 +1,6 @@
-import { Module, Mutation, VuexModule, Action } from 'vuex-module-decorators'
-import { $axios } from '../utils/axios'
-import { User } from './user'
+import { ActionTree, MutationTree } from 'vuex'
+import { RootState } from '~/store'
+import { User } from '~/store/user'
 
 export interface Article {
   id: number
@@ -14,27 +14,29 @@ export interface Article {
   updatedAt: Date
 }
 
-@Module({ namespaced: true, name: 'blog', stateFactory: true })
-export default class BlogModule extends VuexModule {
-  public status = 'unloaded'
-  public articles: Article[] = []
+export const state = () => ({
+  status: 'unloaded',
+  articles: [] as Article[],
+})
 
-  @Mutation
-  setStatus(status: string): void {
-    this.status = status
-  }
+export type BlogState = ReturnType<typeof state>
 
-  @Mutation
-  setArticles(articles: Article[]): void {
-    this.articles = articles
-  }
+export const mutations: MutationTree<BlogState> = {
+  setStatus(state, status: string) {
+    state.status = status
+  },
+  setArticles(state, articles: Article[]) {
+    state.articles = articles
+  },
+}
 
-  @Action({ commit: 'setArticles', rawError: true })
-  async getArticles(): Promise<Article[]> {
-    this.context.commit('setStatus', 'loading')
+export const actions: ActionTree<BlogState, RootState> = {
+  async getArticles({ commit }) {
+    commit('setStatus', 'loading')
 
-    const resp = await $axios.$get('/article')
+    const resp = await this.$axios.$get('/article')
 
-    return resp.result
-  }
+    commit('setStatus', 'success')
+    commit('setArticles', resp.result)
+  },
 }

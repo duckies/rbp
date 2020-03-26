@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2018",
     "module": "esnext",
     "moduleResolution": "node",
     "lib": ["esnext", "esnext.asynciterable", "dom"],
@@ -24,6 +24,7 @@
       "@types/vue-markdown",
       "@nuxt/types",
       "@nuxtjs/axios",
+      "cookie-universal-nuxt",
     ]
   },
   "exclude": ["node_modules"]
