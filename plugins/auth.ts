@@ -60,7 +60,7 @@ export class Auth {
         this.ctx.redirect(redirect)
       }
     } catch (error) {
-      this.ctx.app.$store.state.auth.setUser(null)
+      this.ctx.app.$store.state.user.setUser(null)
       this.ctx.app.$axios.setHeader('Authorization', false)
       console.error(error)
     }
