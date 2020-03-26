@@ -2,7 +2,7 @@
   <v-app dark>
     <v-navigation-drawer v-model="drawer" disable-resize-watcher app>
       <template v-slot:prepend>
-        <v-list-item v-if="isAuthenticated">
+        <v-list-item v-if="$store.getters['user/isLoggedIn']">
           <v-list-item-avatar>
             <img :src="avatar ? avatar : 'https://render-us.worldofwarcraft.com/shadow/avatar/10-1.jpg'" />
 
@@ -100,7 +100,7 @@
           <discord-logo />
         </v-btn>
 
-        <template v-if="isAuthenticated && user">
+        <template v-if="$store.state.user.user">
           <v-menu offset-y dark transition="slide-y-transition" bottom left>
             <template v-slot:activator="{ on }">
               <v-btn text v-on="on">
@@ -142,11 +142,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { User } from '../store/user'
-import Footer from '@/components/Footer.vue'
-import SkullLogo from '@/components/svg/SkullLogo.vue'
-import DiscordLogo from '@/components/svg/discord.vue'
-import { userStore } from '@/store'
+import { User } from '~/store/user'
+import Footer from '~/components/Footer.vue'
+import SkullLogo from '~/components/svg/SkullLogo.vue'
+import DiscordLogo from '~/components/svg/discord.vue'
 
 export interface Link {
   icon?: string
@@ -160,8 +159,8 @@ export interface Link {
   components: {
     SkullLogo,
     DiscordLogo,
-    Footer
-  }
+    Footer,
+  },
 })
 export default class DefaultLayout extends Vue {
   drawer = false
@@ -177,8 +176,8 @@ export default class DefaultLayout extends Vue {
       submenu: [
         { title: 'Ranks', to: '/about/ranks' },
         { title: 'Loot Distribution', to: '/about/loot' },
-        { title: 'Required Addons', to: '/about/addons' }
-      ]
+        { title: 'Required Addons', to: '/about/addons' },
+      ],
     },
     {
       icon: 'mdi-skull-outline',
@@ -186,16 +185,16 @@ export default class DefaultLayout extends Vue {
       to: '/apply',
       submenu: [
         { icon: 'mdi-fountain-pen-tip', title: 'Apply Now', to: '/apply' },
-        { icon: 'mdi-skull-crossbones-outline', title: 'Applications', to: '/applications' }
-      ]
+        { icon: 'mdi-skull-crossbones-outline', title: 'Applications', to: '/applications' },
+      ],
     },
     { icon: 'mdi-ghost', title: 'Roster', to: '/roster' },
     {
       icon: 'mdi-sword-cross',
       title: 'Logs',
       href: 'https://www.warcraftlogs.com/guild/calendar/500023/',
-      target: '_blank'
-    }
+      target: '_blank',
+    },
   ]
 
   get submenu(): Link[] | undefined {
@@ -204,34 +203,47 @@ export default class DefaultLayout extends Vue {
     }
 
     const path = this.$route.name.split('-')[0]
-    const link = this.links.find(l => l.lower === path)
+    const link = this.links.find((l) => l.lower === path)
 
     return link && link.submenu ? link.submenu : undefined
   }
 
-  get isAuthenticated(): boolean {
-    return userStore.loggedIn
-  }
-
   get user(): User | null {
-    return userStore.user
+    return this.$store.state.user.user
   }
 
-  get tag(): string | undefined {
-    return userStore.tag
+  get tag(): string | null {
+    return this.$store.getters['user/tag']
   }
 
   get avatar(): string | undefined {
-    if (!userStore.avatars) return undefined
-
-    if (userStore.avatars.gif) {
-      return userStore.avatars.gif
-    } else {
-      return userStore.avatars.png
-    }
+    return this.$store.getters['user/avatar']
   }
 }
 </script>
+
+<style lang="scss">
+@import '~vuetify/src/components/VGrid/_mixins';
+
+.v-app-bar {
+  backdrop-filter: blur(5px);
+  background-color: rgba(32, 33, 36, 0.7) !important;
+
+  .v-toolbar__content,
+  .v-toolbar__extension {
+    margin: 0 auto;
+    @include make-container-max-widths;
+  }
+
+  &.v-app-bar--is-scrolled {
+    background-color: #141517;
+  }
+
+  .v-btn__content {
+    font-weight: 900;
+  }
+}
+</style>
 
 <style lang="scss" scoped>
 .toolbar-title {

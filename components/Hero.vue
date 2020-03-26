@@ -33,6 +33,21 @@ export default class Hero extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.parallax-gradient {
+  overflow: hidden;
+
+  .v-parallax__image-container::after {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 400px;
+    background: repeat-x url('~assets/images/gradient.png');
+    content: '';
+    z-index: 5;
+  }
+}
+
 .hero {
   position: relative;
 

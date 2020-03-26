@@ -1,6 +1,6 @@
 <template>
   <div class="raiderIO">
-    <v-card v-for="tier in tiers" :key="tier.slug" height="200" class="mb-4">
+    <v-card v-for="tier in $store.state.raid.raids" :key="tier.slug" height="200" class="mb-4">
       <!-- Fix this to ignore raids without backgrounds -->
       <v-img
         v-if="tier.background"
@@ -32,8 +32,8 @@
       </v-img>
     </v-card>
 
-    <v-layout v-if="rankings" wrap>
-      <v-flex v-for="(raid, index) in rankings" :key="index" xs4>
+    <v-layout v-if="$store.getters['raid/rankings'].length" wrap>
+      <v-flex v-for="(raid, index) in $store.getters['raid/rankings']" :key="index" xs4>
         <v-card height="120" class="mb-4">
           <v-img :src="raid.background">
             <v-card-title>
@@ -56,7 +56,7 @@
     />
     <info-box
       title="Discord"
-      :subtitle="onlineMembers + ' members currently online.'"
+      :subtitle="$store.getters['discord/online'] + ' members currently online.'"
       button-text="Join Our Discord"
       button-link="https://discord.gg/mbwbzAs"
       background="https://s3.amazonaws.com/files.enjin.com/632721/material/images/sidebar/WLOP.jpg"
@@ -67,9 +67,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Raid } from '../store/raid'
 import InfoBox from '@/components/InfoBox.vue'
-import { raidStore, discordStore } from '@/store'
 
 export interface Ranking {
   rank: number
@@ -79,42 +77,10 @@ export interface Ranking {
 
 @Component({
   components: {
-    InfoBox
-  }
+    InfoBox,
+  },
 })
-export default class Sidebar extends Vue {
-  get tiers(): Raid[] {
-    return raidStore.raids
-  }
-
-  get onlineMembers(): number {
-    return discordStore.onlineMembers
-  }
-
-  get rankings(): Ranking[] | undefined {
-    if (!this.tiers.length) {
-      return undefined
-    }
-
-    return [
-      {
-        rank: this.tiers[0].world,
-        title: 'World',
-        background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/azeroth.jpg'
-      },
-      {
-        rank: this.tiers[0].region,
-        title: 'Region',
-        background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/barrens.jpg'
-      },
-      {
-        rank: this.tiers[0].realm,
-        title: 'Realm',
-        background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/blackrock.jpg'
-      }
-    ]
-  }
-}
+export default class Sidebar extends Vue {}
 </script>
 
 <style lang="scss" scoped>

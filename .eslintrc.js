@@ -19,7 +19,8 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   // add your custom rules here
   rules: {
-    'no-console': process.env.NODE_ENV === 'production' ? 'errir' : 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
     'no-explicit-any': 'off',
     '@typescript-eslint/camelcase': 'off'
   },

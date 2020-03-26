@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="loading || downloading" class="mb-4">
+  <v-card :loading="$store.state.roster.isLoading || downloading" class="mb-4">
     <v-card-title>Character Selection</v-card-title>
 
     <v-card-text>
@@ -30,7 +30,7 @@
         </v-col>
         <v-col cols="auto">
           <v-btn
-            :loading="loading || downloading"
+            :loading="$store.state.roster.isLoading || downloading"
             :disabled="!realm || !name"
             class="character-add"
             color="primary"
@@ -49,12 +49,12 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { ValidationProvider } from 'vee-validate'
-import { characterStore, userStore, submissionStore } from '../../store'
-import { FormCharacterIdentity } from '@/store/submission'
-import { RealmSlugs, RealmList } from '@/interfaces/realms'
+import { RealmSlugs, RealmList } from '../../interfaces/realms'
+import { FormCharacterIdentity } from '../../store/submission'
+import { CharacterLookupDto } from '../../interfaces/character-lookup.dto'
 
 @Component({
-  components: { ValidationProvider }
+  components: { ValidationProvider },
 })
 export default class CharacterPicker extends Vue {
   private downloading = false
@@ -63,20 +63,12 @@ export default class CharacterPicker extends Vue {
   private characterError = ''
   private realm: RealmList = {
     name: '',
-    slug: ''
-  }
-
-  get loading(): boolean {
-    return characterStore.isLoading
-  }
-
-  get characters(): FormCharacterIdentity[] {
-    return submissionStore.characters
+    slug: '',
   }
 
   async mounted(): Promise<void> {
-    if (userStore.loggedIn) {
-      await characterStore.getKnownCharacters()
+    if (this.$store.getters['user/isLoggedIn']) {
+      await this.$store.dispatch('roster/getKnownCharacters')
     }
   }
 
@@ -89,12 +81,12 @@ export default class CharacterPicker extends Vue {
       name: this.name,
       realm: this.realm.slug,
       realm_name: this.realm.name,
-      region: 'us'
+      region: 'us',
     }
 
     // Avoid trying to make requests when we already have this character.
-    const existing = this.characters.find(
-      c =>
+    const existing = this.$store.state.submission.characters.find(
+      (c: CharacterLookupDto) =>
         c.name.toLowerCase() === character.name.toLowerCase() &&
         c.realm === character.realm &&
         c.region === character.region
@@ -110,7 +102,7 @@ export default class CharacterPicker extends Vue {
     try {
       this.downloading = true
 
-      const { raiderIO, ...blizzard } = await characterStore.getCharacterData(character)
+      const { raiderIO, ...blizzard } = await this.$store.dispatch('roster/getCharacterData', character)
 
       character.blizzard = blizzard
       character.raiderIO = raiderIO
@@ -120,7 +112,7 @@ export default class CharacterPicker extends Vue {
       this.downloading = false
     }
 
-    submissionStore.addCharacter(character)
+    this.$store.commit('submission/addCharacter', character)
   }
 }
 </script>

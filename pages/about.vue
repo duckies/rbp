@@ -21,8 +21,8 @@ import Hero from '@/components/Hero.vue'
 
 @Component({
   components: {
-    Hero
-  }
+    Hero,
+  },
 })
 export default class AboutPage extends Vue {
   background = '/images/backgrounds/about-background.jpg'
@@ -31,7 +31,7 @@ export default class AboutPage extends Vue {
   links = [
     { title: 'Ranks', to: '/about/ranks' },
     { title: 'Loot Distribution', to: '/about/loot' },
-    { title: 'Required Addons', to: '/about/addons' }
+    { title: 'Required Addons', to: '/about/addons' },
   ]
 }
 </script>

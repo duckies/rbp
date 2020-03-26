@@ -94,17 +94,16 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
-import { FormCharacter } from '../store/character'
-import Hero from '@/components/Hero.vue'
-import { submissionStore, formStore } from '@/store'
-import { FormSubmission, Pagination } from '@/store/submission'
-import { Question } from '@/store/form'
-import { User, Avatars } from '@/store/user'
+import { FormCharacter } from '~/store/roster'
+import Hero from '~/components/Hero.vue'
+import { FormSubmission, Pagination } from '~/store/submission'
+import { Avatars, User } from '~/store/user'
+import { Question } from '~/store/form'
 
 @Component({
   components: {
-    Hero
-  }
+    Hero,
+  },
 })
 export default class Applications extends Vue {
   private invalidDialog = false
@@ -112,29 +111,29 @@ export default class Applications extends Vue {
     { text: 'Open', value: 'open' },
     { text: 'Approved', value: 'approved' },
     { text: 'Rejected', value: 'rejected' },
-    { text: 'Cancelled', value: 'cancelled' }
+    { text: 'Cancelled', value: 'cancelled' },
   ]
 
   get submissionBackground(): string {
-    return submissionStore.submission &&
-      submissionStore.submission.characters &&
-      submissionStore.submission.characters[0].render_url
-      ? submissionStore.submission.characters[0].render_url
+    return this.$store.state.submission.submission &&
+      this.$store.state.submission.submission.characters &&
+      this.$store.state.submission.submission.characters[0].render_url
+      ? this.$store.state.submission.submission.characters[0].render_url
       : 'https://cdnassets.raider.io/images/login/backgrounds/bfa/blood-temple.jpg'
   }
 
   get title(): string {
     return `${
-      submissionStore.submission &&
-      submissionStore.submission.characters &&
-      submissionStore.submission.characters[0].name
-        ? submissionStore.submission.characters[0].name + ' Application'
+      this.$store.state.submission.submission &&
+      this.$store.state.submission.submission.characters &&
+      this.$store.state.submission.submission.characters[0].name
+        ? this.$store.state.submission.submission.characters[0].name + ' Application'
         : 'Really Bad Applications'
     }`
   }
 
   get submission(): FormSubmission | null {
-    return submissionStore.submission
+    return this.$store.state.submission.submission
   }
 
   get mainCharacter(): FormCharacter | null {
@@ -142,27 +141,27 @@ export default class Applications extends Vue {
   }
 
   get submissions(): FormSubmission[] {
-    return submissionStore.submissions
+    return this.$store.state.submission.submissions
   }
 
   get formQuestions(): Question[] {
-    return formStore.questions
+    return this.$store.state.form.questions
   }
 
   get statusCategory(): string {
-    return submissionStore.statusCategory
+    return this.$store.state.submission.statusCategory
   }
 
   get pagination(): Pagination {
-    return submissionStore.pagination
+    return this.$store.state.submission.pagination
   }
 
   get paginationCurrent(): number {
-    return submissionStore.pagination.current
+    return this.$store.state.submission.pagination.current
   }
 
   set paginationCurrent(current: number) {
-    submissionStore.setPaginationCurrent(current)
+    this.$store.dispatch('submission/setPaginationCurrent', current)
   }
 
   created(): void {
@@ -194,7 +193,7 @@ export default class Applications extends Vue {
       const avatars: Avatars = {
         webp: `${base}.webp`,
         png: `${base}.png`,
-        jpg: `${base}.jpg`
+        jpg: `${base}.jpg`,
       }
 
       if (user.discord_avatar.startsWith('a_')) {
@@ -217,7 +216,7 @@ export default class Applications extends Vue {
 
   classUnread(submission: FormSubmission): object {
     return {
-      unread: submission.seen
+      unread: submission.seen,
     }
   }
 
@@ -226,7 +225,7 @@ export default class Applications extends Vue {
 
     if (character && character.class_id) {
       Object.assign(classObj, {
-        [`class-blur-bg-${character.class_id}`]: true
+        [`class-blur-bg-${character.class_id}`]: true,
       })
     }
 
@@ -235,12 +234,12 @@ export default class Applications extends Vue {
 
   defaultingClassBorderColor(baseClass: string, character?: FormCharacter): object {
     const classObj = {
-      [baseClass]: true
+      [baseClass]: true,
     }
 
     if (character && character.class_id) {
       Object.assign(classObj, {
-        [`class-border-${character.class_id}`]: true
+        [`class-border-${character.class_id}`]: true,
       })
     }
 
@@ -257,10 +256,10 @@ export default class Applications extends Vue {
   }
 
   async onPageChange(page: number): Promise<void> {
-    await submissionStore.getSubmissions({
+    await this.$store.dispatch('submission/getSubmissions', {
       take: 6,
       skip: (page - 1) * 6,
-      status: this.$route.params.status
+      status: this.$route.params.status,
     })
   }
 }

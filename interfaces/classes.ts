@@ -14,7 +14,7 @@ const WoWClasses: Record<number, string> = {
   9: 'Warlock',
   10: 'Monk',
   11: 'Druid',
-  12: 'Demon Hunter'
+  12: 'Demon Hunter',
 }
 
 export default WoWClasses

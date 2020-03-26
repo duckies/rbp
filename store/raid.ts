@@ -1,5 +1,5 @@
-import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
-import { $axios } from '../utils/axios'
+import { ActionTree, GetterTree, MutationTree } from 'vuex'
+import { RootState } from '.'
 
 export interface Raid {
   id: number
@@ -21,28 +21,52 @@ export interface Raid {
   updatedAt: Date
 }
 
-@Module({ namespaced: true, name: 'raid', stateFactory: true })
-export default class RaidModule extends VuexModule {
-  public status = 'unloaded'
-  public raids: Raid[] = []
+export const state = () => ({
+  status: 'unloaded',
+  raids: [] as Raid[],
+})
 
-  @Mutation
-  setStatus(status: string): void {
-    this.status = status
-  }
+export type RaidState = ReturnType<typeof state>
 
-  @Mutation
-  setRaids(raids: Raid[]): void {
-    this.raids = raids
-  }
+export const getters: GetterTree<RaidState, RootState> = {
+  rankings: (state) =>
+    state.raids.length
+      ? [
+          {
+            rank: state.raids[0].world,
+            title: 'World',
+            background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/azeroth.jpg',
+          },
+          {
+            rank: state.raids[0].region,
+            title: 'Region',
+            background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/barrens.jpg',
+          },
+          {
+            rank: state.raids[0].realm,
+            title: 'Realm',
+            background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/blackrock.jpg',
+          },
+        ]
+      : [],
+}
 
-  @Action({ commit: 'setRaids' })
-  async getRaids(): Promise<Raid[]> {
-    this.context.commit('setStatus', 'loading')
+export const mutations: MutationTree<RaidState> = {
+  setStatus(state, status: string) {
+    state.status = status
+  },
+  setRaids(state, raids: Raid[]) {
+    state.raids = raids
+  },
+}
 
-    const resp = await $axios.$get('/raids/featured')
+export const actions: ActionTree<RaidState, RootState> = {
+  async getRaids({ commit }) {
+    commit('setStatus', 'loading')
 
-    this.context.commit('setStatus', 'success')
-    return resp.result
-  }
+    const resp = await this.$axios.$get('/raids/featured')
+
+    commit('setStatus', 'success')
+    commit('setRaids', resp.result)
+  },
 }

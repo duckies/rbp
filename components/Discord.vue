@@ -1,10 +1,13 @@
 <template>
   <div class="discord">
-    <div class="discord-title">
-      Discord
+    <div class="discord-title">Discord</div>
+
+    <div v-if="$fetchState.error" class="discord-error">
+      Void lords are assaulting Discord's servers. Information temporarily stealthed.
     </div>
-    <div class="discord-channels">
-      <div v-for="channel in channels" :key="channel.id" class="discord-channels--channel">
+
+    <div v-else class="discord-channels">
+      <div v-for="channel in $store.getters['discord/channels']" :key="channel.id" class="discord-channels--channel">
         <div class="discord-channels--channel__title" v-text="channel.name" />
 
         <div v-for="member in channel.members" :key="member.id" class="discord-channels--channel__members">
@@ -27,14 +30,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Channel } from '../store/discord'
 
-@Component
-export default class Discord extends Vue {
-  get channels(): Channel {
-    return this.$store.getters['discord/channels']
-  }
-}
+@Component({
+  async fetch() {
+    await this.$store.dispatch('discord/getDiscord')
+  },
+})
+export default class Discord extends Vue {}
 </script>
 
 <style lang="scss" scoped>
@@ -57,9 +59,15 @@ export default class Discord extends Vue {
   }
 
   &-title {
-    padding: 20px 20px 0 20px;
+    padding: 0 20px 0 20px;
     font-size: 19px;
     font-weight: 700;
+  }
+
+  &-error {
+    padding: 10px 20px 20px 20px;
+    font-family: 'Roboto Mono', sans-serif;
+    font-size: 13px;
   }
 
   &-channels {

@@ -43,9 +43,10 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="!loggedIn">
+      <v-row v-if="!$store.getters['user/isLoggedIn']">
         <v-col>
           <v-card>
+            {{ $store.state.user }}
             <v-card-title>Login to submit an application</v-card-title>
             <v-card-text
               >Fill out an application for our guild quickly by logging in with your Discord account.</v-card-text
@@ -79,7 +80,7 @@
             <v-form @submit.prevent="handleSubmit(submit)">
               <character-picker />
               <character-panel
-                v-for="(character, i) in characters"
+                v-for="(character, i) in $store.state.submission.characters"
                 :key="character.name + ' ' + character.realm"
                 :name="character.name"
                 :realm="character.realm"
@@ -90,17 +91,33 @@
                 :applying="true"
                 :order="i"
               />
-              <form-field v-for="question in questions" :key="question.id" :question="question" />
-
-              <dropzone
-                id="drop"
-                ref="drop"
-                :options="dropOptions"
-                :destroy-dropzone="true"
-                @vdropzone-success="uploadSuccess"
+              <form-field
+                v-for="question in $store.getters['form/questions']"
+                :key="question.id"
+                :question="question"
               />
 
-              <v-btn :loading="formLoading || submissionLoading" type="submit" x-large color="primary">
+              <v-card class="mb-4">
+                <v-card-title>Upload your UI and transmogs (Optional).</v-card-title>
+                <v-card-subtitle
+                  >It's proven that a good transmog can increase performance by up to 10%.</v-card-subtitle
+                >
+                <dropzone
+                  id="drop"
+                  ref="drop"
+                  :options="dropOptions"
+                  :destroy-dropzone="true"
+                  @vdropzone-success="uploadSuccess"
+                  @vdropzone-removed-file="removeFile"
+                />
+              </v-card>
+
+              <v-btn
+                :loading="$store.state.form.isLoading || $store.state.submission.isLoading"
+                type="submit"
+                x-large
+                color="primary"
+              >
                 Submit
               </v-btn>
             </v-form>
@@ -119,13 +136,11 @@ import { ValidationObserver } from 'vee-validate'
 // @ts-ignore
 import Dropzone from 'nuxt-dropzone'
 import 'nuxt-dropzone/dropzone.css'
-import { formStore, submissionStore, discordStore, userStore, raidStore } from '@/store'
-import Hero from '@/components/Hero.vue'
-import { Question } from '@/store/form'
-import FormField from '@/components/fields/FormField.vue'
-import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
-import CharacterPicker from '@/components/blizzard/CharacterPicker.vue'
-import { FormCharacterIdentity, FileUpload } from '@/store/submission'
+import Hero from '~/components/Hero.vue'
+import FormField from '~/components/fields/FormField.vue'
+import CharacterPanel from '~/components/blizzard/CharacterPanel.vue'
+import CharacterPicker from '~/components/blizzard/CharacterPicker.vue'
+import { FileUpload } from '~/store/submission'
 
 @Component({
   components: {
@@ -134,21 +149,21 @@ import { FormCharacterIdentity, FileUpload } from '@/store/submission'
     FormField,
     CharacterPicker,
     CharacterPanel,
-    Dropzone
+    Dropzone,
   },
-  async fetch(): Promise<void> {
-    const promises: Promise<unknown>[] = [discordStore.getDiscord(), formStore.getForm(1)]
+  async fetch({ store }): Promise<void> {
+    const promises: Promise<unknown>[] = [store.dispatch('form/getForm', 1)]
 
-    if (userStore.loggedIn) {
-      promises.push(submissionStore.getOpen())
+    if (store.getters['user/isLoggedIn']) {
+      promises.push(store.dispatch('submission/getUserOpenSubmission'))
     }
 
-    if (!raidStore.raids || !raidStore.raids.length) {
-      promises.push(raidStore.getRaids())
+    if (!store.state.raid?.raids.length) {
+      promises.push(store.dispatch('raid/getRaids'))
     }
 
     await Promise.all(promises)
-  }
+  },
 })
 export default class Apply extends Vue {
   title = 'Really Bad Application'
@@ -156,45 +171,26 @@ export default class Apply extends Vue {
   background = '/images/backgrounds/bastion.jpg'
   files = []
   dropOptions = {
-    whatever: process.env.FRONTEND_BASE_URL,
-    url: process.env.fileUploadURL,
+    url: process.env.FRONTEND_FILE_UPLOAD_URL,
+    addRemoveLinks: true,
     maxFiles: 5,
-    headers: { Authorization: `Bearer ${this.$storage.getCookie('token')}` },
-    duplicateCheck: true
+    headers: { Authorization: `Bearer ${this.$store.state.user.token}` },
+    duplicateCheck: true,
   }
 
   $refs!: {
     form: InstanceType<typeof ValidationObserver>
   }
 
-  get loggedIn(): boolean {
-    return userStore.loggedIn
-  }
-
-  get formLoading(): boolean {
-    return formStore.status === 'loading'
-  }
-
-  get submissionLoading(): boolean {
-    return submissionStore.status === 'loading'
-  }
-
-  get questions(): Question[] {
-    return formStore.questions
-  }
-
   get hasOpenApplication(): boolean {
     return !!this.openApplicationId
   }
 
-  get characters(): FormCharacterIdentity[] {
-    return submissionStore.characters
-  }
-
   get openApplicationId(): number | null {
-    if (!submissionStore.openSubmission || submissionStore.openSubmission.status !== 'open') return null
+    if (!this.$store.state.submission.openSubmission || this.$store.state.submission.openSubmission.status !== 'open')
+      return null
 
-    return submissionStore.openSubmission.id
+    return this.$store.state.submission.openSubmission.id
   }
 
   created(): void {
@@ -206,20 +202,44 @@ export default class Apply extends Vue {
   }
 
   uploadSuccess(file: unknown, response: FileUpload[]): void {
-    submissionStore.setFiles(response)
+    this.$store.commit('submission/addFile', response[0])
+  }
+
+  // TODO: This package is poorly typed, need to make custom types.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeFile(file: any) {
+    if (file.xhr && file.xhr.responseText) {
+      const response = JSON.parse(file.xhr.responseText)
+
+      if (Array.isArray(response) && response[0]?.id) {
+        this.$store.commit('submission/removeFile', response[0])
+        this.$store.dispatch('submission/removeFile', response[0]?.id)
+      }
+    }
   }
 
   async submit(): Promise<void> {
-    if (!this.characters.length) {
+    if (!this.$store.state.submission.characters.length) {
       return this.$refs.form.setErrors({
-        realm: 'You must select at least one main character.'
+        realm: 'You must select at least one main character.',
       })
     }
-    await submissionStore.create(1)
+    await this.$store.dispatch('submission/createSubmission', 1)
 
-    if (submissionStore.status === 'success' && submissionStore.submission) {
-      this.$router.push(`/applications/${submissionStore.submission.id}`)
+    if (this.$store.state.submission.status === 'success' && this.$store.state.submission.submission) {
+      this.$router.push(`/applications/${this.$store.state.submission.submission.id}`)
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.vue-dropzone {
+  border: 0;
+  background: inherit;
+
+  &:hover {
+    background-color: lighten(#1d1e22, 5%);
+  }
+}
+</style>

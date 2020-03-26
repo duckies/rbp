@@ -25,7 +25,6 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Slide } from '@/store/slide'
-import { slideStore } from '@/store'
 
 @Component
 export default class Carousel extends Vue {
@@ -36,11 +35,11 @@ export default class Carousel extends Vue {
     bgLazyLoad: 1,
     pageDots: false,
     prevNextButtons: false,
-    setGallerySize: false
+    setGallerySize: false,
   }
 
   get slides(): Slide[] {
-    return slideStore.slides
+    return this.$store.state.slide.slides
   }
 }
 </script>
