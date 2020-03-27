@@ -240,13 +240,13 @@ export default class CharacterPanel extends Vue {
 
   setMain(): void {
     if (typeof this.order === 'number') {
-      this.$store.state.submission.setMainCharacter(this.order)
+      this.$store.commit('submission/setMainCharacter', this.order)
     }
   }
 
   removeCharacter(): void {
     if (typeof this.order === 'number') {
-      this.$store.state.submission.removeCharacter(this.order)
+      this.$store.commit('submission/removeCharacter', this.order)
     }
   }
 

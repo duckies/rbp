@@ -126,7 +126,6 @@ import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
 import FormField from '@/components/fields/FormField.vue'
 import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
-import { FormCharacter } from '@/store/roster'
 import { Question } from '~/store/form'
 import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission'
 
@@ -180,11 +179,7 @@ export default class ApplicationKey extends Vue {
   }
 
   get isMod(): boolean {
-    return this.$store.state.user.isOfficer
-  }
-
-  get mainCharacter(): FormCharacter | undefined {
-    return this.$store.state.submission.mainCharacter
+    return this.$store.getters['user/isOfficer']
   }
 
   get submission(): FormSubmission | null {

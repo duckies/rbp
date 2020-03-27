@@ -136,10 +136,6 @@ export default class Applications extends Vue {
     return this.$store.state.submission.submission
   }
 
-  get mainCharacter(): FormCharacter | null {
-    return this.submission && this.submission.characters[0] ? this.submission.characters[0] : null
-  }
-
   get submissions(): FormSubmission[] {
     return this.$store.state.submission.submissions
   }
