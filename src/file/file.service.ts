@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import fs from 'fs';
 import { In, Repository } from 'typeorm';
@@ -34,8 +34,12 @@ export class FileService {
     return this.fileRepository.find({ where: { id: In(ids) }, relations: ['author'] });
   }
 
-  async delete(id: number) {
-    const file = await this.fileRepository.findOneOrFail(id);
+  async delete(id: number, user?: User) {
+    const file = await this.fileRepository.findOneOrFail(id, { relations: ['author'] });
+
+    if (user && file.author.id !== user.id) {
+      throw new UnauthorizedException('You do not own this file.');
+    }
 
     await unlink(file.path);
 

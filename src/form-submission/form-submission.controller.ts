@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   UsePipes,
+  Delete,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
@@ -61,6 +62,16 @@ export class SubmissionController {
   )
   uploadFiles(@Usr() user: User, @UploadedFiles() files) {
     return this.fileService.create(files, user);
+  }
+
+  @Delete('file/:id')
+  @UseGuards(JWTGuard)
+  deleteFile(@Usr() user: User, @Param('id') id: number) {
+    if (this.rolebuilder.can(user.roles).deleteAny('file-upload').granted) {
+      return this.fileService.delete(id);
+    } else {
+      return this.fileService.delete(id, user);
+    }
   }
 
   @Get('/user')
