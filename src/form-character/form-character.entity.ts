@@ -92,7 +92,7 @@ export class FormCharacter extends BaseEntity {
   specializations?: SpecializationMeta[];
 
   @Column({ type: 'jsonb', nullable: true })
-  raiderIO?: any;
+  raiderIO?: RaiderIOCharacter;
 
   @UpdateDateColumn()
   updatedAt: Date;

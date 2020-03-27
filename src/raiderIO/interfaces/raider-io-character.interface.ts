@@ -14,4 +14,20 @@ export interface RaiderIOCharacter {
   profile_url: string;
   profile_banner: string;
   raid_progression?: any;
+  gear?: { item_level_equipped: number; item_level_total: number; artifact_traits: number };
+  mythic_plus_scores_by_season?: RaiderIOSeason[];
+}
+
+export interface RaiderIOSeason {
+  season: string;
+  scores: {
+    all: number;
+    dps: number;
+    healer: number;
+    tank: number;
+    spec_0: number;
+    spec_1: number;
+    spec_2: number;
+    spec_3: number;
+  };
 }

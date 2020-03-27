@@ -42,6 +42,12 @@ export interface EquippedItem {
 export interface AzeriteDetails {
   selected_powers: AzeritePower[];
   selected_powers_string: string;
+  level: HeartLevel;
+}
+
+export interface HeartLevel {
+  value: number;
+  display_string: string;
 }
 
 export interface AzeritePower {

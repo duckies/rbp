@@ -68,5 +68,5 @@ export class UpdateFormCharacterDto {
 
   @IsOptional()
   @ValidateNested()
-  raiderIO?: RaiderIOCharacter[];
+  raiderIO?: RaiderIOCharacter;
 }
