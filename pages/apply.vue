@@ -46,7 +46,6 @@
       <v-row v-if="!$store.getters['user/isLoggedIn']">
         <v-col>
           <v-card>
-            {{ $store.state.user }}
             <v-card-title>Login to submit an application</v-card-title>
             <v-card-text
               >Fill out an application for our guild quickly by logging in with your Discord account.</v-card-text
@@ -170,6 +169,7 @@ export default class Apply extends Vue {
   caption = 'Interested in joining our guild?'
   background = '/images/backgrounds/bastion.jpg'
   files = []
+  shouldntRemove = false
   dropOptions = {
     url: process.env.FRONTEND_FILE_UPLOAD_URL,
     addRemoveLinks: true,
@@ -208,7 +208,7 @@ export default class Apply extends Vue {
   // TODO: This package is poorly typed, need to make custom types.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   removeFile(file: any) {
-    if (file.xhr && file.xhr.responseText) {
+    if (!this.shouldntRemove && file.xhr && file.xhr.responseText) {
       const response = JSON.parse(file.xhr.responseText)
 
       if (Array.isArray(response) && response[0]?.id) {
@@ -219,6 +219,8 @@ export default class Apply extends Vue {
   }
 
   async submit(): Promise<void> {
+    this.shouldntRemove = true
+
     if (!this.$store.state.submission.characters.length) {
       return this.$refs.form.setErrors({
         realm: 'You must select at least one main character.',
