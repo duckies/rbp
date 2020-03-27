@@ -19,6 +19,13 @@ export const classIdToColor = {
   12: 10694857,
 };
 
+export interface DiscordWebhook {
+  content?: string;
+  username?: string;
+  avatar_url?: string;
+  embeds?: DiscordEmbed[];
+}
+
 export interface DiscordEmbed {
   title: string;
   color?: number | string;
@@ -29,9 +36,6 @@ export interface DiscordEmbed {
   timestamp?: Date;
   author?: { name: string; url?: string; icon_url?: string };
   footer?: { text: string; icon_url?: string };
-  content?: string;
-  username?: string;
-  avatar_url?: string;
 }
 
 @Processor('form')
@@ -49,23 +53,27 @@ export class FormSubmissionQueue {
       ? `New ${main.class_name} Application: ${main.name}`
       : `New Application: ${main.name}`;
 
-    const embed: DiscordEmbed = {
-      title,
-      color,
-      url: `${this.config.get('BASE_URL')}/applications/${main.id}`,
-      description: 'An application was submitted to the guild website.',
-      fields: [],
-      timestamp: job.data.createdAt,
+    const data: DiscordWebhook = {
       username: job.data.author.discord_username,
       avatar_url: job.data.author.discord_avatar
         ? `https://cdn.discordapp.com/avatars/${job.data.author.discord_id}/${
             job.data.author.discord_avatar
           }${job.data.author.discord_avatar.includes('a_') ? '.gif' : '.png'}`
         : undefined,
+      embeds: [
+        {
+          title,
+          color,
+          url: `${this.config.get('BASE_URL')}/applications/${main.id}`,
+          description: 'An application was submitted to the guild website.',
+          fields: [],
+          timestamp: job.data.createdAt,
+        },
+      ],
     };
 
     if (main.avatar_url) {
-      embed.thumbnail = {
+      data.embeds[0].thumbnail = {
         url: main.avatar_url,
       };
     }
@@ -76,7 +84,7 @@ export class FormSubmissionQueue {
       const legendSlot = main.equipment ? main.equipment.find(slot => slot.item.id === 169223) : null;
       const legendRank = legendSlot ? legendSlot.name_description.display_string : null;
 
-      embed.fields.push({
+      data.embeds[0].fields.push({
         name: 'Gear',
         value: `${main.equipped_item_level ||
           main.raiderIO.gear.item_level_equipped} Equipped\n${main.average_item_level ||
@@ -87,7 +95,7 @@ export class FormSubmissionQueue {
       });
     }
 
-    embed.fields.push({
+    data.embeds[0].fields.push({
       name: 'Progression',
       value: 'Not yet implemented',
       inline: true,
@@ -100,19 +108,19 @@ export class FormSubmissionQueue {
 
         return `Season ${seasonNums[0]}: ${season.scores.all}`;
       });
-      embed.fields.push({
+      data.embeds[0].fields.push({
         name: 'Raider.IO',
         value: rankings.join('\n'),
         inline: true,
       });
     }
 
-    embed.fields.push({
+    data.embeds[0].fields.push({
       name: 'Links',
       value: `[Armory](http://www.worldofwarcraft.com/en-us/character/us/${main.realm}/${main.name}) | [Raider.IO](https://www.raider.io/characters/us/${main.realm}/${main.name}) | [WarcraftLogs](https://www.warcraftlogs.com/character/us/${main.realm}/${main.name})`,
     });
 
-    this.http.post(this.config.get('DISCORD_APP_WEBHOOK'), { embeds: [embed] }).toPromise();
+    this.http.post(this.config.get('DISCORD_APP_WEBHOOK'), data).toPromise();
   }
 
   @OnQueueError()
