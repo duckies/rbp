@@ -29,6 +29,9 @@ export interface DiscordEmbed {
   timestamp?: Date;
   author?: { name: string; url?: string; icon_url?: string };
   footer?: { text: string; icon_url?: string };
+  content?: string;
+  username?: string;
+  avatar_url?: string;
 }
 
 @Processor('form')
@@ -53,14 +56,12 @@ export class FormSubmissionQueue {
       description: 'An application was submitted to the guild website.',
       fields: [],
       timestamp: job.data.createdAt,
-      footer: {
-        text: job.data.author.discord_username,
-        icon_url: job.data.author.discord_avatar
-          ? `https://cdn.discordapp.com/avatars/${job.data.author.discord_id}/${
-              job.data.author.discord_avatar
-            }${job.data.author.discord_avatar.includes('a_') ? '.gif' : '.png'}`
-          : undefined,
-      },
+      username: job.data.author.discord_username,
+      avatar_url: job.data.author.discord_avatar
+        ? `https://cdn.discordapp.com/avatars/${job.data.author.discord_id}/${
+            job.data.author.discord_avatar
+          }${job.data.author.discord_avatar.includes('a_') ? '.gif' : '.png'}`
+        : undefined,
     };
 
     if (main.avatar_url) {
