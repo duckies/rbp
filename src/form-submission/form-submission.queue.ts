@@ -64,7 +64,7 @@ export class FormSubmissionQueue {
         {
           title,
           color,
-          url: `${this.config.get('BASE_URL')}/applications/${main.id}`,
+          url: `${this.config.get('BASE_URL')}/applications/${job.data.id}`,
           description: 'An application was submitted to the guild website.',
           fields: [],
           timestamp: job.data.createdAt,
