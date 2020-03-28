@@ -1,8 +1,9 @@
-import { Process, Processor, OnQueueError, OnQueueCompleted, OnQueueFailed } from '@nestjs/bull';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { HttpService, Logger } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
-import { FormSubmission } from './form-submission.entity';
+import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
+import { FormSubmission } from './form-submission.entity';
+import { DiscordWebhook } from './interfaces/discord-webhook.interface';
 
 export const classIdToColor = {
   1: 13081710,
@@ -18,25 +19,6 @@ export const classIdToColor = {
   11: 16743690,
   12: 10694857,
 };
-
-export interface DiscordWebhook {
-  content?: string;
-  username?: string;
-  avatar_url?: string;
-  embeds?: DiscordEmbed[];
-}
-
-export interface DiscordEmbed {
-  title: string;
-  color?: number | string;
-  url?: string;
-  description?: string;
-  thumbnail?: { url: string };
-  fields?: { name: string; value: string; inline?: boolean }[];
-  timestamp?: Date;
-  author?: { name: string; url?: string; icon_url?: string };
-  footer?: { text: string; icon_url?: string };
-}
 
 @Processor('form')
 export class FormSubmissionQueue {
@@ -79,18 +61,18 @@ export class FormSubmissionQueue {
     }
 
     if ((main.raiderIO && main.raiderIO.gear) || main.equipped_item_level) {
-      const heartSlot = main.equipment ? main.equipment.find(slot => slot.item.id === 158075) : null;
+      const heartSlot = main.equipment ? main.equipment.find((slot) => slot.item.id === 158075) : null;
       const heart = heartSlot ? heartSlot.azerite_details : null;
-      const legendSlot = main.equipment ? main.equipment.find(slot => slot.item.id === 169223) : null;
+      const legendSlot = main.equipment ? main.equipment.find((slot) => slot.item.id === 169223) : null;
       const legendRank = legendSlot ? legendSlot.name_description.display_string : null;
 
       data.embeds[0].fields.push({
         name: 'Gear',
-        value: `${main.equipped_item_level ||
-          main.raiderIO.gear.item_level_equipped} Equipped\n${main.average_item_level ||
-          main.raiderIO.gear.item_level_total} Average\n${
-          heart ? 'Neck Level ' + heart.level.value + '\n' : ''
-        }${legendRank ? 'Cloak ' + legendRank + '\n' : ''}`,
+        value: `${main.equipped_item_level || main.raiderIO.gear.item_level_equipped} Equipped\n${
+          main.average_item_level || main.raiderIO.gear.item_level_total
+        } Average\n${heart ? 'Neck Level ' + heart.level.value + '\n' : ''}${
+          legendRank ? 'Cloak ' + legendRank + '\n' : ''
+        }`,
         inline: true,
       });
     }
@@ -102,7 +84,7 @@ export class FormSubmissionQueue {
     });
 
     if (main.raiderIO && main.raiderIO.mythic_plus_scores_by_season) {
-      const rankings = main.raiderIO.mythic_plus_scores_by_season.map(season => {
+      const rankings = main.raiderIO.mythic_plus_scores_by_season.map((season) => {
         const seasonNums = season.season.match(/\d+/);
         if (!season) return '';
 
@@ -120,7 +102,7 @@ export class FormSubmissionQueue {
       value: `[Armory](http://www.worldofwarcraft.com/en-us/character/us/${main.realm}/${main.name}) | [Raider.IO](https://www.raider.io/characters/us/${main.realm}/${main.name}) | [WarcraftLogs](https://www.warcraftlogs.com/character/us/${main.realm}/${main.name})`,
     });
 
-    this.http.post(this.config.get('DISCORD_APP_WEBHOOK'), data).toPromise();
+    this.http.post(this.config.get('DISCORD_WEBHOOK'), data).toPromise();
   }
 
   @OnQueueError()

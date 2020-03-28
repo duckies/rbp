@@ -1,14 +1,14 @@
-import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
 import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Job } from 'bull';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enum/realm.enum';
 import { Region } from '../blizzard/enum/region.enum';
-import { ProfileService } from '../blizzard/profile.service';
-import { ConfigService } from '../config/config.service';
-import { CharacterService, PurgeResult } from './character.service';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
-import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { ProfileService } from '../blizzard/profile.service';
+import { CharacterService, PurgeResult } from './character.service';
 
 export interface GuildUpdateResult {
   success: number;
@@ -31,12 +31,9 @@ export class CharacterQueue {
   constructor(
     private readonly characterService: CharacterService,
     private readonly profileService: ProfileService,
-    private readonly configService: ConfigService,
+    private readonly config: ConfigService,
   ) {
-    this.minimumCharacterLevel = Math.max(
-      parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10),
-      10,
-    );
+    this.minimumCharacterLevel = Math.max(this.config.get<number>('MINIMUM_CHARACTER_LEVEL'), 10);
   }
 
   /**

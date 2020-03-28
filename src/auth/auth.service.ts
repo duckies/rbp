@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { sign } from 'jsonwebtoken';
-import { ConfigService } from '../config/config.service';
 import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { JWTPayload } from './dto/jwt.dto';
@@ -31,7 +31,7 @@ export class AuthService {
   constructor(
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-    private readonly configService: ConfigService,
+    private readonly config: ConfigService,
   ) {}
 
   async verify(payload: JWTPayload): Promise<User> {
@@ -39,7 +39,7 @@ export class AuthService {
   }
 
   signToken(user: User): string {
-    return sign({ id: user.id }, this.configService.get('JWT_SECRET'));
+    return sign({ id: user.id }, this.config.get('JWT_SECRET'));
   }
 
   async validateDiscordLogin(

@@ -1,5 +1,11 @@
-import { HttpService, Injectable, Logger, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
+import {
+  HttpService,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 export interface Token {
   access_token: string;
@@ -14,7 +20,7 @@ export class TokenService {
 
   private static token: Token = null;
 
-  constructor(private readonly configService: ConfigService, private readonly http: HttpService) {}
+  constructor(private readonly config: ConfigService, private readonly http: HttpService) {}
 
   async getToken() {
     if (TokenService.token !== null && TokenService.token.expires >= new Date().getTime()) return;
@@ -30,8 +36,8 @@ export class TokenService {
             method: 'POST',
             data: 'grant_type=client_credentials',
             auth: {
-              username: this.configService.get('BLIZZARD_CLIENTID'),
-              password: this.configService.get('BLIZZARD_SECRET'),
+              username: this.config.get('BLIZZARD_CLIENTID'),
+              password: this.config.get('BLIZZARD_SECRET'),
             },
           })
           .toPromise()

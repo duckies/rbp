@@ -7,9 +7,11 @@ import {
   QueryFailedExceptionFilter,
   UpdateValuesMissingExceptionFilter,
 } from './typeorm.filter';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const config: ConfigService = app.get(ConfigService);
 
   /**
    * Whitelist all arguments so they must be described in a DTO.
@@ -41,7 +43,7 @@ async function bootstrap(): Promise<void> {
   // });
   app.enableCors();
 
-  await app.listen(3000);
+  await app.listen(config.get<number>('PORT'));
 }
 
 bootstrap();

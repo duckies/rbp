@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-discord';
-import { ConfigService } from '../../config/config.service';
 import { User } from '../../user/user.entity';
 import { AuthService, DiscordProfile } from '../auth.service';
 import { BlizzardStrategy } from './blizzard.strategy';
@@ -10,11 +10,11 @@ import { BlizzardStrategy } from './blizzard.strategy';
 export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
   private readonly logger: Logger = new Logger(BlizzardStrategy.name);
 
-  constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {
+  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
     super({
-      clientID: configService.get('DISCORD_CLIENTID'),
-      clientSecret: configService.get('DISCORD_SECRET'),
-      callbackURL: configService.get('DISCORD_CALLBACK'),
+      clientID: config.get('DISCORD_CLIENT_ID'),
+      clientSecret: config.get('DISCORD_SECRET'),
+      callbackURL: config.get('DISCORD_CALLBACK'),
       scope: ['identify'],
     });
   }

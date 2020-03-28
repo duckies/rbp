@@ -9,7 +9,7 @@
 .gitignore
 
 # Configuration
-.configrc
+.env
 ormconfig.json
 
 # Logs

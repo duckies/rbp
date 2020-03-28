@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
 import { In, LessThan, Repository } from 'typeorm';
 import { BattleNetService } from '../blizzard/battle.net.service';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/profile.service';
-import { ConfigService } from '../config/config.service';
 import { User } from '../user/user.entity';
 import { Character } from './character.entity';
 
@@ -16,14 +16,14 @@ export interface PurgeResult {
 
 @Injectable()
 export class CharacterService {
-  private readonly minimumCharacterLevel: number = parseInt(this.configService.get('MINIMUM_CHARACTER_LEVEL'), 10);
+  private readonly minimumCharacterLevel: number = this.config.get<number>('MINIMUM_CHARACTER_LEVEL');
 
   constructor(
     @InjectRepository(Character)
     private readonly characterRepository: Repository<Character>,
     private readonly battleNetService: BattleNetService,
     private readonly profileService: ProfileService,
-    private readonly configService: ConfigService,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -144,7 +144,10 @@ export class CharacterService {
    */
   async fetchKnownCharacters(user: User, sync?: boolean) {
     // Update for a potentially valid token and we're either forcing an update or not throttled.
-    if (!user.tokenExpired() && (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))) {
+    if (
+      !user.tokenExpired() &&
+      (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))
+    ) {
       try {
         await this.battleNetService.checkToken(user);
         await this.syncUserCharacters(user);

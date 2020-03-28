@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-bnet';
-import { ConfigService } from '../../config/config.service';
 import { User } from '../../user/user.entity';
 import { AuthService } from '../auth.service';
 
@@ -9,11 +9,11 @@ import { AuthService } from '../auth.service';
 export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   private readonly logger: Logger = new Logger(BlizzardStrategy.name);
 
-  constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {
+  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
     super({
-      clientID: configService.get('BLIZZARD_CLIENTID'),
-      clientSecret: configService.get('BLIZZARD_SECRET'),
-      callbackURL: configService.get('BLIZZARD_CALLBACK'),
+      clientID: config.get('BLIZZARD_CLIENTID'),
+      clientSecret: config.get('BLIZZARD_SECRET'),
+      callbackURL: config.get('BLIZZARD_CALLBACK'),
       passReqToCallback: true,
       scope: ['wow.profile'],
     });
