@@ -5,15 +5,14 @@
   "author": "John Gilbert",
   "private": true,
   "scripts": {
-    "dev": "nuxt-ts",
-    "build": "nuxt-ts build",
-    "start": "nuxt-ts start",
-    "generate": "nuxt-ts generate",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
     "lint": "eslint --fix --ext .ts,.js,.vue .",
     "precommit": "npm run lint"
   },
   "dependencies": {
-    "@nuxt/typescript-runtime": "^0.4.0",
     "@nuxtjs/axios": "^5.9.5",
     "@types/vue-markdown": "^2.2.1",
     "babel-runtime": "^6.26.0",

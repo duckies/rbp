@@ -1,8 +1,6 @@
-import { Configuration } from '@nuxt/types'
-
 require('dotenv').config()
 
-const NuxtConfiguration: Partial<Configuration> = {
+const NuxtConfiguration = {
   mode: 'universal',
 
   env: {
@@ -91,7 +89,7 @@ const NuxtConfiguration: Partial<Configuration> = {
     babel: {
       plugins: ['@babel/plugin-proposal-optional-chaining'],
     },
-    extend: (config): void => {
+    extend: (config) => {
       config.node = {
         fs: 'empty',
       }
