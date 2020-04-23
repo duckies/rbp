@@ -39,12 +39,13 @@
               solo
               flat
               hide-details
-              append-icon="mdi-chevron-down"
+              append-icon="mdi-sword-cross"
+              menu-props="offset-y"
               :items="formStatuses"
               @change="changeStatus"
             >
               <template v-slot:selection="{ item }">
-                <span class="category-title">{{ item.text }} Applications</span>
+                <div class="category-title">{{ pagination.submission_total }} {{ item.text }} Applications</div>
               </template>
             </v-select>
 
@@ -303,8 +304,15 @@ export default class Applications extends Vue {
 }
 
 .category-title {
+  display: block;
+  width: 100%;
   font-family: 'Roboto', sans-serif;
   font-size: 20px;
+}
+
+.category-info {
+  display: block;
+  opacity: 0.8;
 }
 
 .pagination {
