@@ -1,4 +1,3 @@
-// import slugify from 'slugify'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import Vue from 'vue'
 
@@ -43,7 +42,6 @@ export enum SubmissionStatus {
   Rejected = 'rejected',
   Cancelled = 'cancelled',
 }
-
 export type OpenSubmission = Pick<FormSubmission, 'id' | 'status'>
 
 export interface FormCharacterIdentity {
@@ -206,7 +204,6 @@ export const actions: ActionTree<SubmissionState, RootState> = {
       take?: number
       skip?: number
       status?: string
-      id?: number
     }
   ) {
     try {
@@ -215,10 +212,11 @@ export const actions: ActionTree<SubmissionState, RootState> = {
       const resp = await this.$axios.$get('/submission', { params })
       const status = params && params.status ? params.status : resp[0].length ? resp[0][0].status : 'open'
 
-      commit('setStatus', { status: 'success' })
       commit('setTotalSubmissions', resp[1])
       commit('setStatusCategory', status)
       commit('setSubmissions', resp[0])
+
+      commit('setStatus', { status: 'success' })
     } catch (error) {
       commit('setStatus', { status: 'error', error })
     }
