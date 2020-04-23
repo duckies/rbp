@@ -152,7 +152,11 @@ import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission
     const param = id ? { id } : { status: params.key }
 
     if (param.status) {
-      await store.dispatch('submission/getSubmissions', { take: 6, skip: 0, status: param.status })
+      await store.dispatch('submission/getSubmissions', {
+        take: store.state.submission.pagination.page_size,
+        skip: 0,
+        status: param.status,
+      })
 
       if (store.state.submission.submissions.length) {
         redirect(302, `/applications/${store.state.submission.submissions[0].id}`)
@@ -162,7 +166,7 @@ import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission
 
       if (store.state.submission.submission && !store.state.submission.submissions.length) {
         await store.dispatch('submission/getSubmissions', {
-          take: 6,
+          take: store.state.submission.pagination.page_size,
           skip: 0,
           status: store.state.submission.submission.status,
         })

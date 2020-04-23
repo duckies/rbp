@@ -39,7 +39,8 @@
               solo
               flat
               hide-details
-              append-icon="mdi-sword-cross"
+              prepend-icon="mdi-sword-cross"
+              append-icon="mdi-chevron-down"
               menu-props="offset-y"
               :items="formStatuses"
               @change="changeStatus"

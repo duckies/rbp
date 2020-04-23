@@ -79,7 +79,7 @@ export const state = () => ({
   pagination: {
     page_current: 1,
     page_total: 0,
-    page_size: 6,
+    page_size: 10,
     submission_total: 0,
   } as Pagination,
 })
