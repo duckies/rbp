@@ -26,6 +26,16 @@
       />
     </template>
 
+    <template v-else>
+      <v-card class="mb-4">
+        <v-card-title>Character Evaporated</v-card-title>
+        <v-card-text
+          >The character was removed as it was no longer unavailable, likely due to a change of name, faction, or realm.
+          This is a privacy requirement imposed by Blizzard.</v-card-text
+        >
+      </v-card>
+    </template>
+
     <!-- Submission Management -->
     <v-scale-transition>
       <v-card v-if="submission" class="pa-4">
@@ -140,20 +150,23 @@ import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission
   async fetch({ redirect, params, store }) {
     const id = parseInt(params.key, 10)
     const param = id ? { id } : { status: params.key }
-    const promises: Promise<unknown>[] = [
-      store.dispatch('submission/getSubmissions', { take: 6, skip: 0, ...param }),
-      store.dispatch('submission/getSubmission', param),
-    ]
 
-    if (!store.state.raid?.raids.length) {
-      promises.push(store.dispatch('raid/getRaids'))
-    }
+    if (param.status) {
+      await store.dispatch('submission/getSubmissions', { take: 6, skip: 0, status: param.status })
 
-    await Promise.all(promises)
+      if (store.state.submission.submissions.length) {
+        redirect(302, `/applications/${store.state.submission.submissions[0].id}`)
+      }
+    } else {
+      await Promise.all([store.dispatch('submission/getSubmission', { id: param.id }), store.dispatch('raid/getRaids')])
 
-    // TODO: Fix double download this kind of redirect causes.
-    if (param.status && store.state.submission.submission && store.state.submission.submission.id) {
-      redirect(302, `/applications/${store.state.submission.submission.id}`)
+      if (store.state.submission.submission && !store.state.submission.submissions.length) {
+        await store.dispatch('submission/getSubmissions', {
+          take: 6,
+          skip: 0,
+          status: store.state.submission.submission.status,
+        })
+      }
     }
   },
 })

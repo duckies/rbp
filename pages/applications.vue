@@ -1,7 +1,7 @@
 <template>
   <div>
     <hero
-      background="https://cdnassets.raider.io/images/login/backgrounds/bfa/blood-temple.jpg"
+      :background="submissionBackground"
       title="Really Bad Applications"
       caption="Blizzard's #1 source of transfer income since 2004"
     />
@@ -28,8 +28,9 @@
 
     <v-container class="hero-nudge">
       <v-row>
-        <!-- Category Selectors -->
+        <!-- Left Sidebar -->
         <v-col cols="12" xs="12" md="5" lg="4" xl="3">
+          <!-- Category Selectors -->
           <v-card>
             <v-select
               :value="statusCategory"
@@ -69,6 +70,28 @@
                 </v-list-item>
               </v-list-item-group>
             </v-card-text>
+
+            <div class="pagination">
+              <v-row>
+                <v-col>
+                  <v-row justify="end">
+                    <v-btn :disabled="pagination.current === 1" text @click="paginate(-1)">
+                      <v-icon large>mdi-chevron-left</v-icon>
+                    </v-btn>
+                  </v-row>
+                </v-col>
+                <v-col class="d-flex justify-center align-center">
+                  <span>Page {{ pagination.current }} of {{ pagination.total }}</span>
+                </v-col>
+                <v-col>
+                  <v-row justify="start">
+                    <v-btn :disabled="pagination.current === pagination.total" text @click="paginate(1)">
+                      <v-icon large>mdi-chevron-right</v-icon>
+                    </v-btn>
+                  </v-row>
+                </v-col>
+              </v-row>
+            </div>
           </v-card>
         </v-col>
 
@@ -117,6 +140,7 @@ export default class Applications extends Vue {
   get submissionBackground(): string {
     return this.$store.state.submission.submission &&
       this.$store.state.submission.submission.characters &&
+      this.$store.state.submission.submission.characters.length &&
       this.$store.state.submission.submission.characters[0].render_url
       ? this.$store.state.submission.submission.characters[0].render_url
       : 'https://cdnassets.raider.io/images/login/backgrounds/bfa/blood-temple.jpg'
@@ -251,10 +275,12 @@ export default class Applications extends Vue {
     }
   }
 
-  async onPageChange(page: number): Promise<void> {
+  async paginate(step: number): Promise<void> {
+    this.$store.commit('submission/setPaginationCurrent', this.pagination.current + step)
+
     await this.$store.dispatch('submission/getSubmissions', {
       take: 6,
-      skip: (page - 1) * 6,
+      skip: (this.pagination.current - 1) * 6,
       status: this.$route.params.status,
     })
   }
@@ -279,5 +305,9 @@ export default class Applications extends Vue {
 .category-title {
   font-family: 'Roboto', sans-serif;
   font-size: 20px;
+}
+
+.pagination {
+  background-color: rgba(#000, 0.2);
 }
 </style>
