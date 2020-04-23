@@ -32,8 +32,10 @@ export interface FormSubmission {
 }
 
 export interface Pagination {
-  current: number
-  total: number
+  page_current: number
+  page_total: number
+  page_size: number
+  submission_total: number
 }
 
 export enum SubmissionStatus {
@@ -72,12 +74,13 @@ export const state = () => ({
   submissions: [] as FormSubmission[],
   selectedSubmission: null as FormSubmission | null,
   openSubmission: null as OpenSubmission | null,
-  totalSubmissions: 0,
   statusCategory: SubmissionStatus.Open as SubmissionStatus,
   files: [] as FileUpload[],
   pagination: {
-    current: 1,
-    total: 0,
+    page_current: 1,
+    page_total: 0,
+    page_size: 6,
+    submission_total: 0,
   } as Pagination,
 })
 
@@ -118,11 +121,11 @@ export const mutations: MutationTree<SubmissionState> = {
     state.openSubmission = submission
   },
   setTotalSubmissions(state, count: number) {
-    state.totalSubmissions = count
-    state.pagination.total = Math.ceil(count / 6)
+    state.pagination.submission_total = count
+    state.pagination.page_total = Math.ceil(count / state.pagination.page_size)
   },
   setPaginationCurrent(state, current: number) {
-    state.pagination.current = current
+    state.pagination.page_current = current
   },
   setStatusCategory(state, status: SubmissionStatus) {
     state.statusCategory = status

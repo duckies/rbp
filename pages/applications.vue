@@ -48,7 +48,7 @@
               </template>
             </v-select>
 
-            <v-divider></v-divider>
+            <v-divider />
 
             <v-card-text>
               <v-list-item-group>
@@ -75,18 +75,18 @@
               <v-row>
                 <v-col>
                   <v-row justify="end">
-                    <v-btn :disabled="pagination.current === 1" text @click="paginate(-1)">
-                      <v-icon large>mdi-chevron-left</v-icon>
+                    <v-btn :disabled="pagination.page_current === 1" text @click="paginate(-1)">
+                      <v-icon large>mdi-chevron-double-left</v-icon>
                     </v-btn>
                   </v-row>
                 </v-col>
-                <v-col class="d-flex justify-center align-center">
-                  <span>Page {{ pagination.current }} of {{ pagination.total }}</span>
+                <v-col cols="auto" class="d-flex justify-center align-center">
+                  <span>Page {{ pagination.page_current }} of {{ pagination.page_total }}</span>
                 </v-col>
                 <v-col>
                   <v-row justify="start">
-                    <v-btn :disabled="pagination.current === pagination.total" text @click="paginate(1)">
-                      <v-icon large>mdi-chevron-right</v-icon>
+                    <v-btn :disabled="pagination.page_current === pagination.page_total" text @click="paginate(1)">
+                      <v-icon large>mdi-chevron-double-right</v-icon>
                     </v-btn>
                   </v-row>
                 </v-col>
@@ -276,12 +276,12 @@ export default class Applications extends Vue {
   }
 
   async paginate(step: number): Promise<void> {
-    this.$store.commit('submission/setPaginationCurrent', this.pagination.current + step)
+    this.$store.commit('submission/setPaginationCurrent', this.pagination.page_current + step)
 
     await this.$store.dispatch('submission/getSubmissions', {
-      take: 6,
-      skip: (this.pagination.current - 1) * 6,
-      status: this.$route.params.status,
+      take: this.pagination.page_size,
+      skip: (this.pagination.page_current - 1) * this.pagination.page_size,
+      status: this.statusCategory,
     })
   }
 }
