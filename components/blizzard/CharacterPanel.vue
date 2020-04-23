@@ -120,9 +120,15 @@
                   :class="`item item-quality-border-${item.quality.name.toLowerCase()}`"
                 >
                   <v-img
-                    v-if="item.media && item.media.assets && item.media.assets.value"
-                    :src="item.media.assets.value"
-                    @:error="iconFailure"
+                    :src="
+                      item.media &&
+                      item.media.assets &&
+                      item.media.assets.value &&
+                      !iconFailures.hasOwnProperty(item.media.assets.value)
+                        ? item.media.assets.value
+                        : '/inv_misc_questionmark.jpg'
+                    "
+                    @error="imgFailure"
                   />
                 </a>
               </div>
@@ -177,6 +183,8 @@ export default class CharacterPanel extends Vue {
   @Prop() readonly raiderIO?: CharacterRaiderIO
   @Prop() readonly applying?: boolean
   @Prop() readonly order?: number
+
+  iconFailures = {}
 
   get titledName(): string {
     return this.name.charAt(0).toUpperCase() + this.name.slice(1)
@@ -234,8 +242,9 @@ export default class CharacterPanel extends Vue {
     }
   }
 
-  iconFailure(thing: unknown): void {
-    console.log(thing)
+  // Replace this when the v-img component has proper fallback support.
+  imgFailure(src: string): void {
+    this.iconFailures = Object.assign({}, this.iconFailures, { [src]: true })
   }
 
   setMain(): void {
