@@ -173,6 +173,20 @@ import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission
       }
     }
   },
+  transition(to, from) {
+    if (!from) {
+      return 'slide-left'
+    }
+
+    const toId = +to.params.key
+    const fromId = +from.params.key
+
+    if (!toId || !fromId) {
+      return 'slide-left'
+    }
+
+    return toId < fromId ? 'slide-right' : 'slide-left'
+  },
 })
 export default class ApplicationKey extends Vue {
   private dialog = false

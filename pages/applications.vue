@@ -39,7 +39,6 @@
               solo
               flat
               hide-details
-              prepend-icon="mdi-sword-cross"
               append-icon="mdi-chevron-down"
               menu-props="offset-y"
               :items="formStatuses"
@@ -106,7 +105,7 @@
         <v-col v-else>
           <v-row no-gutters>
             <v-col>
-              <nuxt-child />
+              <nuxt-child :key="$route.params.key" />
             </v-col>
           </v-row>
         </v-col>
