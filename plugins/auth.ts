@@ -1,5 +1,5 @@
 import { Plugin, Context } from '@nuxt/types'
-import nanoid from 'nanoid'
+import { nanoid } from 'nanoid'
 
 export const encodeQuery = (queryObject: object): string => {
   return Object.entries(queryObject)
