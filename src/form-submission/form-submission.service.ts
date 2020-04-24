@@ -53,7 +53,7 @@ export class SubmissionService {
     }
 
     const formCharacters = await Promise.all(
-      characters.map(character =>
+      characters.map((character) =>
         this.formCharacterService.create({
           name: character.name,
           realm: character.realm,
@@ -83,6 +83,7 @@ export class SubmissionService {
    * @param id Form submission id.
    */
   async findOne(id: number) {
+    //
     return this.formSubRepository
       .createQueryBuilder('submission')
       .select()
@@ -192,7 +193,7 @@ export class SubmissionService {
 
     // Subquery status category from id.
     else if (id) {
-      query = query.where(qb => {
+      query = query.where((qb) => {
         const subQuery = qb
           .subQuery()
           .select('submission.status')
@@ -204,11 +205,7 @@ export class SubmissionService {
       });
     }
 
-    return query
-      .orderBy('submission.id', 'DESC')
-      .take(take)
-      .skip(skip)
-      .getManyAndCount();
+    return query.orderBy('submission.id', 'DESC').take(take).skip(skip).getManyAndCount();
   }
 
   /**
