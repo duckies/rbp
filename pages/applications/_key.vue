@@ -6,7 +6,7 @@
         <v-card-title>Are you sure?</v-card-title>
         <v-card-text v-text="dialogTexts[dialogType]"></v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn text color="primary" @click="changeStatus(dialogType)">Proceed</v-btn>
           <v-btn text @click="dialog = false">Nevermind</v-btn>
         </v-card-actions>
@@ -30,75 +30,71 @@
       <v-card class="mb-4">
         <v-card-title>Character Evaporated</v-card-title>
         <v-card-text
-          >The character was removed as it was no longer unavailable, likely due to a change of name, faction, or realm.
-          This is a privacy requirement imposed by Blizzard.</v-card-text
-        >
+          >The character was removed as it was no longer unavailable. Whenever a character becomes unavailable our
+          website is required to remove the character information. This is mandated by Blizzard for privacy reasons.
+        </v-card-text>
       </v-card>
     </template>
 
     <!-- Submission Management -->
     <v-scale-transition>
       <v-card v-if="submission" class="pa-4">
-        <v-row>
-          <v-col>
-            <v-row>
-              <v-col cols="auto">
-                <v-avatar>
-                  <v-img :src="authorAvatar" />
-                </v-avatar>
-              </v-col>
-              <v-col>
-                <h3>Author</h3>
-                <span>{{ authorName }}</span>
-                <h3>Submitted</h3>
-                <span>Submitted {{ formatRelative(submission.createdAt) }}</span>
-              </v-col>
-            </v-row>
-          </v-col>
+        <div class="info-wrap">
+          <v-avatar size="100" class="info-avatar">
+            <v-img :src="authorAvatar" />
+          </v-avatar>
 
-          <v-col>
-            <v-row>
-              <v-col>
-                <h3>Application Status</h3>
-                <span class="status">{{ submission.status }}</span>
+          <div>
+            <h3>Author</h3>
+            <p>{{ authorName }}</p>
+          </div>
 
-                <template v-if="$store.getters['user/isLoggedIn'] && (isAuthor || isMod)">
-                  <h3>Application Control</h3>
-                  <v-btn
-                    v-if="isAuthor"
-                    text
-                    :loading="$store.state.submission.isLoading"
-                    @click="
-                      dialogType = 'cancelled'
-                      dialog = true
-                    "
-                    >Cancel</v-btn
-                  >
-                  <v-btn
-                    v-if="isMod"
-                    text
-                    :loading="$store.state.submission.isLoading"
-                    @click="
-                      dialogType = 'approved'
-                      dialog = true
-                    "
-                    >Approve</v-btn
-                  >
-                  <v-btn
-                    v-if="isMod"
-                    text
-                    :loading="$store.state.submission.isLoading"
-                    @click="
-                      dialogType = 'rejected'
-                      dialog = true
-                    "
-                    >Reject</v-btn
-                  >
-                </template>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
+          <div>
+            <h3>Submitted</h3>
+            <p>Submitted {{ formatRelative(submission.createdAt) }}</p>
+          </div>
+
+          <div>
+            <h3>Application Status</h3>
+            <p class="status">{{ submission.status }}</p>
+          </div>
+
+          <div v-if="$store.getters['user/isLoggedIn'] && (isAuthor || isMod)">
+            <h3>Application Control</h3>
+
+            <v-btn
+              v-if="isAuthor"
+              :loading="$store.state.submission.isLoading"
+              outlined
+              @click="
+                dialogType = 'cancelled'
+                dialog = true
+              "
+              >Cancel</v-btn
+            >
+            <v-btn
+              v-if="isMod"
+              :loading="$store.state.submission.isLoading"
+              outlined
+              @click="
+                dialogType = 'approved'
+                dialog = true
+              "
+              >Approve</v-btn
+            >
+            <v-btn
+              v-if="isMod"
+              :loading="$store.state.submission.isLoading"
+              outlined
+              @click="
+                dialogType = 'rejected'
+                dialog = true
+              "
+            >
+              Reject
+            </v-btn>
+          </div>
+        </div>
       </v-card>
     </v-scale-transition>
 
@@ -115,15 +111,15 @@
     </v-row>
 
     <!-- Image Dialog -->
-    <v-dialog v-model="lightbox" max-width="900">
-      <v-img :src="lightbox_image" aspect-ratio="1.7778" @click="lightbox = !lightbox" />
+    <v-dialog v-model="lightbox" max-width="80%">
+      <v-img :src="lightbox_image" contain @click="lightbox = !lightbox" />
     </v-dialog>
 
     <!-- Images -->
     <v-row v-if="submission && submission.files && submission.files.length">
       <v-col v-for="file in submission.files" :key="file.id" md="4">
         <v-card>
-          <v-img :src="baseFileURL + file.path" aspect-ratio="1.7778" @click="createLightbox(file)" />
+          <v-img :src="baseFileURL + file.path" contain @click="createLightbox(file)" />
         </v-card>
       </v-col>
     </v-row>
@@ -244,7 +240,8 @@ export default class ApplicationKey extends Vue {
   }
 
   get baseFileURL(): string {
-    return process.env.FRONTEND_BASE_URL + '/'
+    // return process.env.FRONTEND_BASE_URL + '/'
+    return 'https://www.reallybadplayers.wtf/'
   }
 
   createLightbox(file: FileUpload): void {
@@ -283,7 +280,27 @@ export default class ApplicationKey extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.info-wrap {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas: 'avatar . .' 'avatar . .';
+}
+
+.info-avatar {
+  grid-area: avatar;
+  margin-right: 16px;
+  align-self: center;
+  justify-self: center;
+}
+
 .status {
   text-transform: uppercase;
+}
+
+.dialog-buttons {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 </style>

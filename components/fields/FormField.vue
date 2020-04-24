@@ -1,6 +1,6 @@
 <template>
   <v-card class="mb-4">
-    <v-card-title>{{ question.question }}</v-card-title>
+    <v-card-title class="question-title">{{ question.question }}</v-card-title>
 
     <v-card-text>
       <validation-provider v-slot="{ errors }" :rules="rules">
@@ -55,3 +55,9 @@ export default class FormField extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.question-title {
+  word-break: break-word;
+}
+</style>

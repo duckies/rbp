@@ -1,13 +1,14 @@
 <template>
   <v-textarea
+    v-if="!readOnly"
     v-model="questionData"
     :hint="question.hint"
     :label="question.label"
     :required="question.required"
     :error-messages="errors"
-    :readonly="readOnly"
     filled
   />
+  <form-response v-else :text="questionData" />
 </template>
 
 <script lang="ts">
@@ -16,8 +17,13 @@ import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import { AnswerData } from '@/store/submission'
 import { Question } from '@/store/form'
+import FormResponse from '@/components/fields/FormResponse.vue'
 
-@Component
+@Component({
+  components: {
+    FormResponse,
+  },
+})
 export default class TextArea extends Vue {
   @Prop() readonly question!: Question
   @Prop() readonly readOnly?: boolean
@@ -35,3 +41,9 @@ export default class TextArea extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.question-text {
+  word-break: break-word;
+}
+</style>
