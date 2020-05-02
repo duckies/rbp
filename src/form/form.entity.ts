@@ -1,24 +1,27 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Collection, Entity, OneToMany, PrimaryKey, Property, QueryOrder } from 'mikro-orm';
 import { FormQuestion } from '../form-question/question.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
-@Entity('form')
-export class Form extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Entity()
+export class Form {
+  @PrimaryKey()
+  id!: number;
 
-  @Column()
-  name: string;
+  @Property()
+  name!: string;
 
-  @OneToMany(() => FormQuestion, question => question.form, { eager: true })
-  questions: FormQuestion[];
+  @OneToMany(() => FormQuestion, (question) => question.form, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC },
+  })
+  questions = new Collection<FormQuestion>(this);
 
-  @OneToMany(() => FormSubmission, submission => submission.form)
-  submissions: FormSubmission[];
+  @OneToMany(() => FormSubmission, (submission) => submission.form)
+  submissions = new Collection<FormSubmission>(this);
 
-  @CreateDateColumn()
-  createdOn: Date;
+  @Property({ default: new Date() })
+  createdAt = new Date();
 
-  @UpdateDateColumn()
-  lastUpdated: Date;
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 }

@@ -1,4 +1,4 @@
-import { ProfileEndpoints } from '../../enum/profile-api.enum';
+import { ProfileEndpoints } from '../../enums/profile-api.enum';
 import {
   AccountCollectionsIndex,
   AccountMountsCollectionSummary,

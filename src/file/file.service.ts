@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import fs from 'fs';
-import { In, Repository } from 'typeorm';
+import { EntityRepository } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
 import { User } from '../user/user.entity';
 import { FileUpload } from './file.entity';
 import { File } from './interfaces/file.interface';
@@ -10,10 +10,10 @@ const { unlink } = fs.promises;
 
 @Injectable()
 export class FileService {
-  constructor(@InjectRepository(FileUpload) private readonly fileRepository: Repository<FileUpload>) {}
+  constructor(@InjectRepository(FileUpload) private readonly fileRepository: EntityRepository<FileUpload>) {}
 
-  create(files: File[], user?: User) {
-    const fileEntities = files.map(file => {
+  async create(files: File[], user?: User) {
+    const fileEntities = files.map((file) => {
       const fileEntity = new FileUpload();
       fileEntity.filename = file.filename;
       fileEntity.mimetype = file.mimetype;
@@ -27,15 +27,17 @@ export class FileService {
       return fileEntity;
     });
 
-    return this.fileRepository.save(fileEntities);
+    await this.fileRepository.persistAndFlush(fileEntities);
+
+    return fileEntities;
   }
 
   find(ids: number[]) {
-    return this.fileRepository.find({ where: { id: In(ids) }, relations: ['author'] });
+    return this.fileRepository.find({ id: { $in: ids } }, ['author']);
   }
 
   async delete(id: number, user?: User) {
-    const file = await this.fileRepository.findOneOrFail(id, { relations: ['author'] });
+    const file = await this.fileRepository.findOneOrFail(id, ['author']);
 
     if (user && file.author.id !== user.id) {
       throw new UnauthorizedException('You do not own this file.');

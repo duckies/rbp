@@ -1,6 +1,6 @@
 import { IsEnum, IsString } from 'class-validator';
-import { RealmSlug } from '../enum/realm.enum';
-import { Region } from '../enum/region.enum';
+import { RealmSlug } from '../enums/realm.enum';
+import { Region } from '../enums/region.enum';
 
 export class FindCharacterDto {
   @IsString()

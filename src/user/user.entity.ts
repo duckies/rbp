@@ -1,162 +1,58 @@
-import moment from 'moment';
-import {
-  BaseEntity,
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Collection, Entity, OneToMany, PrimaryKey, Property, WrappedEntity } from 'mikro-orm';
+import { EnumArray } from '../../config/types/enum-array.type';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
-import { ProfileKnownCharacter } from '../blizzard/interfaces/profile/account-profile/account-profile-summary.interface';
-import { Character } from '../character/character.entity';
 import { FileUpload } from '../file/file.entity';
-import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
+import { FormComment } from '../form-comment/form-comment.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
-@Entity('user')
-export class User extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Entity()
+export class User {
+  @PrimaryKey()
+  id!: number;
 
-  @Column({ nullable: true })
-  nickname: string;
+  @Property({ unique: true })
+  discord_id!: string;
 
-  @Column({ nullable: true })
-  battletag: string;
+  @Property()
+  discord_username!: string;
 
-  @Column({ nullable: true, select: false })
-  blizzardid: number;
+  @Property()
+  discord_discriminator!: string;
 
-  @Column({ nullable: true, select: false })
-  blizzardtoken: string;
-
-  @Column({ nullable: true, select: false })
-  blizzardTokenExpiration: Date;
-
-  @Column()
-  discord_id?: string;
-
-  @Column({ nullable: true })
-  discord_username?: string;
-
-  @Column({ nullable: true })
-  discord_discriminator?: string;
-
-  @Column({ nullable: true, select: false })
+  @Property({ hidden: true })
   discord_access_token?: string;
 
-  @Column({ nullable: true, select: false })
+  @Property({ hidden: true })
   discord_refresh_token?: string;
 
-  @Column({ nullable: true })
+  @Property()
   discord_avatar?: string;
 
-  @Column({ type: 'enum', enum: Roles, default: [Roles.Guest], array: true })
-  roles: Roles[];
+  @Property({ hidden: true })
+  blizzard_token?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Property({ type: EnumArray })
+  roles: Roles[] = [];
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property()
+  createdAt = new Date();
 
-  @Column({ nullable: true })
-  lastLogin: Date;
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 
-  @OneToMany(
-    () => Article,
-    article => article.author,
-  )
+  @OneToMany(() => Article, (article) => article.author)
   articles: Article[];
 
-  // Not yet implemented.
-  // @OneToMany(() => Comment, comment => comment.author)
-  // comments: Comment[];
+  @OneToMany(() => FormSubmission, (submission) => submission.author)
+  submissions = new Collection<FormSubmission>(this);
 
-  @OneToOne(() => Character, { eager: false })
-  @JoinColumn()
-  mainCharacter: Character;
+  @OneToMany(() => FormComment, (comment) => comment.author)
+  comments = new Collection<FormComment>(this);
 
-  @OneToMany(
-    () => Character,
-    character => character.account,
-    {
-      cascade: true,
-    },
-  )
-  characters: Character[];
-
-  @Column({ type: 'jsonb', nullable: true, select: false })
-  knownCharacters: ProfileKnownCharacter[];
-
-  @Column({ nullable: true, select: false })
-  knownCharactersLastUpdated: Date;
-
-  @OneToMany(
-    () => FormSubmission,
-    formSubmission => formSubmission.author,
-  )
-  formSubmissions: FormSubmission[];
-
-  @OneToMany(
-    () => FileUpload,
-    fileUpload => fileUpload.author,
-  )
+  @OneToMany(() => FileUpload, (fileUpload) => fileUpload.author)
   files: FileUpload[];
-
-  /**
-   * Notification or "Seen" Relations
-   */
-  @OneToMany(
-    () => FormSubmissionRead,
-    formSubmissionRead => formSubmissionRead.user,
-  )
-  readFormSubmissions: FormSubmissionRead;
-
-  /**
-   * Methods
-   */
-
-  @BeforeInsert()
-  setToken(): void {
-    if (this.blizzardtoken) {
-      this.blizzardTokenExpiration = moment()
-        .add(24, 'hours')
-        .toDate();
-    }
-  }
-
-  @BeforeUpdate()
-  updateToken(): void {
-    if (this.blizzardtoken === null) {
-      this.blizzardTokenExpiration = null;
-    } else {
-      this.blizzardTokenExpiration = moment()
-        .add(24, 'hours')
-        .toDate();
-    }
-  }
-
-  tokenExpired(): boolean {
-    return (
-      !this.blizzardtoken ||
-      !this.blizzardTokenExpiration ||
-      !moment(this.blizzardTokenExpiration).isSameOrAfter(new Date())
-    );
-  }
-
-  charactersUpdatedWithin(minutes: number): boolean {
-    if (!this.knownCharactersLastUpdated) return false;
-
-    return moment(this.knownCharactersLastUpdated)
-      .add(minutes, 'minutes')
-      .isAfter(new Date());
-  }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface User extends WrappedEntity<User, 'id'> {}

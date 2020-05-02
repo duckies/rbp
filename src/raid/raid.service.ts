@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import { Raid } from './raid.entity';
+import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateRaidDto } from './dto/create-raid.dto';
 import { UpdateRaidDto } from './dto/update-raid.dto';
+import { Raid } from './raid.entity';
 
 @Injectable()
 export class RaidService {
   constructor(
     @InjectRepository(Raid)
-    private readonly repository: Repository<Raid>,
+    private readonly raidRepository: EntityRepository<Raid>,
   ) {}
 
   /**
@@ -17,8 +17,12 @@ export class RaidService {
    * human readable name, the Raider.IO api does not do this.
    * @param createRaidDto
    */
-  create(createRaidDto: CreateRaidDto): Promise<Raid> {
-    return this.repository.save(createRaidDto);
+  async create(createRaidDto: CreateRaidDto) {
+    const raid = this.raidRepository.create(createRaidDto);
+
+    await this.raidRepository.persistAndFlush(raid);
+
+    return raid;
   }
 
   /**
@@ -26,12 +30,15 @@ export class RaidService {
    * @param take Takes only 10 most recent raids by default
    * @param skip Skips no raids by default
    */
-  async findAll(take = 10, skip = 0): Promise<{ result: Raid[]; total: number }> {
-    const [result, total] = await this.repository.findAndCount({
-      order: { id: 'DESC' },
-      take,
-      skip,
-    });
+  async findAll(limit = 10, offset = 0) {
+    const [result, total] = await this.raidRepository.findAndCount(
+      {},
+      {
+        orderBy: { id: QueryOrder.DESC },
+        limit,
+        offset,
+      },
+    );
 
     return { result, total };
   }
@@ -40,24 +47,24 @@ export class RaidService {
    * Retrieves all raids in an array of slugs.
    * @param slugs Array of raid slugs.
    */
-  async findAllBySlugs(slugs: string[]): Promise<Raid[]> {
-    return this.repository.find({
-      where: { slug: In(slugs) },
-    });
+  async findAllBySlugs(slugs: string[]) {
+    return this.raidRepository.find({ slug: { $in: slugs } });
   }
 
   /**
    * Finds the latest featured raids. Primarily used for the homepage.
    * @param take Takes only 4 most recent featuerd raids by default.
-   * @param skip Skips no raids by default.
+   * @param offset Skips no raids by default.
    */
-  async findAllFeatured(take = 4, skip = 0): Promise<{ result: Raid[]; total: number }> {
-    const [result, total] = await this.repository.findAndCount({
-      order: { order: 'ASC' },
-      where: { isFeatured: true },
-      take,
-      skip,
-    });
+  async findAllFeatured(limit = 4, offset = 0) {
+    const [result, total] = await this.raidRepository.findAndCount(
+      { isFeatured: true },
+      {
+        orderBy: { order: QueryOrder.ASC },
+        limit,
+        offset,
+      },
+    );
 
     return { result, total };
   }
@@ -67,7 +74,7 @@ export class RaidService {
    * @param id
    */
   findOne(id: number): Promise<Raid> {
-    return this.repository.findOneOrFail(id);
+    return this.raidRepository.findOneOrFail(id);
   }
 
   /**
@@ -76,7 +83,7 @@ export class RaidService {
    * @param slug
    */
   findOneBySlug(slug: string): Promise<Raid> {
-    return this.repository.findOne({ slug });
+    return this.raidRepository.findOne({ slug });
   }
 
   /**
@@ -86,10 +93,22 @@ export class RaidService {
    * @param updateRaidDto
    */
   async update(id: number, updateRaidDto: UpdateRaidDto): Promise<Raid> {
-    const raid = await this.repository.findOneOrFail(id);
+    const raid = await this.raidRepository.findOneOrFail(id);
 
-    this.repository.merge(raid, updateRaidDto);
+    wrap(raid).assign(updateRaidDto);
 
-    return this.repository.save(raid);
+    await this.raidRepository.flush();
+
+    return raid;
+  }
+
+  /**
+   * Persists a newly created raid or updates an already existing one.
+   * @param raid
+   */
+  async upsert(raid: Raid) {
+    await this.raidRepository.persistAndFlush(raid);
+
+    return raid;
   }
 }

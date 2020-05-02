@@ -30,6 +30,7 @@ import {
 import { FormSubmission } from './form-submission.entity';
 import { SubmissionService } from './form-submission.service';
 import { CreateSubmissionPipe } from './pipes/create-submission.pipe';
+import { Auth } from '../auth/decorators/auth.decorator';
 
 @Controller('submission')
 export class SubmissionController {
@@ -51,10 +52,10 @@ export class SubmissionController {
   @UseInterceptors(
     AnyFilesInterceptor({
       storage: multer.diskStorage({
-        destination: function(req, file, cb) {
+        destination: function (req, file, cb) {
           cb(null, 'uploads/applications/');
         },
-        filename: function(req, file, cb) {
+        filename: function (req, file, cb) {
           cb(null, Date.now() + '-' + file.originalname);
         },
       }),
@@ -98,8 +99,8 @@ export class SubmissionController {
 
   @UseGuards(OptionalAuthGuard)
   @Get()
-  findAll(@Query() { take, skip, status, id }: FindAllFormSubmissionsDto, @Usr() user?: User) {
-    return this.submissionService.findAll(take, skip, status, id, user);
+  findAll(@Query() { take, skip, status }: FindAllFormSubmissionsDto) {
+    return this.submissionService.findAll(take, skip, status);
   }
 
   @UseGuards(AccessControlGuard)
@@ -114,5 +115,11 @@ export class SubmissionController {
     } else {
       return this.submissionService.updateOwn(id, user, updateFormSubmissionDto);
     }
+  }
+
+  @Auth({ action: 'delete', possession: 'any', resource: 'form-submission' })
+  @Delete(':id')
+  delete(@Param() { id }: FindFormSubmissionDto) {
+    return this.submissionService.delete(id);
   }
 }

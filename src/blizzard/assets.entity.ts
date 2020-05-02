@@ -1,19 +1,21 @@
-import { BaseEntity, Column, Entity, PrimaryColumn, Unique } from 'typeorm';
+import { Entity, Enum, PrimaryKey, Property, Unique } from 'mikro-orm';
+import { AssetType } from './enums/asset-type.enum';
 
-export enum AssetType {
-    Icon = 'icon',
-    Spell = 'spell'
-}
+@Entity({ tableName: 'wow_asset' })
+@Unique({ properties: ['id', 'type'] })
+export class WoWAsset {
+  constructor(id: number, type: AssetType, value: string) {
+    this.id = id;
+    this.type = type;
+    this.value = value;
+  }
 
-@Entity('wow_assets')
-@Unique('unique_asset_id_type', ['id', 'type'])
-export class WoWAssets extends BaseEntity {
-  @PrimaryColumn()
-  id: number;
+  @PrimaryKey()
+  id!: number;
 
-  @PrimaryColumn({type: "enum", enum: AssetType })
-  type: AssetType
+  @Enum(() => AssetType)
+  type: AssetType;
 
-  @Column()
-  value: string;
+  @Property()
+  value!: string;
 }

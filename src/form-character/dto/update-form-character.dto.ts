@@ -2,8 +2,8 @@ import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-va
 import { EquippedItem } from '../../blizzard/interfaces/profile/character-equipment/character-equipment-summary.interface';
 import { SpecializationMeta } from '../../blizzard/interfaces/profile/character-specializations/character-specializations-summary.interface';
 import { RaiderIOCharacter } from '../../raiderIO/interfaces/raider-io-character.interface';
-import { RealmSlug } from './../../blizzard/enum/realm.enum';
-import { Region } from './../../blizzard/enum/region.enum';
+import { RealmSlug } from '../../blizzard/enums/realm.enum';
+import { Region } from '../../blizzard/enums/region.enum';
 
 export class UpdateFormCharacterDto {
   @IsOptional()

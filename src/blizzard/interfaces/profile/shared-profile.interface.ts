@@ -1,4 +1,4 @@
-import { RealmSlug } from '../../enum/realm.enum';
+import { RealmSlug } from '../../enums/realm.enum';
 
 export interface Links {
   self: Link;

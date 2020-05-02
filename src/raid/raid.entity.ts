@@ -1,67 +1,66 @@
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, UpdateDateColumn } from 'typeorm';
+import { Entity, Enum, PrimaryKey, Property } from 'mikro-orm';
+import { Expansion } from './enums/expansion.enum';
+import { DecimalType } from '../../config/types/decimal.type';
 
-export enum Expansion {
-  SHADOWLANDS = 'Shadowlands',
-  BATTLE_FOR_AZEROTH = 'Battle for Azeroth',
-  LEGION = 'Legion',
-}
+@Entity()
+export class Raid {
+  @PrimaryKey()
+  id!: number;
 
-@Entity('raid')
-export class Raid extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @Property()
+  name?: string;
 
-  @Column({ nullable: true })
-  name: string;
+  @Property({ unique: true })
+  slug!: string;
 
-  @Column({ unique: true })
-  slug: string;
+  @Enum({ items: () => Expansion, nullable: true })
+  expansion?: Expansion;
 
-  @Column({ type: 'enum', enum: Expansion, nullable: true })
-  expansion: Expansion;
+  @Property({ nullable: true })
+  background?: string;
 
-  @Column({ nullable: true })
-  background: string;
+  @Property({ type: DecimalType })
+  progress!: number;
 
-  @Column({ type: 'decimal' })
-  progress: number;
+  @Property()
+  difficulty!: string;
 
-  @Column()
-  difficulty: string;
+  @Property()
+  world!: number;
 
-  @Column()
-  world: number;
+  @Property()
+  region!: number;
 
-  @Column()
-  region: number;
+  @Property()
+  realm!: number;
 
-  @Column()
-  realm: number;
+  @Property()
+  summary!: string;
 
-  @Column()
-  summary: string;
+  @Property()
+  bosses!: number;
 
-  @Column()
-  bosses: number;
+  @Property()
+  normal_bosses_killed!: number;
 
-  @Column()
-  normal_bosses_killed: number;
+  @Property()
+  heroic_bosses_killed!: number;
 
-  @Column()
-  heroic_bosses_killed: number;
+  @Property()
+  mythic_bosses_killed!: number;
 
-  @Column()
-  mythic_bosses_killed: number;
+  @Property({ index: true })
+  isFeatured = false;
 
-  @Column({ default: false })
-  isFeatured: boolean;
+  @Property()
+  order = 0;
 
-  @Column({ default: 0 })
-  order: number;
+  @Property()
+  locked = false;
 
-  @Column({ default: false })
-  locked: boolean;
+  @Property()
+  createdAt = new Date();
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 }

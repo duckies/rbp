@@ -1,37 +1,30 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 import { User } from '../user/user.entity';
 
 @Entity()
 export class FileUpload {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryKey()
+  id!: number;
 
-  @Column()
-  filename: string;
+  @Property()
+  filename!: string;
 
-  @Column()
-  path: string;
+  @Property()
+  path!: string;
 
-  @Column()
-  mimetype: string;
+  @Property()
+  mimetype!: string;
 
-  @Column()
-  size: number;
+  @Property()
+  size!: number;
 
-  @Column({ default: false })
-  immune: boolean;
+  @Property()
+  immune = false;
 
-  @ManyToOne(
-    () => User,
-    user => user.files,
-    { eager: true, cascade: true },
-  )
+  @ManyToOne()
   author: User;
 
-  @ManyToOne(
-    () => FormSubmission,
-    submission => submission.files,
-  )
-  submission: FormSubmission;
+  @ManyToOne({ onDelete: 'SET NULL' })
+  submission?: FormSubmission;
 }

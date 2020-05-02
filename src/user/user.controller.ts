@@ -20,12 +20,9 @@ export class UserController {
 
   @Get('/me')
   findMe(@Usr() user: User): User {
-    delete user.blizzardtoken;
-    delete user.blizzardTokenExpiration;
-    delete user.createdAt;
-    delete user.updatedAt;
-    delete user.knownCharacters;
-    delete user.knownCharactersLastUpdated;
+    delete user.discord_access_token;
+    delete user.discord_refresh_token;
+    delete user.blizzard_token;
 
     return user;
   }

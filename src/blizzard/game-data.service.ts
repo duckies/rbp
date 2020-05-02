@@ -1,10 +1,11 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { GameDataEndpoint } from './enum/game-data-api.enum';
-import { TokenService } from './token.service';
-import { WoWAssets, AssetType } from './assets.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { EntityRepository } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
+import { WoWAsset } from './assets.entity';
+import { AssetType } from './enums/asset-type.enum';
+import { GameDataEndpoint } from './enums/game-data-api.enum';
 import * as GameData from './interfaces/game-data';
+import { TokenService } from './token.service';
 
 export type GameDataReturnType = {
   [GameDataEndpoint.AchievementCategoriesIndex]: void;
@@ -82,8 +83,8 @@ export type GameDataReturnType = {
 @Injectable()
 export class GameDataService {
   constructor(
-    @InjectRepository(WoWAssets)
-    private readonly assetRepository: Repository<WoWAssets>,
+    @InjectRepository(WoWAsset)
+    private readonly assetRepository: EntityRepository<WoWAsset>,
     private readonly tokenService: TokenService,
     private readonly http: HttpService,
   ) {}
@@ -91,12 +92,14 @@ export class GameDataService {
   async getGameItemMedia(id: number, download?: boolean): Promise<GameData.ItemMedia> {
     if (!download) return this.getGameData(GameDataEndpoint.ItemMedia, id);
 
-    const asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
+    let asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
 
     if (!asset) {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);
 
-      await this.assetRepository.save({ id, type: AssetType.Icon, value: data.assets[0].value });
+      asset = new WoWAsset(id, AssetType.Icon, data.assets[0].value);
+
+      this.assetRepository.persistLater(asset);
 
       return data;
     }
@@ -114,6 +117,13 @@ export class GameDataService {
         },
       ],
     };
+  }
+
+  /**
+   * Assets are transactionally tracked and may conflict due to the high-concurrency.
+   */
+  async flush() {
+    await this.assetRepository.flush();
   }
 
   async getGameData<T extends GameDataEndpoint>(

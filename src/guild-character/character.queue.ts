@@ -4,11 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
-import { RealmSlug } from '../blizzard/enum/realm.enum';
-import { Region } from '../blizzard/enum/region.enum';
+import { RealmSlug } from '../blizzard/enums/realm.enum';
+import { Region } from '../blizzard/enums/region.enum';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
 import { ProfileService } from '../blizzard/profile.service';
+import { GuildCharacter } from './character.entity';
 import { CharacterService, PurgeResult } from './character.service';
+import moment from 'moment';
 
 export interface GuildUpdateResult {
   success: number;
@@ -53,7 +55,7 @@ export class CharacterQueue {
     const guild = await this.profileService.getGuildRoster(this.guildLookup, this.minimumCharacterLevel);
 
     await Promise.all(
-      guild.members.map(async member => {
+      guild.members.map(async (member) => {
         const findCharacterDto = new FindCharacterDto(member.character.name);
 
         try {
@@ -86,33 +88,28 @@ export class CharacterQueue {
     return Promise.resolve({ success, failed, ignored });
   }
 
-  // @Process({ name: 'removeNonGuildMembers', concurrency: 1 })
-  // private async removeNonGuildMembers(): Promise<unknown> {
-  //   const [blizzard, local] = await Promise.all([
-  //     this.blizzardService.getGuildRoster(this.guildLookup),
-  //     this.characterService.findAllInGuild(),
-  //   ]);
+  @Process({ name: 'removeNonGuildMembers', concurrency: 1 })
+  private async removeNonGuildMembers() {
+    const [blizzard, local] = await Promise.all([
+      this.profileService.getGuildRoster(this.guildLookup, this.minimumCharacterLevel),
+      this.characterService.findAllInGuild(),
+    ]);
 
-  //   // Creates a list of local characters who are not in the guild.
-  //   const toRemove: Character[] = local.filter(l => !blizzard.members.some(b => l.name === b.character.name));
+    // Creates a list of local characters who are not in the guild.
+    const missing: GuildCharacter[] = local.filter(
+      (l) => !blizzard.members.some((b) => l.name === b.character.name),
+    );
 
-  //   // Remove all guild associations.
-  //   const promises = [];
-  //   for (const character of toRemove) {
-  //     this.logger.log(`Removing ${character.name} from the guild.`);
-
-  //     character.guild_id = null;
-  //     character.guild_name = null;
-  //     character.guild_realm = null;
-  //     // Should I just delete them instead?
-  //     promises.push(character.removeGuild().save());
-  //   }
-
-  //   return Promise.all(promises);
-  // }
+    if (missing.length) {
+      this.logger.log(`Found ${missing.length} missing guild characters.`);
+      await this.characterService.setCharactersMissing(missing, moment.utc().toDate());
+    } else {
+      this.logger.log(`No missing guild characters.`);
+    }
+  }
 
   @Process({ name: 'purgeGuildRoster', concurrency: 1 })
-  private async purgeGuildRoster(): Promise<PurgeResult> {
+  private async purgeGuildRoster() {
     return await this.characterService.purgeRoster();
   }
 

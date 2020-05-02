@@ -1,6 +1,6 @@
 import { HttpModule, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { WoWAssets } from './assets.entity';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
+import { WoWAsset } from './assets.entity';
 import { BattleNetService } from './battle.net.service';
 import { BlizzardScheduler } from './blizzard.scheduler';
 import { GameDataController } from './game-data.controller';
@@ -11,8 +11,15 @@ import { RateLimiter } from './rate-limiter.service';
 import { TokenService } from './token.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([WoWAssets]), HttpModule],
-  providers: [ProfileService, GameDataService, BattleNetService, TokenService, RateLimiter, BlizzardScheduler],
+  imports: [MikroOrmModule.forFeature({ entities: [WoWAsset] }), HttpModule],
+  providers: [
+    ProfileService,
+    GameDataService,
+    BattleNetService,
+    TokenService,
+    RateLimiter,
+    BlizzardScheduler,
+  ],
   controllers: [BlizzardController, GameDataController],
   exports: [ProfileService, BattleNetService, GameDataService, TokenService, RateLimiter],
 })

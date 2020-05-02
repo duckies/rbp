@@ -1,5 +1,6 @@
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
-import { FieldType, FileTypes } from '../question.entity';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { FieldType } from '../enums/field-type.enum';
+import { FileTypes } from '../enums/file-types.enum';
 
 export class CreateQuestionDto {
   @IsString()

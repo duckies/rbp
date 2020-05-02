@@ -22,19 +22,20 @@ export class RateLimiter {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getBlizzard(uri: string, user?: User): Promise<any> {
     try {
       await this.tokenService.getToken();
 
       const config = user
         ? {
-            headers: { Authorization: `Bearer ${user.blizzardtoken}` },
+            headers: { Authorization: `Bearer ${user.blizzard_token}` },
           }
         : null;
 
       return (
-        await this.blizzard.add(() => this.http.get(uri + '?namespace=profile-us&locale=en_US', config).toPromise())
+        await this.blizzard.add(() =>
+          this.http.get(uri + '?namespace=profile-us&locale=en_US', config).toPromise(),
+        )
       ).data;
     } catch (error) {
       switch (error.response.status) {

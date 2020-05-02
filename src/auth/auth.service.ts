@@ -34,31 +34,27 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {}
 
-  async verify(payload: JWTPayload): Promise<User> {
+  async verify(payload: JWTPayload) {
     return await this.userService.findOneByJwtPayload(payload);
   }
 
-  signToken(user: User): string {
+  signToken(user: User) {
     return sign({ id: user.id }, this.config.get('JWT_SECRET'));
   }
 
-  async validateDiscordLogin(
-    accessToken: string,
-    refreshToken: string,
-    profile: DiscordProfile,
-  ): Promise<User> {
+  async validateDiscordLogin(accessToken: string, refreshToken: string, profile: DiscordProfile) {
     const user = await this.userService.findOneByProviderId(profile.id, profile.provider);
 
     if (!user) {
       return await this.userService.create(profile.id, accessToken, refreshToken, profile);
     }
 
-    user.discord_access_token = accessToken;
-    user.discord_refresh_token = refreshToken;
-    user.discord_avatar = profile.avatar;
-    user.discord_username = profile.username;
-    user.discord_discriminator = profile.discriminator;
-
-    return await user.save();
+    return await this.userService.updateByDiscord(user, {
+      discord_access_token: accessToken,
+      discord_refresh_token: refreshToken,
+      discord_avatar: profile.avatar,
+      discord_username: profile.username,
+      discord_discriminator: profile.discriminator,
+    });
   }
 }

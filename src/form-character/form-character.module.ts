@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { BlizzardModule } from '../blizzard/blizzard.module';
 import { RaiderIOModule } from '../raiderIO/raiderIO.module';
 import { FormCharacterController } from './form-character.controller';
@@ -11,7 +11,7 @@ import { FormCharacterService } from './form-character.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FormCharacter]),
+    MikroOrmModule.forFeature({ entities: [FormCharacter] }),
     BullModule.registerQueue({ name: 'form-character' }),
     BlizzardModule,
     RaiderIOModule,

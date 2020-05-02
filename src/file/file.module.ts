@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { FileUpload } from './file.entity';
 import { FileService } from './file.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FileUpload])],
+  imports: [MikroOrmModule.forFeature({ entities: [FileUpload] })],
   providers: [FileService],
   exports: [FileService],
 })

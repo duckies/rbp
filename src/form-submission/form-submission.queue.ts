@@ -77,22 +77,57 @@ export class FormSubmissionQueue {
       });
     }
 
-    data.embeds[0].fields.push({
-      name: 'Progression',
-      value: 'Not yet implemented',
-      inline: true,
-    });
-
     if (main.raiderIO && main.raiderIO.mythic_plus_scores_by_season) {
       const rankings = main.raiderIO.mythic_plus_scores_by_season.map((season) => {
         const seasonNums = season.season.match(/\d+/);
         if (!season) return '';
 
-        return `Season ${seasonNums[0]}: ${season.scores.all}`;
+        const isPost = season.season.includes('post');
+
+        return `Season ${seasonNums[0]}${isPost ? '.5' : ''}: ${season.scores.all}`;
       });
       data.embeds[0].fields.push({
         name: 'Raider.IO',
         value: rankings.join('\n'),
+        inline: true,
+      });
+    }
+
+    if (main.raiderIO && main.raiderIO.mythic_plus_best_runs) {
+      const runs = main.raiderIO.mythic_plus_best_runs.map(
+        (run) =>
+          `${run.mythic_level} ${run.short_name} ${
+            run.num_keystone_upgrades > 0 ? '+' + run.num_keystone_upgrades : ''
+          }`,
+      );
+
+      data.embeds[0].fields.push({
+        name: 'Best Dungeons',
+        value: runs.join('\n'),
+        inline: true,
+      });
+    }
+
+    if (main.raids) {
+      let progression = '';
+      const lastExp = main.raids[main.raids.length - 1];
+
+      for (const instance of lastExp.instances.slice(-4)) {
+        const mythic = instance.modes.find((m) => m.difficulty.type === 'MYTHIC');
+
+        if (mythic) {
+          progression += `\n:crossed_swords: ${instance.instance.name} (${mythic.progress.completed_count}/${mythic.progress.total_count})`;
+        }
+      }
+      data.embeds[0].fields.push({
+        name: 'Recent Raids',
+        value: progression,
+        inline: false,
+      });
+    } else {
+      data.embeds[0].fields.push({
+        name: 'Progression',
+        value: 'Data missing.',
         inline: true,
       });
     }

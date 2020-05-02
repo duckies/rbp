@@ -1,4 +1,4 @@
-import { RealmName, RealmSlug } from './enum/realm.enum';
+import { RealmName, RealmSlug } from './enums/realm.enum';
 
 export const RealmSlugDictionary = {
   [RealmSlug.Lightbringer]: RealmName.Lightbringer,

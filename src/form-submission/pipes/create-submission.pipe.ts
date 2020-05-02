@@ -1,5 +1,6 @@
 import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { FieldType, FormQuestion } from '../../form-question/question.entity';
+import { FieldType } from '../../form-question/enums/field-type.enum';
+import { FormQuestion } from '../../form-question/question.entity';
 import { FormQuestionService } from '../../form-question/question.service';
 import { CreateFormSubmissionDto } from '../dto';
 
@@ -58,7 +59,10 @@ export class CreateSubmissionPipe implements PipeTransform {
    * @param question
    * @param answer
    */
-  private validateAnswer({ id, type, choices, multiple }: FormQuestion, answer: string | boolean | string[]): void {
+  private validateAnswer(
+    { id, type, choices, multiple }: FormQuestion,
+    answer: string | boolean | string[],
+  ): void {
     // Textarea, Textinputs, and Radio Buttons can only return strings.
     if (
       (type === FieldType.TEXTAREA || type === FieldType.TEXTINPUT || type === FieldType.RADIO) &&
@@ -96,7 +100,7 @@ export class CreateSubmissionPipe implements PipeTransform {
 
     // Check if Checkbox and Select multiple values are valid.
     if ((type === FieldType.CHECKBOX || type === FieldType.SELECT) && multiple) {
-      if (!(Array.isArray(answer) && answer.every(v => typeof v === 'string'))) {
+      if (!(Array.isArray(answer) && answer.every((v) => typeof v === 'string'))) {
         throw new BadRequestException({
           type,
           id,
