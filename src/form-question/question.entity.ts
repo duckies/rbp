@@ -1,77 +1,57 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { v4 } from 'uuid';
+import { EnumArray } from '../../config/types/enum-array.type';
 import { Form } from '../form/form.entity';
+import { FieldType } from './enums/field-type.enum';
+import { FileTypes } from './enums/file-types.enum';
 
-export enum FieldType {
-  TEXTINPUT = 'TextInput',
-  TEXTAREA = 'TextArea',
-  CHECKBOX = 'Checkbox',
-  SELECT = 'Select',
-  RADIO = 'Radio',
-  UPLOAD = 'Upload',
-}
+@Entity()
+export class FormQuestion {
+  @PrimaryKey()
+  id = v4();
 
-export const choicesFields = [FieldType.CHECKBOX, FieldType.SELECT, FieldType.RADIO];
-export const multipleFields = [FieldType.CHECKBOX, FieldType.SELECT, FieldType.UPLOAD];
+  @Property()
+  question!: string;
 
-export enum FileTypes {
-  Image = 'image/*',
-}
-
-@Entity('form_question')
-export class FormQuestion extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column()
-  question: string;
-
-  @Column({ nullable: true })
+  @Property()
   label?: string;
 
-  @Column({ nullable: true })
+  @Property()
   hint?: string;
 
-  @Column()
-  required: boolean;
+  @Property()
+  required!: boolean;
 
-  @Column('text', { nullable: true, array: true })
-  choices: string[];
+  @Property()
+  choices?: string[];
 
-  @Column({ nullable: true })
-  multiple: number;
+  @Property()
+  multiple?: number;
 
-  @Column()
-  order: number;
+  @Property()
+  order!: number;
 
-  @Column({ type: 'enum', enum: FieldType })
-  type: FieldType;
+  @Enum(() => FieldType)
+  type!: FieldType;
 
-  @Column({ type: 'enum', enum: FileTypes, nullable: true, array: true })
-  fileTypes: FileTypes[];
+  @Property({ type: EnumArray })
+  fileTypes?: FileTypes[];
 
-  @Column({ default: false })
-  deleted: boolean;
+  @Property()
+  deleted = false;
 
-  @Column({ default: false })
-  hasAnswers: boolean;
+  @Property()
+  hasAnswers = false;
 
-  @Column()
-  formId: number;
+  @Property({ persist: false })
+  form_id: number;
 
-  @ManyToOne(() => Form, form => form.questions, { onDelete: 'CASCADE' })
-  form: Form;
+  @ManyToOne()
+  form!: Form;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Property()
+  createdAt = new Date();
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 }

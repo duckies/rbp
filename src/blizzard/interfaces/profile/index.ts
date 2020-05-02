@@ -15,6 +15,8 @@ export { CharacterAppearanceSummary } from './character-appearance/character-app
 export { CharacterCollectionsIndex } from './character-collections/character-collections-index.interface';
 export { CharacterMountsCollectionSummary } from './character-collections/character-mounts-collection-summary.interface';
 export { CharacterPetsCollectionSummary } from './character-collections/character-pets-collection-summary.interface';
+// Character Encounters API
+export { CharacterRaids } from './character-encounters/character-raids.interface';
 // Character Equipment API
 export { CharacterEquipmentSummary } from './character-equipment/character-equipment-summary.interface';
 // Character Hunter Pets API

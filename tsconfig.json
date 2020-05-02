@@ -12,6 +12,6 @@
     "baseUrl": "./",
     "incremental": true
   },
-  "include": ["src"],
+  "include": ["src", "config/types/enum-array.type.ts", "config/types/decimal.type.ts"],
   "exclude": ["node_modules", "dist", "uploads"]
 }

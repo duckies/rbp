@@ -16,6 +16,7 @@ export interface RaiderIOCharacter {
   raid_progression?: any;
   gear?: { item_level_equipped: number; item_level_total: number; artifact_traits: number };
   mythic_plus_scores_by_season?: RaiderIOSeason[];
+  mythic_plus_best_runs?: RaiderIOBestRun[];
 }
 
 export interface RaiderIOSeason {
@@ -30,4 +31,24 @@ export interface RaiderIOSeason {
     spec_2: number;
     spec_3: number;
   };
+}
+
+export interface RaiderIOBestRun {
+  dungeon: string;
+  short_name: string;
+  mythic_level: number;
+  completed_at: string;
+  clear_time_ms: number;
+  num_keystone_upgrades: number;
+  map_challenge_mode_id: number;
+  score: number;
+  affixes: Affix[];
+  url: string;
+}
+
+export interface Affix {
+  id: number;
+  name: string;
+  description: string;
+  wowhead_url: string;
 }

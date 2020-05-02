@@ -2,17 +2,17 @@ import * as Joi from '@hapi/joi';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessControlModule } from 'nest-access-control';
-import { Connection } from 'typeorm';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
+import MikroOrmConfig from '../mikro-orm.config';
 import { roleBuilder } from './app.roles';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
-import { CharacterModule } from './character/character.module';
 import { FormCharacterModule } from './form-character/form-character.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
+import { CharacterModule } from './guild-character/character.module';
 import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
@@ -23,9 +23,7 @@ import { UserModule } from './user/user.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string()
-          .valid('development', 'production', 'test')
-          .default('development'),
+        NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3000),
         JWT_SECRET: Joi.string().default('testing'),
         BLIZZARD_CLIENTID: Joi.string().required(),
@@ -43,7 +41,7 @@ import { UserModule } from './user/user.module';
     PassportModule.register({
       defaultStrategy: 'blizzard',
     }),
-    TypeOrmModule.forRoot(),
+    MikroOrmModule.forRoot(MikroOrmConfig),
     AccessControlModule.forRoles(roleBuilder),
     ConfigModule,
     UserModule,
@@ -59,6 +57,4 @@ import { UserModule } from './user/user.module';
     RaiderIOModule,
   ],
 })
-export class AppModule {
-  constructor(private readonly connection: Connection) {}
-}
+export class AppModule {}

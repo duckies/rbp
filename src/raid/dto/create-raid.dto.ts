@@ -1,52 +1,68 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { Expansion } from '../raid.entity';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Expansion } from '../enums/expansion.enum';
 
 export class CreateRaidDto {
-  @IsNotEmpty()
-  name: string;
+  @IsOptional()
+  @IsString()
+  name?: string;
 
   @IsNotEmpty()
-  slug: string;
-
-  @IsNotEmpty()
-  expansion: Expansion;
-
-  @IsNotEmpty()
-  background: string;
-
-  @IsNotEmpty()
-  progress: number;
-
-  @IsNotEmpty()
-  difficulty: string;
-
-  @IsNumber()
-  bosses: number;
-
-  @IsNotEmpty()
-  world: number;
-
-  @IsNotEmpty()
-  region: number;
-
-  @IsNotEmpty()
-  realm: number;
-
-  @IsNotEmpty()
-  summary: string;
-
-  @IsNotEmpty()
-  total_bosses: number;
-
-  @IsNotEmpty()
-  normal_bosses_killed: number;
-
-  @IsNotEmpty()
-  heroic_bosses_killed: number;
-
-  @IsNotEmpty()
-  mythic_bosses_killed: number;
+  @IsString()
+  slug!: string;
 
   @IsOptional()
-  isFocused: boolean;
+  @IsEnum(Expansion)
+  expansion?: Expansion;
+
+  @IsOptional()
+  @IsString()
+  background?: string;
+
+  @IsOptional()
+  @IsNumber()
+  progress?: number;
+
+  @IsOptional()
+  @IsString()
+  difficulty?: string;
+
+  @IsOptional()
+  @IsNumber()
+  bosses?: number;
+
+  @IsOptional()
+  @IsNumber()
+  world?: number;
+
+  @IsOptional()
+  @IsNumber()
+  region?: number;
+
+  @IsOptional()
+  @IsNumber()
+  realm?: number;
+
+  @IsOptional()
+  @IsString()
+  summary?: string;
+
+  @IsOptional()
+  @IsNumber()
+  total_bosses?: number;
+
+  @IsOptional()
+  @IsNumber()
+  normal_bosses_killed?: number;
+
+  @IsOptional()
+  @IsNumber()
+  heroic_bosses_killed?: number;
+
+  @IsOptional()
+  @IsNumber()
+  mythic_bosses_killed?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isFocused?: boolean;
 }

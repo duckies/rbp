@@ -1,10 +1,11 @@
 import { InjectQueue } from '@nestjs/bull';
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bull';
-import { Repository } from 'typeorm';
+import { EntityManager, EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
 import { FileService } from '../file/file.service';
 import { FormCharacterService } from '../form-character/form-character.service';
+import { Form } from '../form/form.entity';
 import { User } from '../user/user.entity';
 import { CreateFormSubmissionDto, UpdateFormSubmissionDto } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
@@ -14,9 +15,10 @@ import { FormSubmission } from './form-submission.entity';
 export class SubmissionService {
   constructor(
     @InjectRepository(FormSubmission)
-    private readonly formSubRepository: Repository<FormSubmission>,
+    private readonly formSubmissionRepository: EntityRepository<FormSubmission>,
     private readonly formCharacterService: FormCharacterService,
     private readonly fileService: FileService,
+    private readonly em: EntityManager,
     @InjectQueue('form') private readonly queue: Queue,
   ) {}
 
@@ -29,10 +31,13 @@ export class SubmissionService {
   async create(author: User, { formId, answers, files, characters }: CreateFormSubmissionDto) {
     const formSubmission = new FormSubmission();
 
-    const openForm = await this.formSubRepository.find({
-      where: { status: FormSubmissionStatus.Open, authorId: author.id },
-      select: ['author'],
-    });
+    const openForm = await this.formSubmissionRepository.find(
+      {
+        status: FormSubmissionStatus.Open,
+        author_id: author.id,
+      },
+      ['author'],
+    );
 
     if (openForm.length) {
       throw new BadRequestException(
@@ -49,7 +54,7 @@ export class SubmissionService {
         }
       }
 
-      formSubmission.files = fileUploads;
+      formSubmission.files.set(fileUploads);
     }
 
     const formCharacters = await Promise.all(
@@ -62,39 +67,24 @@ export class SubmissionService {
       ),
     );
 
-    formSubmission.formId = formId;
-    formSubmission.characters = formCharacters;
+    formSubmission.form = this.em.getReference(Form, formId);
     formSubmission.author = author;
+    formSubmission.characters.set(formCharacters);
     formSubmission.answers = answers;
 
     formCharacters[0].isMain = true;
 
-    const submission = await this.formSubRepository.save(formSubmission);
+    await this.formSubmissionRepository.persistAndFlush(formSubmission);
 
-    submission.justSubmitted = true;
+    // When not using the populate API, this needs to be manually set.
+    formSubmission.author.populated();
+    formSubmission.characters.populated();
+    formSubmission.justSubmitted = true;
 
-    await this.queue.add('newApplication', submission);
+    // Send webhook notification.
+    await this.queue.add('newApplication', formSubmission);
 
-    return submission;
-  }
-
-  /**
-   * Finds an individual form submission.
-   * @param id Form submission id.
-   */
-  async findOne(id: number) {
-    //
-    return this.formSubRepository
-      .createQueryBuilder('submission')
-      .select()
-      .leftJoinAndSelect('submission.author', 'author')
-      .leftJoinAndSelect('submission.characters', 'characters')
-      .leftJoinAndSelect('submission.files', 'files')
-      .leftJoinAndSelect('submission.form', 'form')
-      .leftJoinAndSelect('form.questions', 'questions')
-      .where('submission.id = :id', { id })
-      .orderBy('questions.order')
-      .getOne();
+    return formSubmission;
   }
 
   /**
@@ -103,15 +93,9 @@ export class SubmissionService {
    */
   findFirstByStatus(status: FormSubmissionStatus) {
     // This intentionally does not fail so it does not pass the 404 error.
-    return this.formSubRepository.findOneOrFail(
-      { status },
-      {
-        relations: ['form', 'author', 'characters'],
-        order: {
-          id: 'DESC',
-        },
-      },
-    );
+    return this.formSubmissionRepository.findOneOrFail({ status }, ['form', 'author', 'characters'], {
+      id: QueryOrder.DESC,
+    });
   }
 
   /**
@@ -119,12 +103,12 @@ export class SubmissionService {
    * @param user Form submission author.
    */
   findByUser(user: User) {
-    return this.formSubRepository
-      .createQueryBuilder('submission')
-      .select(['submission.id', 'submission.status'])
-      .leftJoin('submission.author', 'author')
-      .where('author.id = :id', { id: user.id })
-      .getMany();
+    return this.formSubmissionRepository
+      .createQueryBuilder('s')
+      .select(['s.id', 's.status'])
+      .join('s.author', 'author')
+      .where('author.id = :id', [user.id])
+      .getResult();
   }
 
   /**
@@ -133,12 +117,15 @@ export class SubmissionService {
    * @param user Form submission author.
    */
   findOpenByUser(user: User): Promise<Pick<FormSubmission, 'id' | 'status'>> {
-    return this.formSubRepository
-      .createQueryBuilder('submission')
-      .select(['submission.id', 'submission.status'])
-      .leftJoin('submission.author', 'author')
-      .where('author.id = :id', { id: user.id })
-      .getOne();
+    return this.formSubmissionRepository.findOne({ author_id: user.id, status: FormSubmissionStatus.Open });
+  }
+
+  /**
+   * Finds an individual form submission.
+   * @param id Form submission id.
+   */
+  async findOne(id: number) {
+    return this.formSubmissionRepository.findOne({ id }, ['author', 'characters', 'files', 'form']);
   }
 
   /**
@@ -148,64 +135,14 @@ export class SubmissionService {
    * @param take Number of submissions to retrieve.
    * @param skip Number of submissions to skip.
    */
-  findAll(take: number, skip: number, status?: FormSubmissionStatus, id?: number, user?: User) {
-    let query = this.formSubRepository
-      .createQueryBuilder('submission')
-      .select([
-        'submission.id',
-        'submission.status',
-        'submission.createdAt',
-        'submission.formId',
-        'author.id',
-        'author.nickname',
-        'author.discord_id',
-        'author.discord_username',
-        'author.discord_discriminator',
-        'author.discord_avatar',
-        'character.name',
-        'character.realm',
-        'character.avatar_url',
-        'character.bust_url',
-        'character.render_url',
-        'character.race_id',
-        'character.race_name',
-        'character.class_id',
-        'character.class_name',
-        'character.gender',
-      ]);
+  async findAll(limit: number, offset: number, status?: FormSubmissionStatus) {
+    const submissions = await this.formSubmissionRepository.findAndCount(
+      { status },
+      ['author', 'characters'],
+      { id: QueryOrder.DESC },
+    );
 
-    // Currently cannot add computed selectors to TypeORM. Depression!
-    // .addSelect('(seen.id) IS NOT NULL', 'submission.seen')
-    if (user) {
-      query = query.leftJoinAndSelect('submission.readFormSubmissions', 'read', 'read.userId = :uId', {
-        uId: user.id,
-      });
-    }
-
-    query
-      .leftJoin('submission.characters', 'character', 'character.isMain = true')
-      .leftJoin('submission.author', 'author');
-
-    // Status category retrieval.
-    if (status) {
-      query = query.where('submission.status = :status', { status });
-    }
-
-    // Subquery status category from id.
-    else if (id) {
-      query = query.where((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('submission.status')
-          .from('form_submission', 'submission')
-          .where('submission.id = :id', { id })
-          .getQuery();
-
-        return 'submission.status = ' + subQuery;
-      });
-    }
-
-    return query.orderBy('submission.id', 'DESC').take(take).skip(skip).getManyAndCount();
+    return submissions;
   }
 
   /**
@@ -214,11 +151,13 @@ export class SubmissionService {
    * @param updateFormSubmissionDto UpdateFormSubmissionDto
    */
   async update(id: number, updateFormSubmissionDto: UpdateFormSubmissionDto) {
-    const formSubmission = await this.formSubRepository.findOneOrFail(id);
+    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id);
 
-    this.formSubRepository.merge(formSubmission, updateFormSubmissionDto);
+    wrap(formSubmission).assign(updateFormSubmissionDto);
 
-    return formSubmission.save();
+    await this.formSubmissionRepository.flush();
+
+    return formSubmission;
   }
 
   /**
@@ -233,9 +172,9 @@ export class SubmissionService {
       throw new ForbiddenException('Can only cancel owned applications.');
     }
 
-    const formSubmission = await this.formSubRepository.findOneOrFail(id, {
-      select: ['id', 'status'],
-      relations: ['author'],
+    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id, {
+      populate: ['author'],
+      fields: ['status'],
     });
 
     if (formSubmission.author.id !== user.id) {
@@ -244,22 +183,20 @@ export class SubmissionService {
 
     delete formSubmission.author;
 
-    this.formSubRepository.merge(formSubmission, updateFormSubmissionDto);
+    wrap(formSubmission).assign(updateFormSubmissionDto);
 
-    return formSubmission.save();
+    return formSubmission;
   }
 
-  // This is set aside for future character logic.
-  // findOneCharacter(id: number): Promise<FormCharacter> {
-  //   return this.repository.query(
-  //     `
-  // SELECT c.id, c.name, c.realm, c.region, jsonb_agg(jsonb_insert(slot, '{media, assets}', jsonb_build_array(jsonb_build_object('key', asset.type, 'value', asset.value)))) AS equipment
-  // FROM form_character c, jsonb_array_elements(c.equipment) slot
-  // JOIN wow_assets asset on asset.id = (slot->'item'->'id')::integer
-  // WHERE c.id = $1
-  // GROUP BY c.id;
-  //   `,
-  //     [id],
-  //   );
-  // }
+  /**
+   * Deletes a form submission.
+   * @param id
+   */
+  async delete(id: number) {
+    const submission = await this.formSubmissionRepository.findOneOrFail(id, ['characters']);
+
+    this.formSubmissionRepository.remove(submission, true);
+
+    return submission;
+  }
 }

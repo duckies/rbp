@@ -14,23 +14,24 @@ export class RaidQueue {
   @Process({ name: 'updateRaids' })
   private async updateRaids(job: Job<number>): Promise<Raid[]> {
     const raiderIOData = await this.raiderIOService.getGuildRaiderIO();
-    const raidEntities = await this.raidService.findAllBySlugs(Object.keys(raiderIOData.raid_rankings));
+    const raids = await this.raidService.findAllBySlugs(Object.keys(raiderIOData.raid_rankings));
     const promises = [];
     let progress = 0;
 
     if (!raiderIOData.raid_progression || !raiderIOData.raid_rankings) {
-      throw new BadRequestException({ message: 'No data available for RaiderIO guild update.', raiderIOData });
+      throw new BadRequestException({
+        message: 'No data available for RaiderIO guild update.',
+        raiderIOData,
+      });
     }
 
     for (const raidSlug of Object.keys(raiderIOData.raid_rankings)) {
-      let raid = raidEntities.find(r => r.slug === raidSlug);
+      let raid = raids.find((r) => r.slug === raidSlug);
 
       if (!raid) {
         raid = new Raid();
         raid.slug = raidSlug;
-      }
-
-      if (raid.locked) {
+      } else if (raid.locked) {
         continue;
       }
 
@@ -60,10 +61,10 @@ export class RaidQueue {
         raid.progress = raid.normal_bosses_killed / raid.bosses;
       }
 
-      promises.push(raid.save());
+      promises.push(this.raidService.upsert(raid));
     }
 
-    promises.forEach(p => p.then(() => job.progress(progress++ / promises.length)));
+    promises.forEach((p) => p.then(() => job.progress(progress++ / promises.length)));
 
     return Promise.all(promises);
   }

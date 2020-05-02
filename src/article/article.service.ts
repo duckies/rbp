@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
 import slugify from 'slugify';
+import { User } from '../user/user.entity';
 import { Article } from './article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { User } from '../user/user.entity';
 
 @Injectable()
 export class ArticleService {
   constructor(
     @InjectRepository(Article)
-    private readonly articleRepository: Repository<Article>,
+    private readonly articleRepository: EntityRepository<Article>,
   ) {}
 
-  async create(user: User, createArticleDto: CreateArticleDto): Promise<Article> {
+  async create(user: User, createArticleDto: CreateArticleDto) {
     const article = this.articleRepository.create(createArticleDto);
 
     article.slug = slugify(createArticleDto.title, {
@@ -23,38 +23,43 @@ export class ArticleService {
     });
     article.author = user;
 
-    return article.save();
+    await this.articleRepository.persistAndFlush(article);
+
+    return article;
   }
 
-  async findAll(take = 8, skip = 0): Promise<{ result: Article[]; total: number }> {
-    const [result, total] = await this.articleRepository.findAndCount({
-      order: { id: 'DESC' },
-      take,
-      skip,
-    });
+  async findAll(take = 8, skip = 0) {
+    const [result, total] = await this.articleRepository.findAndCount(
+      {},
+      { orderBy: { id: QueryOrder.DESC }, limit: take, offset: skip },
+    );
 
     return { result, total };
   }
 
-  findOne(id: number): Promise<Article> {
+  findOne(id: number) {
     return this.articleRepository.findOneOrFail(id);
   }
 
-  findBySlug(slug: string): Promise<Article> {
+  findBySlug(slug: string) {
     return this.articleRepository.findOneOrFail({ slug });
   }
 
-  async update(id: number, updateArticleDto: UpdateArticleDto): Promise<Article> {
+  async update(id: number, updateArticleDto: UpdateArticleDto) {
     const article = await this.articleRepository.findOneOrFail(id);
 
-    this.articleRepository.merge(article, updateArticleDto);
+    wrap(article).assign(updateArticleDto);
 
-    return this.articleRepository.save(article);
+    await this.articleRepository.flush();
+
+    return article;
   }
 
-  async delete(id: number): Promise<Article> {
+  async delete(id: number) {
     const article = await this.articleRepository.findOneOrFail(id);
 
-    return this.articleRepository.remove(article);
+    await this.articleRepository.remove(article);
+
+    return article;
   }
 }

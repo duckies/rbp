@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateSlideDto } from './dto/create-slide.dto';
 import { UpdateSlideDto } from './dto/update-slide.dto';
 import { Slide } from './slide.entity';
@@ -9,36 +9,47 @@ import { Slide } from './slide.entity';
 export class SlideService {
   constructor(
     @InjectRepository(Slide)
-    private readonly slideRepository: Repository<Slide>,
+    private readonly slideRepository: EntityRepository<Slide>,
   ) {}
 
-  create(createSlideDto: CreateSlideDto): Promise<Slide> {
-    return this.slideRepository.save(createSlideDto);
+  async create(createSlideDto: CreateSlideDto) {
+    const slide = this.slideRepository.create(createSlideDto);
+
+    await this.slideRepository.persistAndFlush(slide);
+
+    return slide;
   }
 
-  findAll(take = 10, skip = 0): Promise<Slide[]> {
-    return this.slideRepository.find({
-      order: { id: 'DESC' },
-      take,
-      skip,
-    });
+  findAll(limit = 10, offset = 0) {
+    return this.slideRepository.find(
+      {},
+      {
+        orderBy: { id: QueryOrder.DESC },
+        limit,
+        offset,
+      },
+    );
   }
 
-  findOne(id: number): Promise<Slide> {
+  findOne(id: number) {
     return this.slideRepository.findOneOrFail(id);
   }
 
-  async update(id: number, updateSlideDto: UpdateSlideDto): Promise<Slide> {
+  async update(id: number, updateSlideDto: UpdateSlideDto) {
     const slide = await this.slideRepository.findOneOrFail(id);
 
-    const result = await this.slideRepository.merge(slide, updateSlideDto);
+    wrap(slide).assign(updateSlideDto);
 
-    return this.slideRepository.save(result);
+    await this.slideRepository.flush();
+
+    return slide;
   }
 
-  async delete(id: number): Promise<Slide> {
+  async delete(id: number) {
     const slide = await this.slideRepository.findOneOrFail(id);
 
-    return this.slideRepository.remove(slide);
+    await this.slideRepository.remove(slide);
+
+    return slide;
   }
 }

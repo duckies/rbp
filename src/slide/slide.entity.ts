@@ -1,19 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { Entity, PrimaryKey, Property } from 'mikro-orm';
 
-@Entity('slide')
-export class Slide extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Entity()
+export class Slide {
+  @PrimaryKey()
+  id!: number;
 
-  @Column({ nullable: false })
-  image: string;
+  @Property()
+  image!: string;
 
-  @Column({ nullable: false })
-  title: string;
+  @Property()
+  title!: string;
 
-  @Column({ nullable: true })
+  @Property()
   subtitle?: string;
 
-  @Column({ nullable: true })
+  @Property()
   link?: string;
 }

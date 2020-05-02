@@ -1,15 +1,19 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { BlizzardModule } from '../blizzard/blizzard.module';
 import { CharacterController } from './character.controller';
-import { Character } from './character.entity';
+import { GuildCharacter } from './character.entity';
 import { CharacterQueue } from './character.queue';
 import { CharacterScheduler } from './character.scheduler';
 import { CharacterService } from './character.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Character]), BullModule.registerQueue({ name: 'character' }), BlizzardModule],
+  imports: [
+    MikroOrmModule.forFeature({ entities: [GuildCharacter] }),
+    BullModule.registerQueue({ name: 'character' }),
+    BlizzardModule,
+  ],
   providers: [CharacterService, CharacterQueue, CharacterScheduler],
   exports: [CharacterService, CharacterQueue],
   controllers: [CharacterController],

@@ -14,6 +14,10 @@ export enum ProfileEndpoints {
   CharacterCollectionsIndex = '/profile/wow/character/{realmSlug}/{characterName}/collections',
   CharacterMountsCollectionSummary = '/profile/wow/character/{realmSlug}/{characterName}/collections/mounts',
   CharacterPetsCollectionSummary = '/profile/wow/character/{realmSlug}/{characterName}/collections/pets',
+  // Character Encounters API
+  CharacterEncountersSummary = '/profile/wow/character/{realmSlug}/{characterName}/encounters',
+  CharacterDungeons = '/profile/wow/character/{realmSlug}/{characterName}/encounters/dungeons',
+  CharacterRaids = '/profile/wow/character/{realmSlug}/{characterName}/encounters/raids',
   // Character Equipment API
   CharacterEquipmentSummary = '/profile/wow/character/{realmSlug}/{characterName}/equipment',
   // Character Hunter Pets API

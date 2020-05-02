@@ -1,42 +1,32 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  BaseEntity,
-} from 'typeorm';
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { User } from '../user/user.entity';
 
-@Entity('article')
-export class Article extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Entity()
+export class Article {
+  @PrimaryKey()
+  id!: number;
 
-  @Column({ nullable: false, unique: true })
-  title: string;
+  @Property({ unique: true })
+  title!: string;
 
-  @Column({ nullable: false })
-  slug: string;
+  @Property()
+  slug!: string;
 
-  @Column({ nullable: false })
-  subtitle: string;
+  @Property()
+  subtitle!: string;
 
-  @Column({ nullable: false })
-  content: string;
+  @Property()
+  content!: string;
 
-  @Column({ nullable: true })
-  header: string;
+  @Property()
+  header?: string;
 
-  @ManyToOne(() => User, user => user.articles, { eager: true, onDelete: 'SET NULL' })
+  @ManyToOne({ eager: true, cascade: [Cascade.ALL] })
   author: User;
 
-  @Column()
-  @CreateDateColumn()
-  createdAt: Date;
+  @Property({ default: new Date() })
+  createdAt = new Date();
 
-  @Column()
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property({ onUpdate: () => new Date(), default: new Date() })
+  updatedAt = new Date();
 }

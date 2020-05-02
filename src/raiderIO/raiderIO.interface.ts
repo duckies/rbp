@@ -1,4 +1,4 @@
-import { RealmName } from '../blizzard/enum/realm.enum';
+import { RealmName } from '../blizzard/enums/realm.enum';
 
 export interface RaiderIOGuild {
   name: string;

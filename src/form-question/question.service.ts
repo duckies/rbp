@@ -1,38 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { InvalidQuestionException } from './exceptions/bad-question.exception';
+import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
-import { choicesFields, FieldType, multipleFields, FormQuestion } from './question.entity';
+import { choicesFields } from './enums/choice-fields.enum';
+import { FieldType } from './enums/field-type.enum';
+import { multipleFields } from './enums/multiple-fields.enum';
+import { InvalidQuestionException } from './exceptions/bad-question.exception';
+import { FormQuestion } from './question.entity';
 
 @Injectable()
 export class FormQuestionService {
   constructor(
     @InjectRepository(FormQuestion)
-    private readonly repository: Repository<FormQuestion>,
+    private readonly formQuestionRepository: EntityRepository<FormQuestion>,
   ) {}
 
   /**
    * Creates a new question for a form.
    * @param createQuestionDto CreateQuestionDto
    */
-  create(createQuestionDto: CreateQuestionDto): Promise<FormQuestion> {
-    const question = this.repository.create(createQuestionDto);
+  async create(createQuestionDto: CreateQuestionDto) {
+    const question = this.formQuestionRepository.create(createQuestionDto);
 
     this.validateQuestion(question);
 
-    return this.repository.save(createQuestionDto);
+    await this.formQuestionRepository.persistAndFlush(question);
+
+    return question;
   }
 
   /**
    * Finds all questions for a form by its id.
    * @param id Form id
    */
-  findByForm(id: number): Promise<FormQuestion[]> {
-    return this.repository.find({
-      where: { formId: id },
-      order: { order: 'ASC' },
-    });
+  findByForm(id: number) {
+    return this.formQuestionRepository.find(
+      {
+        form_id: id,
+      },
+      { orderBy: { order: QueryOrder.ASC } },
+    );
   }
 
   /**
@@ -41,39 +48,44 @@ export class FormQuestionService {
    * @param id Form id
    * @param type Question FieldType
    */
-  findByFormAndType(id: number, type: FieldType): Promise<FormQuestion[]> {
-    return this.repository.find({ formId: id, type });
+  findByFormAndType(id: number, type: FieldType) {
+    return this.formQuestionRepository.find({ form_id: id, type });
   }
 
   /**
    * Finds a question by id.
    * @param id Question UUID
    */
-  findOne(id: string): Promise<FormQuestion> {
-    return this.repository.findOneOrFail(id);
+  findOne(id: string) {
+    return this.formQuestionRepository.findOneOrFail(id);
   }
 
   /**
    * Updates a question from a valid DTO.
    * @param updateQuestionDto UpdateQuestionDto
    */
-  async update(updateQuestionDto: UpdateQuestionDto): Promise<FormQuestion> {
-    const question = await this.repository.findOneOrFail(updateQuestionDto.id);
+  async update(updateQuestionDto: UpdateQuestionDto) {
+    const question = await this.formQuestionRepository.findOneOrFail(updateQuestionDto.id);
 
-    this.repository.merge(question, updateQuestionDto);
+    wrap(question).assign(updateQuestionDto);
+
     this.validateQuestion(question);
 
-    return this.repository.save(question);
+    await this.formQuestionRepository.flush();
+
+    return question;
   }
 
   /**
    * Deletes a question by id.
    * @param id Question UUID
    */
-  async delete(id: string): Promise<FormQuestion> {
-    const question = await this.repository.findOneOrFail(id);
+  async delete(id: string) {
+    const question = await this.formQuestionRepository.findOneOrFail(id);
 
-    return this.repository.remove(question);
+    await this.formQuestionRepository.remove(question);
+
+    return question;
   }
 
   /**

@@ -60,7 +60,7 @@ export class TokenService {
   }
 
   private setAxiosBearerToken(): void {
-    this.logger.log('Setting access token: ' + TokenService.token.access_token);
+    this.logger.log('Set access token');
     this.http.axiosRef.defaults.headers.common = {
       Authorization: `Bearer ${TokenService.token.access_token}`,
     };

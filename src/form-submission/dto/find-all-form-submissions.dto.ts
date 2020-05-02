@@ -16,9 +16,4 @@ export class FindAllFormSubmissionsDto {
   @IsOptional()
   @IsEnum(FormSubmissionStatus)
   status: FormSubmissionStatus;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  id: number;
 }

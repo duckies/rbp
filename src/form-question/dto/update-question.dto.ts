@@ -1,5 +1,15 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, IsArray, IsEnum, Min, Max, IsUUID } from 'class-validator';
-import { FileTypes } from '../question.entity';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
+import { FileTypes } from '../enums/file-types.enum';
 
 export class UpdateQuestionDto {
   // Required for validation logic.

@@ -1,112 +1,104 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  Index,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
-} from 'typeorm';
-import { RealmSlug } from '../blizzard/enum/realm.enum';
-import { Region } from '../blizzard/enum/region.enum';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property, Unique } from 'mikro-orm';
+import { RealmSlug } from '../blizzard/enums/realm.enum';
+import { Region } from '../blizzard/enums/region.enum';
 import * as ProfileAPI from '../blizzard/interfaces/profile';
+import { RaidExpansion } from '../blizzard/interfaces/profile/character-encounters/character-raids.interface';
 import { EquippedItem } from '../blizzard/interfaces/profile/character-equipment/character-equipment-summary.interface';
 import { SpecializationMeta } from '../blizzard/interfaces/profile/character-specializations/character-specializations-summary.interface';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.interface';
 
-@Entity('form_character')
-@Unique('Unique_Main', ['id', 'name', 'realm', 'region', 'isMain'])
-export class FormCharacter extends BaseEntity {
+@Entity()
+@Unique({ name: 'unique_main', properties: ['id', 'name', 'realm', 'region', 'isMain'] })
+export class FormCharacter {
   constructor(name: string, realm: RealmSlug = RealmSlug.Area52, region: Region = Region.US) {
-    super();
     this.name = name;
     this.realm = realm;
     this.region = region;
   }
 
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryKey()
+  id!: number;
 
-  @Index()
-  @Column({ nullable: true })
-  character_id: number;
+  @Property({ index: true })
+  character_id?: number;
 
-  @Column()
-  name: string;
+  @Property()
+  name!: string;
 
-  @Column({ type: 'enum', enum: RealmSlug })
-  realm: RealmSlug;
+  @Enum(() => RealmSlug)
+  realm!: RealmSlug;
 
-  @Column({ type: 'enum', enum: Region, default: Region.US })
-  region: Region;
+  @Enum(() => Region)
+  region: Region = Region.US;
 
-  @Column({ default: false })
-  isMain: boolean;
+  @Property()
+  isMain = false;
 
-  @Column({ type: 'smallint', nullable: true })
-  race_id: number;
+  @Property({ type: 'smallint' })
+  race_id?: number;
 
-  @Column({ nullable: true })
-  race_name: string;
+  @Property()
+  race_name?: string;
 
-  @Column({ type: 'smallint', nullable: true })
-  class_id: number;
+  @Property({ type: 'smallint' })
+  class_id?: number;
 
-  @Column({ nullable: true })
-  class_name: string;
+  @Property()
+  class_name?: string;
 
-  @Column({ nullable: true })
-  gender: string;
+  @Property()
+  gender?: string;
 
-  @Column({ nullable: true })
-  average_item_level: number;
+  @Property()
+  average_item_level?: number;
 
-  @Column({ nullable: true })
-  equipped_item_level: number;
+  @Property()
+  equipped_item_level?: number;
 
   /**
    * Optional Character Data Fields
    */
 
-  @Column({ nullable: true })
-  avatar_url: string;
+  @Property()
+  avatar_url?: string;
 
-  @Column({ nullable: true })
-  bust_url: string;
+  @Property()
+  bust_url?: string;
 
-  @Column({ nullable: true })
-  render_url: string;
+  @Property()
+  render_url?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Property()
+  raids?: RaidExpansion[];
+
+  @Property()
   equipment?: EquippedItem[];
 
-  @Column({ nullable: true })
+  @Property()
   specialization_id?: number;
 
-  @Column({ nullable: true })
+  @Property()
   specialization_name?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Property()
   specializations?: SpecializationMeta[];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Property()
   raiderIO?: RaiderIOCharacter;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property()
+  createdAt = new Date();
+
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 
   /**
    * Form Character Relations
    */
 
-  @ManyToOne(
-    () => FormSubmission,
-    formSubmission => formSubmission.characters,
-    { onDelete: 'CASCADE', cascade: ['insert'] },
-  )
-  submission: FormSubmission;
+  @ManyToOne()
+  submission?: FormSubmission;
 
   /**
    * Updating Methods
@@ -131,6 +123,13 @@ export class FormCharacter extends BaseEntity {
     this.specialization_id = data.active_specialization.id;
     this.specialization_name = data.active_specialization.name;
     this.specializations = data.specializations;
+  }
+
+  setCharacterRaidEncounterSummary(data: ProfileAPI.CharacterRaids) {
+    // A character that has no raid kills can apparently lack this object.
+    if (data.expansions) {
+      this.raids = data.expansions.slice(-2);
+    }
   }
 
   setCharacterMediaSummary(data: ProfileAPI.CharacterMediaSummary) {

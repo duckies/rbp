@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArticleController } from './article.controller';
 import { Article } from './article.entity';
 import { ArticleService } from './article.service';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Article])],
+  imports: [MikroOrmModule.forFeature({ entities: [Article] })],
   controllers: [ArticleController],
   providers: [ArticleService],
   exports: [ArticleService],

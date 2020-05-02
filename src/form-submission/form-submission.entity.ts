@@ -1,100 +1,65 @@
 import {
-  AfterLoad,
-  BaseEntity,
-  Column,
-  CreateDateColumn,
+  Cascade,
+  Collection,
   Entity,
-  Index,
-  JoinTable,
+  Enum,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+  PrimaryKey,
+  Property,
+  WrappedEntity,
+} from 'mikro-orm';
 import { FileUpload } from '../file/file.entity';
 import { FormCharacter } from '../form-character/form-character.entity';
-import { FormSubmissionRead } from '../form-submission-seen/form-submission-read.entity';
 import { Form } from '../form/form.entity';
 import { User } from '../user/user.entity';
 import { Answers } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 
 @Entity()
-export class FormSubmission extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class FormSubmission {
+  @PrimaryKey()
+  id!: number;
 
-  @Index()
-  @Column({ type: 'enum', enum: FormSubmissionStatus, default: FormSubmissionStatus.Open })
-  status: FormSubmissionStatus;
+  @Enum(() => FormSubmissionStatus)
+  status = FormSubmissionStatus.Open;
 
-  @Column({ type: 'jsonb' })
+  @Property({ type: 'jsonb' })
   answers: Answers;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
+  @Property({ persist: false })
+  form_id!: number;
 
-  @Column()
-  formId: number;
+  @ManyToOne()
+  form!: Form;
 
-  /**
-   * Relations
-   */
+  @OneToMany(() => FormCharacter, (char) => char.submission, { cascade: [Cascade.ALL] })
+  characters = new Collection<FormCharacter>(this);
 
-  @ManyToOne(
-    () => Form,
-    form => form.submissions,
-    { onDelete: 'CASCADE' },
-  )
-  form: Form;
+  @Property({ persist: false })
+  author_id!: number;
 
-  @OneToMany(
-    () => FormCharacter,
-    formCharacter => formCharacter.submission,
-    { eager: true, cascade: ['insert'] },
-  )
-  characters: FormCharacter[];
+  @ManyToOne({ eager: true })
+  author!: User;
 
-  @Column()
-  authorId: number;
-
-  @ManyToOne(
-    () => User,
-    user => user.formSubmissions,
-    { eager: true, cascade: true },
-  )
-  author: User;
+  @OneToMany(() => FileUpload, (file) => file.submission, {
+    eager: true,
+    cascade: [Cascade.MERGE, Cascade.PERSIST],
+  })
+  files = new Collection<FileUpload>(this);
 
   /**
-   * "Seen" Relations
+   * Instructs the frontend the submission is new.
    */
-
-  @OneToMany(
-    () => FormSubmissionRead,
-    formSubmissionRead => formSubmissionRead.formSubmission,
-  )
-  @JoinTable()
-  readFormSubmissions: FormSubmissionRead[];
-
-  @OneToMany(
-    () => FileUpload,
-    file => file.submission,
-    { eager: true, cascade: true },
-  )
-  @JoinTable()
-  files: FileUpload[];
-
-  /**
-   * Just Submitted.
-   * Not persisted, instructs the frontend the submission is new.
-   */
+  @Property({ persist: false })
   justSubmitted?: boolean;
 
-  // Used as a constructed select in findAll.
-  // Or would be if TypeORM supported them.
-  seen?: boolean;
+  @Property()
+  createdAt = new Date();
 
-  @AfterLoad()
-  setSeen(): void {
-    this.seen = !!(this.readFormSubmissions && this.readFormSubmissions.length);
-  }
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FormSubmission extends WrappedEntity<FormSubmission, 'id'> {}
