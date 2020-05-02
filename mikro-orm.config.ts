@@ -13,7 +13,7 @@ import { Raid } from './src/raid/raid.entity';
 import { Slide } from './src/slide/slide.entity';
 import { User } from './src/user/user.entity';
 
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 
 const config: Options = {
   entities: [
