@@ -49,7 +49,7 @@ export class Raid {
   @Property()
   mythic_bosses_killed!: number;
 
-  @Property()
+  @Property({ index: true })
   isFeatured = false;
 
   @Property()

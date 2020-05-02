@@ -6,6 +6,7 @@ import { JWTPayload } from '../auth/dto/jwt.dto';
 import { UpdateUserDiscordDTO } from './dto/update-user-discord.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
+import { Roles } from '../app.roles';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
       discord_access_token: access_token,
       discord_refresh_token: refresh_token,
       discord_avatar: profile.avatar,
+      roles: [Roles.Fan],
     });
 
     await this.userRepository.persistAndFlush(user);
