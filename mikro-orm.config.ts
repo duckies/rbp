@@ -37,7 +37,7 @@ const config: Options = {
   password: process.env.DATABASE_PASSWORD || 'postgres',
   dbName: process.env.DATABASE_DATABASE || 'backend',
   cache: { options: { cacheDir: './dist/temp' } },
-  debug: true,
+  debug: false,
   findOneOrFailHandler: (entityName: string) => {
     return new NotFoundException(`${entityName} was not found.`);
   },

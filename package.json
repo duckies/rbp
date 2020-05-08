@@ -21,6 +21,8 @@
     "test:e2e": "cross-env CONFIG_PATH=../testing.env jest --config ./jest-e2e.json --ci --color -i"
   },
   "dependencies": {
+    "@discordjs/opus": "^0.3.2",
+    "@golevelup/nestjs-discovery": "^2.3.0",
     "@hapi/joi": "^17.1.1",
     "@nestjs/bull": "^0.1.1",
     "@nestjs/cli": "^7.1.4",
@@ -35,7 +37,9 @@
     "bull": "^3.13.0",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.12.2",
+    "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
+    "ffmpeg-static": "^4.2.0",
     "lodash": "^4.17.15",
     "mikro-orm": "^3.6.12",
     "moment": "^2.24.0",
@@ -52,7 +56,8 @@
     "pg": "^8.0.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "slugify": "^1.4.0"
+    "slugify": "^1.4.0",
+    "ytdl-core": "^2.1.1"
   },
   "devDependencies": {
     "@nestjs/testing": "^7.0.9",
