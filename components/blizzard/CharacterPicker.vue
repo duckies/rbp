@@ -66,12 +66,6 @@ export default class CharacterPicker extends Vue {
     slug: '',
   }
 
-  async mounted(): Promise<void> {
-    if (this.$store.getters['user/isLoggedIn']) {
-      await this.$store.dispatch('roster/getKnownCharacters')
-    }
-  }
-
   async addCharacter(): Promise<void> {
     if (!this.realm || !this.name) {
       return

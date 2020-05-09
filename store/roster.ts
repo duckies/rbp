@@ -1,15 +1,9 @@
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-
 import { ProfileEquipment } from '../interfaces/profile/profile-equipment.interface'
 import { ProfileSpecializations, Specialization } from '../interfaces/profile/profile-specializations.interface'
 import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
 import { User } from './user'
-import { RaiderIOCharacter } from './raiderIO'
-import { RootState } from '.'
-// import { RaiderIOCharacter } from './raiderIO'
-// import { User } from './auth'
-
-// const FIFTEEN_MINUTES = 1000 * 60 * 16
+import { RootState } from './'
 
 export interface FindCharacterDto {
   name: string
@@ -38,20 +32,6 @@ export interface FormCharacter {
   specialization_name?: string
   raiderIO?: CharacterRaiderIO
   updatedAt: Date
-}
-
-export interface KnownCharacter {
-  name: string
-  realm: string
-  region: string
-  class: number
-  race: number
-  gender: number
-  level: number
-  thumbnail: string
-  lastModified: number
-  blizzard?: Character
-  raiderIO?: RaiderIOCharacter
 }
 
 export interface Character {
@@ -110,7 +90,6 @@ export const state = () => ({
   status: 'unloaded',
   error: null as Error | null,
   roster: [] as Character[],
-  knownCharacters: [] as KnownCharacter[],
 })
 
 export type RosterState = ReturnType<typeof state>
@@ -126,9 +105,6 @@ export const mutations: MutationTree<RosterState> = {
   },
   setRoster(state, characters: Character[]) {
     state.roster = characters
-  },
-  setKnownCharacters(state, characters: KnownCharacter[]) {
-    state.knownCharacters = characters
   },
 }
 
@@ -147,16 +123,5 @@ export const actions: ActionTree<RosterState, RootState> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getCharacterData({ commit }, { name, realm, region }: FindCharacterDto): Promise<FormCharacter> {
     return this.$axios.$get(`/form-character/${region}/${realm}/${name}`)
-  },
-  async getKnownCharacters({ commit }) {
-    try {
-      commit('setStatus', { status: 'loading' })
-      const resp = await this.$axios.$get('/characters/known')
-
-      commit('setStatus', { status: 'success' })
-      commit('setKnownCharacters', resp)
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
   },
 }
