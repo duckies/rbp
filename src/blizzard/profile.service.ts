@@ -155,13 +155,13 @@ export class ProfileService {
 
             return slot;
           } catch (error) {
-            console.log(error);
+            console.log('Profile Error', error);
             return slot;
           }
         }),
       );
 
-      await this.gameDataService.flush();
+      // await this.gameDataService.flush();
     }
 
     return data;

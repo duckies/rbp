@@ -25,6 +25,6 @@ export class FileUpload {
   @ManyToOne()
   author: User;
 
-  @ManyToOne({ onDelete: 'SET NULL' })
+  @ManyToOne()
   submission?: FormSubmission;
 }

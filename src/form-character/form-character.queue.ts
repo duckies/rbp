@@ -1,9 +1,12 @@
-import { Process, Processor, OnQueueCompleted } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
-import { FormCharacterService } from './form-character.service';
-import { ProfileService } from '../blizzard/profile.service';
-import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { OnQueueCompleted, Process, Processor } from '@nestjs/bull';
+import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
+import { EntityRepository } from 'mikro-orm';
+import { InjectRepository } from 'nestjs-mikro-orm';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
+import { ProfileService } from '../blizzard/profile.service';
+import { FormCharacter } from './form-character.entity';
+import { FormCharacterService } from './form-character.service';
 
 interface FormCharacterUpdateResult {
   deleted: number;
@@ -11,11 +14,14 @@ interface FormCharacterUpdateResult {
   success: number;
 }
 
+@Injectable()
 @Processor('form-character')
 export class FormCharacterQueue {
   private readonly logger: Logger = new Logger(FormCharacterQueue.name);
 
   constructor(
+    @InjectRepository(FormCharacter)
+    private readonly formCharacterRepository: EntityRepository<FormCharacter>,
     private readonly formCharacterService: FormCharacterService,
     private readonly profileService: ProfileService,
   ) {}
@@ -30,7 +36,7 @@ export class FormCharacterQueue {
     const characters = await this.formCharacterService.findAll();
 
     await Promise.all(
-      characters.map(async character => {
+      characters.map(async (character) => {
         const findCharacterDto = new FindCharacterDto(character.name, character.realm, character.region);
         let shouldDelete = false;
 
@@ -58,19 +64,22 @@ export class FormCharacterQueue {
         }
 
         if (shouldDelete) {
-          this.formCharacterService.delete(character.id);
+          this.formCharacterRepository.removeLater(character);
         } else {
           try {
             const formCharacter = await this.formCharacterService.create(findCharacterDto);
-            await this.formCharacterService.update(character.id, formCharacter);
+
+            character.assign(formCharacter);
             success++;
           } catch (error) {
-            this.logger.error('Error updating form character: ' + error);
+            this.logger.error('Error updating form character: ', error);
             failed++;
           }
         }
       }),
     );
+
+    await this.formCharacterRepository.flush();
 
     return Promise.resolve({ success, deleted, failed });
   }

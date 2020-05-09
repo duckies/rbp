@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, wrap } from 'mikro-orm';
+import { EntityRepository } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/profile.service';
@@ -17,7 +17,7 @@ export class FormCharacterService {
     private readonly raiderIOService: RaiderIOService,
   ) {}
 
-  async create(findCharacterDto: FindCharacterDto) {
+  async create(findCharacterDto: FindCharacterDto, flush = false) {
     const formCharacter = new FormCharacter(
       findCharacterDto.name,
       findCharacterDto.realm,
@@ -64,6 +64,15 @@ export class FormCharacterService {
       formCharacter.setCharacterRaiderIO(raiderIO);
     }
 
+    if (flush) {
+      try {
+        await this.formCharacterRepository.flush();
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    }
+
     return formCharacter;
   }
 
@@ -74,7 +83,7 @@ export class FormCharacterService {
   async update(id: number, updateFormCharacterDto: UpdateFormCharacterDto) {
     const formCharacter = await this.formCharacterRepository.findOneOrFail(id);
 
-    wrap(formCharacter).assign(updateFormCharacterDto);
+    formCharacter.assign(updateFormCharacterDto);
 
     await this.formCharacterRepository.flush();
 
