@@ -57,7 +57,7 @@
         </v-col>
       </v-row>
 
-      <!-- <v-row v-else-if="hasOpenApplication">
+      <v-row v-else-if="hasOpenApplication">
         <v-col>
           <v-card>
             <v-card-title>
@@ -71,7 +71,7 @@
             </v-card-text>
           </v-card>
         </v-col>
-      </v-row> -->
+      </v-row>
 
       <v-row v-else>
         <v-col>
