@@ -33,9 +33,12 @@ export class CreateSubmissionPipe implements PipeTransform {
       if (question.deleted || question.type === FieldType.UPLOAD) continue;
 
       // Answers is missing a required question.
-      if (question.required && typeof answers[question.id] === 'undefined') {
+      if (question.required && !answers[question.id]) {
         throw new BadRequestException(`Question [${question.id}] is required.`);
       }
+
+      // An empty optional field will be null.
+      if (!question.required && !answers[question.id]) continue;
 
       this.validateAnswer(question, answers[question.id]);
     }

@@ -98,7 +98,7 @@ export class FormCharacter {
    */
 
   @ManyToOne()
-  submission?: FormSubmission;
+  submission!: FormSubmission;
 
   /**
    * Updating Methods

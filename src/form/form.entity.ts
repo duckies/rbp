@@ -19,7 +19,7 @@ export class Form {
   @OneToMany(() => FormSubmission, (submission) => submission.form)
   submissions = new Collection<FormSubmission>(this);
 
-  @Property({ default: new Date() })
+  @Property()
   createdAt = new Date();
 
   @Property({ onUpdate: () => new Date() })
