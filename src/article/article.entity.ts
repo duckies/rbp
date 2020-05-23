@@ -24,9 +24,9 @@ export class Article {
   @ManyToOne({ eager: true, cascade: [Cascade.ALL] })
   author: User;
 
-  @Property({ default: new Date() })
+  @Property()
   createdAt = new Date();
 
-  @Property({ onUpdate: () => new Date(), default: new Date() })
+  @Property({ onUpdate: () => new Date() })
   updatedAt = new Date();
 }

@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property, Unique } from 'mikro-orm';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property, Unique, WrappedEntity } from 'mikro-orm';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
 import * as ProfileAPI from '../blizzard/interfaces/profile';
@@ -98,7 +98,7 @@ export class FormCharacter {
    */
 
   @ManyToOne()
-  submission?: FormSubmission;
+  submission!: FormSubmission;
 
   /**
    * Updating Methods
@@ -146,3 +146,6 @@ export class FormCharacter {
     this.raiderIO = data;
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FormCharacter extends WrappedEntity<FormCharacter, 'id'> {}

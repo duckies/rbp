@@ -1,6 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { UseRoles } from 'nest-access-control';
-import { AccessControlGuard } from '../auth/guards/compose.guard';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Auth } from '../auth/decorators/auth.decorator';
 import { FindFormDto } from '../form/dto';
 import { CreateQuestionDto, FindQuestionDto, UpdateQuestionDto } from './dto';
 import { FormQuestion } from './question.entity';
@@ -11,8 +10,7 @@ export class FormQuestionController {
   constructor(private readonly formQuestionService: FormQuestionService) {}
 
   @Post()
-  // @UseGuards(ComposeGuard)
-  @UseRoles({ resource: 'question', action: 'create', possession: 'any' })
+  @Auth({ resource: 'question', action: 'create', possession: 'any' })
   create(@Body() createQuestionDto: CreateQuestionDto): Promise<FormQuestion> {
     return this.formQuestionService.create(createQuestionDto);
   }
@@ -28,15 +26,13 @@ export class FormQuestionController {
   }
 
   @Put(':id')
-  @UseGuards(AccessControlGuard)
-  @UseRoles({ resource: 'question', action: 'update', possession: 'any' })
+  @Auth({ resource: 'question', action: 'update', possession: 'any' })
   update(@Body() updateQuestionDto: UpdateQuestionDto): Promise<FormQuestion> {
     return this.formQuestionService.update(updateQuestionDto);
   }
 
   @Delete(':id')
-  @UseGuards(AccessControlGuard)
-  @UseRoles({ resource: 'question', action: 'delete', possession: 'any' })
+  @Auth({ resource: 'question', action: 'delete', possession: 'any' })
   delete(@Param() { id }: FindQuestionDto): Promise<FormQuestion> {
     return this.formQuestionService.delete(id);
   }

@@ -10,6 +10,6 @@ export class FormCharacterController {
   @UseGuards(AccessControlGuard)
   @Get('/:region/:realm/:name')
   formCharacterData(@Param() findCharacterDto: FindCharacterDto) {
-    return this.formCharacterService.create(findCharacterDto);
+    return this.formCharacterService.create(findCharacterDto, true);
   }
 }

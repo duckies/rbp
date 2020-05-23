@@ -2,7 +2,7 @@ import { Migration } from 'mikro-orm';
 
 export class Migration20200502020028 extends Migration {
   async up(): Promise<void> {
-    this.addSql('create index if not exists on raid (id) where "is_featured" = TRUE;');
+    // this.addSql('create index if not exists on raid (id) where "is_featured" = TRUE;');
 
     /**
      * Cleanup Queries: Harmless or default dropping.

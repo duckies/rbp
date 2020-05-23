@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { EntityRepository } from 'mikro-orm';
+import { EntityRepository, EntityManager } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { WoWAsset } from './assets.entity';
 import { AssetType } from './enums/asset-type.enum';
@@ -87,19 +87,23 @@ export class GameDataService {
     private readonly assetRepository: EntityRepository<WoWAsset>,
     private readonly tokenService: TokenService,
     private readonly http: HttpService,
+    private readonly em: EntityManager,
   ) {}
 
   async getGameItemMedia(id: number, download?: boolean): Promise<GameData.ItemMedia> {
     if (!download) return this.getGameData(GameDataEndpoint.ItemMedia, id);
 
-    let asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
+    const asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
 
     if (!asset) {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);
 
-      asset = new WoWAsset(id, AssetType.Icon, data.assets[0].value);
-
-      this.assetRepository.persistLater(asset);
+      this.em
+        .getConnection()
+        .execute(`insert into "wow_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`, [
+          id,
+          data.assets[0].value,
+        ]);
 
       return data;
     }

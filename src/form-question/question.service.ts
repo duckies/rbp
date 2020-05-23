@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { EntityRepository, QueryOrder, wrap, EntityManager } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
 import { choicesFields } from './enums/choice-fields.enum';
@@ -7,22 +7,26 @@ import { FieldType } from './enums/field-type.enum';
 import { multipleFields } from './enums/multiple-fields.enum';
 import { InvalidQuestionException } from './exceptions/bad-question.exception';
 import { FormQuestion } from './question.entity';
+import { Form } from '../form/form.entity';
 
 @Injectable()
 export class FormQuestionService {
   constructor(
     @InjectRepository(FormQuestion)
     private readonly formQuestionRepository: EntityRepository<FormQuestion>,
+    private readonly em: EntityManager,
   ) {}
 
   /**
    * Creates a new question for a form.
    * @param createQuestionDto CreateQuestionDto
    */
-  async create(createQuestionDto: CreateQuestionDto) {
-    const question = this.formQuestionRepository.create(createQuestionDto);
+  async create({ formId, ...dto }: CreateQuestionDto) {
+    const question = this.formQuestionRepository.create(dto);
 
     this.validateQuestion(question);
+
+    question.form = this.em.getReference(Form, formId);
 
     await this.formQuestionRepository.persistAndFlush(question);
 

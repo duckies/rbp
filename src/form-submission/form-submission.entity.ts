@@ -44,7 +44,7 @@ export class FormSubmission {
 
   @OneToMany(() => FileUpload, (file) => file.submission, {
     eager: true,
-    cascade: [Cascade.MERGE, Cascade.PERSIST],
+    cascade: [Cascade.MERGE],
   })
   files = new Collection<FileUpload>(this);
 
