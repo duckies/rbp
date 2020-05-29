@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Options } from 'mikro-orm';
 import { Article } from './src/article/article.entity';
 import { WoWAsset } from './src/blizzard/assets.entity';
+import { DiscordConfig } from './src/discord/discord-plugin.entity';
 import { FileUpload } from './src/file/file.entity';
 import { FormCharacter } from './src/form-character/form-character.entity';
 import { FormComment } from './src/form-comment/form-comment.entity';
@@ -29,6 +30,7 @@ const config: Options = {
     Raid,
     Slide,
     User,
+    DiscordConfig,
   ],
   type: 'postgresql',
   host: process.env.DATABASE_HOST || '127.0.0.1',
@@ -37,7 +39,7 @@ const config: Options = {
   password: process.env.DATABASE_PASSWORD || 'postgres',
   dbName: process.env.DATABASE_DATABASE || 'backend',
   cache: { options: { cacheDir: './dist/temp' } },
-  debug: true,
+  debug: false,
   findOneOrFailHandler: (entityName: string) => {
     return new NotFoundException(`${entityName} was not found.`);
   },

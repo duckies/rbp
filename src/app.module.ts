@@ -9,6 +9,7 @@ import { roleBuilder } from './app.roles';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
+import { DiscordModule } from './discord/discord.module';
 import { FormCharacterModule } from './form-character/form-character.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
@@ -43,6 +44,18 @@ import { UserModule } from './user/user.module';
     }),
     MikroOrmModule.forRoot(MikroOrmConfig),
     AccessControlModule.forRoles(roleBuilder),
+    DiscordModule.forRoot({
+      ws: {
+        intents: [
+          'GUILDS',
+          'GUILD_MEMBERS',
+          'GUILD_MESSAGES',
+          'GUILD_VOICE_STATES',
+          'GUILD_MESSAGE_REACTIONS',
+          'DIRECT_MESSAGE_REACTIONS',
+        ],
+      },
+    }),
     ConfigModule,
     UserModule,
     AuthModule,

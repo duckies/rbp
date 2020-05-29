@@ -110,11 +110,9 @@ export class SubmissionController {
     @Usr() user: User,
     @Body() updateFormSubmissionDto: UpdateFormSubmissionDto,
   ) {
-    if (this.rolebuilder.can(user.roles).updateAny('form-submission').granted) {
-      return this.submissionService.update(id, updateFormSubmissionDto);
-    } else {
-      return this.submissionService.updateOwn(id, user, updateFormSubmissionDto);
-    }
+    const canUpdateAny = this.rolebuilder.can(user.roles).updateAny('form-submission').granted;
+
+    return this.submissionService.update(id, user, updateFormSubmissionDto, canUpdateAny);
   }
 
   @Auth({ action: 'delete', possession: 'any', resource: 'form-submission' })
