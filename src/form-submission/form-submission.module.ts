@@ -16,6 +16,7 @@ import { SubmissionService } from './form-submission.service';
   imports: [
     MikroOrmModule.forFeature({ entities: [FormSubmission, FormQuestion] }),
     BullModule.registerQueue({ name: 'form' }),
+    BullModule.registerQueue({ name: 'discord' }),
     HttpModule,
     BlizzardModule,
     RaiderIOModule,

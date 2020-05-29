@@ -19,7 +19,8 @@ export class SubmissionService {
     private readonly formCharacterService: FormCharacterService,
     private readonly fileService: FileService,
     private readonly em: EntityManager,
-    @InjectQueue('form') private readonly queue: Queue,
+    @InjectQueue('form') private readonly formQueue: Queue,
+    @InjectQueue('discord') private readonly discordQueue: Queue,
   ) {}
 
   /**
@@ -81,8 +82,9 @@ export class SubmissionService {
     formSubmission.characters.populated();
     formSubmission.justSubmitted = true;
 
-    // Send webhook notification.
-    await this.queue.add('newApplication', formSubmission);
+    // Send notifications.
+    await this.formQueue.add('newApplication', formSubmission);
+    await this.discordQueue.add('APP_CREATE_NOTIFICATION', formSubmission);
 
     return formSubmission;
   }
@@ -121,6 +123,17 @@ export class SubmissionService {
   }
 
   /**
+   * Finds an open form submission by a discord identifier.
+   * @param id
+   */
+  findOpenByUserDiscordID(id: string) {
+    return this.formSubmissionRepository.findOne({
+      author: { discord_id: id },
+      status: FormSubmissionStatus.Open,
+    });
+  }
+
+  /**
    * Finds an individual form submission.
    * @param id Form submission id.
    */
@@ -146,44 +159,39 @@ export class SubmissionService {
   }
 
   /**
-   * Updates a form with complete privileges over the status and answers.
+   * Updates a form.
    * @param id Form submission id.
    * @param updateFormSubmissionDto UpdateFormSubmissionDto
+   * @param updateAny Describes if the user has has officer-level permissions over applications.
    */
-  async update(id: number, updateFormSubmissionDto: UpdateFormSubmissionDto) {
-    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id);
+  async update(id: number, user: User, updateFormSubmissionDto: UpdateFormSubmissionDto, updateAny: boolean) {
+    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id, ['author']);
+
+    if (!updateAny && formSubmission.author.id !== user.id) {
+      throw new ForbiddenException();
+    }
+
+    // Only officers can change the status of applications to anything other than cancelled.
+    if (
+      !updateAny &&
+      updateFormSubmissionDto.status &&
+      updateFormSubmissionDto.status !== FormSubmissionStatus.Cancelled
+    ) {
+      throw new ForbiddenException();
+    }
+
+    const statusChange =
+      updateFormSubmissionDto.status &&
+      updateFormSubmissionDto.status !== 'open' &&
+      formSubmission.status !== updateFormSubmissionDto.status;
 
     wrap(formSubmission).assign(updateFormSubmissionDto);
 
     await this.formSubmissionRepository.flush();
 
-    return formSubmission;
-  }
-
-  /**
-   * Updates a form with checks to ensure the user editing it is the author
-   * and only allows users to cancel their own applications.
-   * @param id Form submission id.
-   * @param user Form submission author.
-   * @param updateFormSubmissionDto UpdateFormSubmissionDto
-   */
-  async updateOwn(id: number, user: User, updateFormSubmissionDto: UpdateFormSubmissionDto) {
-    if (updateFormSubmissionDto.status && updateFormSubmissionDto.status !== FormSubmissionStatus.Cancelled) {
-      throw new ForbiddenException('Can only cancel owned applications.');
+    if (statusChange) {
+      await this.discordQueue.add('APP_STATUS_NOTIFICATION', formSubmission);
     }
-
-    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id, {
-      populate: ['author'],
-      fields: ['status'],
-    });
-
-    if (formSubmission.author.id !== user.id) {
-      throw new ForbiddenException();
-    }
-
-    delete formSubmission.author;
-
-    wrap(formSubmission).assign(updateFormSubmissionDto);
 
     return formSubmission;
   }
