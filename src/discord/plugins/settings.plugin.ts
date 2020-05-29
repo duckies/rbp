@@ -7,10 +7,11 @@ import { DiscordService } from '../discord.service';
 @Injectable()
 @Plugin('Settings')
 export class SettingsPlugin {
-  private readonly config: PluginConfig<null, { embedColor: 0xc328ff }>;
+  private readonly config: PluginConfig<null, { embedColor: number }>;
 
   constructor(private readonly discordService: DiscordService) {
     this.config = discordService.getConfig(SettingsPlugin.name);
+    this.config.registerGlobal({ embedColor: 0xc328ff });
   }
 
   @CommandGroup({ name: 'set', description: 'Configure bot settings.' })
