@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { MessageEmbed, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
 import YouTube from 'ytdl-core';
 import { Context } from '../discord.context';
-import { Cog, Command } from '../discord.decorators';
+import { Command, Plugin } from '../discord.decorators';
+import { DiscordPlugin } from './plugin.class';
 
 export interface AudioQueue {
   voiceChannel: VoiceChannel;
@@ -25,11 +26,11 @@ export interface Song {
 }
 
 @Injectable()
-@Cog('Audio')
-export class PlayCommand {
+@Plugin('Audio')
+export class AudioPlugin extends DiscordPlugin {
   private queue: AudioQueue;
 
-  @Command({ name: 'play' })
+  @Command({ name: 'play', description: 'Plays a song from a YouTube url' })
   async playCommand(ctx: Context, url: string) {
     if (!ctx.message.guild) {
       return ctx.message.reply('I cannot play music in DMs.');
@@ -101,7 +102,7 @@ export class PlayCommand {
     }
   }
 
-  @Command({ name: 'stop' })
+  @Command({ name: 'stop', description: 'Stops the bot and erases the queue' })
   async stopCommand(ctx: Context) {
     if (!ctx.message.guild) {
       return ctx.message.reply('This command is only available in servers.');
@@ -119,7 +120,7 @@ export class PlayCommand {
     await ctx.tick();
   }
 
-  @Command({ name: 'volume' })
+  @Command({ name: 'volume', description: 'Sets the volume of the bot from 0 to 200' })
   async setVolume(ctx: Context, volume: string) {
     const volumeNum = +volume;
 

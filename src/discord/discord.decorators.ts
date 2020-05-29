@@ -1,41 +1,20 @@
 import { CustomDecorator, Inject, SetMetadata } from '@nestjs/common';
-import { DISCORD_CLIENT, DISCORD_COG, DISCORD_COG_COMMAND, DISCORD_COG_GROUP } from '../app.constants';
+import {
+  DISCORD_CLIENT,
+  DISCORD_PLUGIN,
+  DISCORD_PLUGIN_COMMAND,
+  DISCORD_PLUGIN_GROUP,
+  DISCORD_PLUGIN_LOOP,
+  DISCORD_PLUGIN_EVENT,
+} from '../app.constants';
 import { isString } from '../utils/shared.utils';
+import { DiscordEvent } from './interfaces/events.enum';
 
-export interface CogOptions {
+export interface PluginOptions {
   /**
-   * Name of the cog used for help or
+   * Name of the plugin used for the help command.
    */
   name: string;
-}
-
-/**
- * Decorator that marks a class as a Discord cog.
- *
- * @param {string} name string of the name of the cog housing commands.
- */
-export function Cog(name: string): CustomDecorator<string>;
-
-/**
- * Decorator that marks a class as a Discord cog.
- *
- * @param {object} options configuration object specifying:
- *
- * - `name` - string that defines the name of the cog housing commands.
- */
-export function Cog(options: CogOptions): CustomDecorator<string>;
-
-export function Cog(nameOrOptions: string | CogOptions): CustomDecorator<string> {
-  return SetMetadata(DISCORD_COG, isString(nameOrOptions) ? { name: nameOrOptions } : nameOrOptions);
-}
-
-export interface Group extends GroupOptions {
-  method: string;
-  commands: Map<string, Command>;
-}
-
-export interface Command extends CommandOptions {
-  method: string;
 }
 
 export interface CommandOptions {
@@ -61,52 +40,188 @@ export interface CommandOptions {
   alias?: string[];
 }
 
-export interface CommandGroup {
-  /**
-   * Defines the name of a command group.
-   */
-  name: string;
-
-  /**
-   * Specifies if the command group is not meant to be invoked.
-   */
-  abstract?: boolean;
-
-  /**
-   * Specifies if invoking the command group should show help text.
-   */
-  autoHelp?: boolean;
-}
-
 export interface GroupOptions {
+  /**
+   * Specifies the name of the command group.
+   *
+   * This shows in the help command.
+   */
   name: string;
+
+  /**
+   * Specifies the description of the command group.
+   *
+   * This shows in the help command.
+   */
+  description?: string;
+
+  /**
+   * Specifies any alternative invoking aliases for the command group.
+   */
   alias?: string[];
 }
 
+export interface EventOptions {
+  /**
+   * Enum of the event that should call this method when emitted.
+   */
+  name: DiscordEvent;
+}
+
+export interface LoopOptions {
+  /**
+   * Name which describes the loop's functionality.
+   */
+  name: string;
+}
+
+export interface PluginMethod {
+  /**
+   * The name of the method being decorated.
+   */
+  method: string;
+}
+
+export type CommandMeta = CommandOptions & PluginMethod;
+export type GroupMeta = GroupOptions & PluginMethod;
+export type EventMeta = EventOptions & PluginMethod;
+export type LoopMeta = LoopOptions & PluginMethod;
+
+/**
+ * Decorator that marks a class as a Discord plugin.
+ *
+ * @param {string} name string of the name of the plugin housing commands.
+ */
+export function Plugin(name: string): CustomDecorator<string>;
+
+/**
+ * Decorator that marks a class as a Discord plugin.
+ *
+ * @param {object} options configuration object specifying:
+ *
+ * - `name` - string that defines the name of the plugin housing commands.
+ */
+export function Plugin(options: PluginOptions): CustomDecorator<string>;
+
+export function Plugin(nameOrOptions: string | PluginOptions): CustomDecorator<string> {
+  return SetMetadata(DISCORD_PLUGIN, isString(nameOrOptions) ? { name: nameOrOptions } : nameOrOptions);
+}
+
+/**
+ * Decorator that marks a method within a Discord plugin as a group.
+ *
+ * TODO: Clarify execution of group methods, their purpose is suspect.
+ *
+ * @param {string} name name of the command group
+ */
 export function CommandGroup(name: string): MethodDecorator;
+
+/**
+ * Decorator that marks a method within a Discord plugin as a group.
+ *
+ * TODO: Clarify execution of group methods, their purpose is suspect.
+ *
+ * @param {GroupOptions} options options for the command group:
+ *
+ * - `name` - name of the command group
+ * - `description` - short description of the command group, shown in the help command
+ */
 export function CommandGroup(options: GroupOptions): MethodDecorator;
+
 export function CommandGroup(nameOrOptions: string | GroupOptions): MethodDecorator {
-  return (target: object, propertyKey: string | symbol) => {
-    const groups = Reflect.getOwnMetadata(DISCORD_COG_GROUP, target) || [];
-    const options = isString(nameOrOptions) ? { name: nameOrOptions } : nameOrOptions;
-
-    groups.push({ ...options, method: propertyKey });
-
-    Reflect.defineMetadata(DISCORD_COG_GROUP, groups, target);
-  };
+  return createPluginMethodDecorator<string | GroupOptions>(DISCORD_PLUGIN_GROUP, nameOrOptions);
 }
 
-// export function Command(name: string): MethodDecorator;
+/**
+ * Decorator that marks a method within a Discord plugin as a command.
+ *
+ * @param {string} name name of the command users type out to execute
+ */
+export function Command(name: string): MethodDecorator;
+
+/**
+ *
+ * @param {CommandOptions} options options for the command:
+ *
+ * - `name` - name of the command users type out to execute
+ * - `description` - short description of the command displayed in the help command
+ * - `alias` - alias or aliases of the command as alternate names for execution
+ * - `group` - optional parameter denoting the command is part of a group
+ */
 export function Command(options: CommandOptions): MethodDecorator;
-export function Command(nameOrOptions: CommandOptions): MethodDecorator {
-  return (target: object, propertyKey: string | symbol) => {
-    const commands = Reflect.getOwnMetadata(DISCORD_COG_COMMAND, target) || [];
-    const options = isString(nameOrOptions) ? { name: nameOrOptions } : nameOrOptions;
 
-    commands.push({ ...options, method: propertyKey });
+export function Command(nameOrOptions: string | CommandOptions): MethodDecorator {
+  return createPluginMethodDecorator<string | CommandOptions>(DISCORD_PLUGIN_COMMAND, nameOrOptions);
+}
 
-    Reflect.defineMetadata(DISCORD_COG_COMMAND, commands, target);
+/**
+ * Decorator that marks a method within a Discord plugin as
+ * an event listener. The method will be called when the event is fired.
+ *
+ * @param {DiscordEvent} event `DicordEvent` to listen to when emitted.
+ */
+export function Event(event: DiscordEvent): MethodDecorator;
+
+/**
+ * Decorator that marks a method within a Discord plugin as
+ * an event listener. The method will be called when the event is fired.
+ *
+ * @param {EventOptions} options options for the event listener:
+ *
+ * - `event` - `DicordEvent` to listen to when emitted.
+ */
+export function Event(options: EventOptions): MethodDecorator;
+
+export function Event(eventOrOptions: DiscordEvent | EventOptions): MethodDecorator {
+  return createPluginMethodDecorator<DiscordEvent | EventOptions>(DISCORD_PLUGIN_EVENT, eventOrOptions);
+}
+
+/**
+ * Decorator that marks a method within a Discord plugin as
+ * a loop. The function will be called once and should consist of
+ * an asynchronous infinite loop to run timed commands.
+ *
+ * @param name name describing the loop
+ */
+export function Loop(name: string): MethodDecorator;
+
+/**
+ * Decorator that marks a method within a Discord plugin as
+ * a loop. The function will be called once and should consist of
+ * an asynchronous infinite loop to run timed commands.
+ *
+ * @param options options for the loop specifying:
+ *
+ * - `name` - name describing the loop
+ */
+export function Loop(options: LoopOptions): MethodDecorator;
+
+export function Loop(nameOrOptions: string | LoopOptions): MethodDecorator {
+  return createPluginMethodDecorator<string | LoopOptions>(DISCORD_PLUGIN_LOOP, nameOrOptions);
+}
+
+/**
+ * Appends the data for a Discord plugin method to any existing
+ * metadata of the given key. This is used to define different
+ * decorators within the `@Plugin` decorator retrieved during
+ * instantiation.
+ *
+ * @param key constant value to retrieve the metadata with later
+ * @param data data to be stored within the method
+ */
+function createPluginMethodDecorator<T>(key: any, data: T) {
+  return (target: Record<string, unknown>, propertyKey: string | symbol) => {
+    const metadata = Reflect.getOwnMetadata(key, target) || [];
+    const options = isString(data) ? { name: data } : data;
+
+    metadata.push({ ...options, method: propertyKey });
+
+    Reflect.defineMetadata(key, metadata, target);
   };
 }
 
+/**
+ * Decorator that injects the Discord client into the provider.
+ * When possible, using a context object or service is preferred.
+ */
 export const InjectClient = () => Inject(DISCORD_CLIENT);

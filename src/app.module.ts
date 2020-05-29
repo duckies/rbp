@@ -45,7 +45,16 @@ import { UserModule } from './user/user.module';
     MikroOrmModule.forRoot(MikroOrmConfig),
     AccessControlModule.forRoles(roleBuilder),
     DiscordModule.forRoot({
-      ws: { intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_VOICE_STATES'] },
+      ws: {
+        intents: [
+          'GUILDS',
+          'GUILD_MEMBERS',
+          'GUILD_MESSAGES',
+          'GUILD_VOICE_STATES',
+          'GUILD_MESSAGE_REACTIONS',
+          'DIRECT_MESSAGE_REACTIONS',
+        ],
+      },
     }),
     ConfigModule,
     UserModule,
