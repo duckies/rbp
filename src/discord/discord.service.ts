@@ -127,8 +127,7 @@ export class DiscordService {
   }
 
   public getGuildMember(user_id: string) {
-    // return this.client.guilds.cache.get(this.config.get('DISCORD_GUILD_ID')).members.fetch(user_id);
-    return this.client.guilds.cache.get('443958062542356481').members.fetch(user_id);
+    return this.client.guilds.cache.get(this.config.get('DISCORD_GUILD_ID')).members.fetch(user_id);
   }
 
   public getGuildChannel(id: string) {
