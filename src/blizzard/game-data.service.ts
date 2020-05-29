@@ -123,13 +123,6 @@ export class GameDataService {
     };
   }
 
-  /**
-   * Assets are transactionally tracked and may conflict due to the high-concurrency.
-   */
-  async flush() {
-    await this.assetRepository.flush();
-  }
-
   async getGameData<T extends GameDataEndpoint>(
     endpoint: T,
     param: string | number = '',

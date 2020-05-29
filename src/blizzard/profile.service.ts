@@ -160,8 +160,6 @@ export class ProfileService {
           }
         }),
       );
-
-      // await this.gameDataService.flush();
     }
 
     return data;
