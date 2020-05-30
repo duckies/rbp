@@ -23,6 +23,7 @@ import { AudioPlugin } from './plugins/audio.plugin';
 import { HelpPlugin } from './plugins/help.plugin';
 import { PingPlugin } from './plugins/ping.plugin';
 import { DiscordPlugin } from './plugins/plugin.class';
+import { ReactionsPlugin } from './plugins/reactions.plugin';
 import { SettingsPlugin } from './plugins/settings.plugin';
 import { WarcraftLogsPlugin } from './plugins/warcraftlogs.plugin';
 import { WelcomerPlugin } from './plugins/welcomer.plugin';
@@ -44,6 +45,7 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     WarcraftLogsPlugin,
     WelcomerPlugin,
     DiscordService,
+    ReactionsPlugin,
   ],
   controllers: [DiscordController],
   exports: [DiscordService],
