@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client, Guild, GuildMember, MessageEmbed, TextChannel } from 'discord.js';
+import { sample } from 'lodash';
 import moment from 'moment';
 import { SubmissionService } from '../../form-submission/form-submission.service';
 import { PluginConfig } from '../discord-config.class';
@@ -15,6 +16,13 @@ import { DiscordPlugin } from './plugin.class';
 export class WelcomerPlugin extends DiscordPlugin {
   private readonly logger = new Logger(WelcomerPlugin.name);
   private readonly config: PluginConfig<{ channel: string; message: string; count: number; date: Date }>;
+  private readonly goodbyeMessages = [
+    '{username} is off to greener pastures.',
+    '{username} became a born-again!',
+    '{username} had their car broken into.',
+    "{username} didn't like that one black joke.",
+    '{username} found a married woman in an open relationship.',
+  ];
 
   constructor(
     private readonly submissionService: SubmissionService,
@@ -81,6 +89,22 @@ export class WelcomerPlugin extends DiscordPlugin {
     }
   }
 
+  @Event(DiscordEvent.GuildMemberRemove)
+  async onGuildMemberRemove(client: Client, member: GuildMember) {
+    const { channel: cid } = await this.config.getGuild(member.guild);
+
+    // Plugin is unitialized for the guild.
+    if (!cid) return;
+
+    const channel = client.channels.cache.get(cid) as TextChannel;
+
+    if (!channel || channel.type !== 'text') {
+      return this.logger.error('Channel was not found or is not a text channel.');
+    }
+
+    await this.sendGoobyeMessage(channel, member);
+  }
+
   private async sendWelcomeMessage(
     guild: Guild,
     channel: TextChannel,
@@ -89,7 +113,7 @@ export class WelcomerPlugin extends DiscordPlugin {
   ) {
     const { count, date, message: mid } = await this.config.getGuild(guild);
     const resetCount = this.isYesterday(date);
-    const newCount = resetCount ? 1 : count + 1;
+    const newCount = resetCount || typeof count !== 'number' ? 1 : count + 1;
 
     // Remove the old welcome message, if possible.
     if (mid) {
@@ -107,6 +131,26 @@ export class WelcomerPlugin extends DiscordPlugin {
     );
 
     await this.config.setGuild(guild, { count: newCount, date: new Date(), message: message.id });
+  }
+
+  @Command({ name: 'debug', group: 'welcome', description: 'Prints the current configuration.' })
+  private async debug(ctx: Context) {
+    await ctx.send(
+      `**Guild**\n\`\`\`JSON\n${JSON.stringify(
+        await this.config.getGuild(ctx.message.guild),
+        null,
+        2,
+      )}\`\`\``,
+    );
+  }
+
+  private async sendGoobyeMessage(channel: TextChannel, member: GuildMember) {
+    const message = sample(this.goodbyeMessages).replace(
+      '{username}',
+      `${member.user.username}#${member.user.discriminator}`,
+    );
+
+    await channel.send(message);
   }
 
   private isYesterday(date: Date) {
