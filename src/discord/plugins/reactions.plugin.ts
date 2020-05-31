@@ -16,6 +16,9 @@ export class ReactionsPlugin extends DiscordPlugin {
 
   @Event(DiscordEvent.Message)
   async onMessage(_client: Client, message: Message) {
+    // Do not care about partial messages.
+    if (message.partial) return;
+
     const words = message.content.split(' ').map((w) => w.replace(/[^A-Za-z0-9]/g, '').toLowerCase());
     const mentioned = message.mentions.users.map((u) => u.username.toLowerCase());
     const candidates = [...words, ...mentioned];

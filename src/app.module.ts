@@ -45,6 +45,7 @@ import { UserModule } from './user/user.module';
     MikroOrmModule.forRoot(MikroOrmConfig),
     AccessControlModule.forRoles(roleBuilder),
     DiscordModule.forRoot({
+      partials: ['REACTION', 'CHANNEL', 'MESSAGE', 'USER', 'GUILD_MEMBER'],
       ws: {
         intents: [
           'GUILDS',
@@ -52,7 +53,6 @@ import { UserModule } from './user/user.module';
           'GUILD_MESSAGES',
           'GUILD_VOICE_STATES',
           'GUILD_MESSAGE_REACTIONS',
-          'DIRECT_MESSAGE_REACTIONS',
         ],
       },
     }),

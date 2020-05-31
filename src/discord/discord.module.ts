@@ -23,6 +23,7 @@ import { AudioPlugin } from './plugins/audio.plugin';
 import { HelpPlugin } from './plugins/help.plugin';
 import { PingPlugin } from './plugins/ping.plugin';
 import { DiscordPlugin } from './plugins/plugin.class';
+import { ReactRolesPlugin } from './plugins/react-roles.plugin';
 import { ReactionsPlugin } from './plugins/reactions.plugin';
 import { SettingsPlugin } from './plugins/settings.plugin';
 import { WarcraftLogsPlugin } from './plugins/warcraftlogs.plugin';
@@ -45,6 +46,7 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     WarcraftLogsPlugin,
     WelcomerPlugin,
     DiscordService,
+    ReactRolesPlugin,
     ReactionsPlugin,
   ],
   controllers: [DiscordController],
@@ -107,6 +109,9 @@ export class DiscordModule implements OnModuleInit {
    * @param message
    */
   async messageHandler(message: Message) {
+    // Don't invoke the main handler on partial messages.
+    if (message.partial) return;
+
     // Ignore bots or messages without the prefix.
     if (message.author.bot || !message.content.startsWith(this.discord.prefix)) {
       return;
