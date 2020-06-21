@@ -119,16 +119,11 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
 import { FormCharacter } from '~/store/roster'
-import Hero from '~/components/Hero.vue'
 import { FormSubmission, Pagination } from '~/store/submission'
 import { Avatars, User } from '~/store/user'
 import { Question } from '~/store/form'
 
-@Component({
-  components: {
-    Hero,
-  },
-})
+@Component({})
 export default class Applications extends Vue {
   private invalidDialog = false
   public readonly formStatuses = [

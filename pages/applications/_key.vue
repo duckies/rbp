@@ -130,16 +130,10 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
-import FormField from '@/components/fields/FormField.vue'
-import CharacterPanel from '@/components/blizzard/CharacterPanel.vue'
 import { Question } from '~/store/form'
 import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission'
 
 @Component({
-  components: {
-    FormField,
-    CharacterPanel,
-  },
   validate({ params }) {
     return /^(\d+|open|approved|rejected|cancelled)$/.test(params.key)
   },

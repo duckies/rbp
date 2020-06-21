@@ -47,6 +47,8 @@ const NuxtConfiguration = {
 
   modules: ['@nuxtjs/axios', 'cookie-universal-nuxt'],
 
+  components: true,
+
   vuetify: {
     customVariables: ['~/assets/styles/vuetify.scss'],
     icons: {

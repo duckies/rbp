@@ -24,14 +24,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import Hero from '../components/Hero.vue'
-import CharacterWindow from '../components/blizzard/CharacterWindow.vue'
 
 @Component({
-  components: {
-    CharacterWindow,
-    Hero,
-  },
   async fetch({ store }): Promise<void> {
     await store.dispatch('roster/getRoster')
   },

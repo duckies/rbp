@@ -6,7 +6,7 @@
       <div class="hero-nudge">
         <v-card>
           <v-tabs centered grow>
-            <v-tab v-for="link in links" :key="link.to" nuxt to="/about/ranks">{{ link.title }}</v-tab>
+            <v-tab v-for="link in links" :key="link.to" nuxt :to="link.to">{{ link.title }}</v-tab>
           </v-tabs>
           <nuxt-child />
         </v-card>
@@ -17,13 +17,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import Hero from '@/components/Hero.vue'
 
-@Component({
-  components: {
-    Hero,
-  },
-})
+@Component({})
 export default class AboutPage extends Vue {
   background = '/images/backgrounds/about-background.jpg'
   title = 'Really Bad Info'

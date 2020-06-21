@@ -135,20 +135,12 @@ import { ValidationObserver } from 'vee-validate'
 // @ts-ignore
 import Dropzone from 'nuxt-dropzone'
 import 'nuxt-dropzone/dropzone.css'
-import Hero from '~/components/Hero.vue'
-import FormField from '~/components/fields/FormField.vue'
-import CharacterPanel from '~/components/blizzard/CharacterPanel.vue'
-import CharacterPicker from '~/components/blizzard/CharacterPicker.vue'
 import { FileUpload } from '~/store/submission'
 
 @Component({
   components: {
-    Hero,
-    ValidationObserver,
-    FormField,
-    CharacterPicker,
-    CharacterPanel,
     Dropzone,
+    ValidationObserver,
   },
   async fetch({ store }): Promise<void> {
     const promises: Promise<unknown>[] = [store.dispatch('form/getForm', 1)]

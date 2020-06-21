@@ -18,22 +18,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import Carousel from '@/components/home/Carousel.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import BlogPost from '@/components/BlogPost.vue'
 
 @Component({
-  components: {
-    Carousel,
-    Sidebar,
-    BlogPost,
-  },
   async fetch({ store }): Promise<void> {
     await Promise.all([
       store.dispatch('blog/getArticles'),
       store.dispatch('raid/getRaids'),
       store.dispatch('slide/getSlides'),
-      // raiderIOStore.getRaiderIO()
     ])
   },
 })
