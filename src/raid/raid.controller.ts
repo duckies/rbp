@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  CacheInterceptor,
+} from '@nestjs/common';
 import { UseRoles } from 'nest-access-control';
 import { AccessControlGuard } from '../auth/guards/compose.guard';
 import { RaiderIOGuild } from '../raiderIO/raiderIO.interface';
@@ -9,6 +20,7 @@ import { Raid } from './raid.entity';
 import { RaidService } from './raid.service';
 
 @Controller('raids')
+@UseInterceptors(CacheInterceptor)
 export class RaidController {
   constructor(private readonly raidService: RaidService, private readonly raiderIOService: RaiderIOService) {}
 
@@ -33,7 +45,10 @@ export class RaidController {
   }
 
   @Get()
-  findAll(@Query('take') take?: number, @Query('skip') skip?: number): Promise<{ result: Raid[]; total: number }> {
+  findAll(
+    @Query('take') take?: number,
+    @Query('skip') skip?: number,
+  ): Promise<{ result: Raid[]; total: number }> {
     return this.raidService.findAll(take, skip);
   }
 

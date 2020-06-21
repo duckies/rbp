@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  CacheInterceptor,
+  CacheTTL,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UseRoles } from 'nest-access-control';
 import { AccessControlGuard } from '../auth/guards/compose.guard';
 import { CreateSlideDto } from './dto/create-slide.dto';
@@ -7,6 +20,7 @@ import { Slide } from './slide.entity';
 import { SlideService } from './slide.service';
 
 @Controller('slide')
+@UseInterceptors(CacheInterceptor)
 export class SlideController {
   constructor(private readonly slideService: SlideService) {}
 
@@ -18,6 +32,7 @@ export class SlideController {
   }
 
   @Get()
+  @CacheTTL(600)
   findAll(@Query('take') take?: number, @Query('skip') skip?: number): Promise<Slide[]> {
     return this.slideService.findAll(take, skip);
   }

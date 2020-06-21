@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { EntityRepository, QueryOrder } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import slugify from 'slugify';
 import { User } from '../user/user.entity';
@@ -48,7 +48,7 @@ export class ArticleService {
   async update(id: number, updateArticleDto: UpdateArticleDto) {
     const article = await this.articleRepository.findOneOrFail(id);
 
-    wrap(article).assign(updateArticleDto);
+    article.assign(updateArticleDto);
 
     await this.articleRepository.flush();
 

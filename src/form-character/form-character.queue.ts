@@ -1,4 +1,4 @@
-import { OnQueueCompleted, Process, Processor, OnQueueError } from '@nestjs/bull';
+import { OnQueueCompleted, Process, Processor, OnQueueError, OnQueueFailed } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { EntityRepository } from 'mikro-orm';
@@ -89,8 +89,15 @@ export class FormCharacterQueue {
     return Promise.resolve({ success, deleted, failed });
   }
 
+  @OnQueueFailed()
+  private onFailed(job: Job<number>, error: Error) {
+    console.error(error);
+    this.logger.error(error);
+  }
+
   @OnQueueError()
   private onError(job: Job<number>, error: Error) {
+    console.error(error);
     this.logger.error(error);
   }
 

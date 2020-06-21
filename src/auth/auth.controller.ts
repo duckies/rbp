@@ -8,14 +8,14 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('/discord')
   @UseGuards(AuthGuard('discord'))
+  @Get('/discord')
   discordLogin(@Usr() user: User): User {
     return user;
   }
 
-  @Get('/discord/callback')
   @UseGuards(AuthGuard('discord'))
+  @Get('/discord/callback')
   discordCallback(@Usr() user: User): { user: User; token: string } {
     const token = this.authService.signToken(user);
 
@@ -25,14 +25,14 @@ export class AuthController {
     };
   }
 
-  @Get('blizzard/login')
   @UseGuards(AuthGuard('blizzard'))
+  @Get('blizzard/login')
   blizzardLogin(@Usr() user: User): User {
     return user;
   }
 
-  @Post('blizzard/callback')
   @UseGuards(AuthGuard('blizzard'))
+  @Post('blizzard/callback')
   blizzardCallback(@Usr() user: User): { user: User; token: string } {
     const token = this.authService.signToken(user);
 

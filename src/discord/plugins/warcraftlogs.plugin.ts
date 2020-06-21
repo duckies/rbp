@@ -109,7 +109,6 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
         return await ctx.send('Invalid or missing API key for WarcraftLogs, aborting!');
       }
 
-      console.log(error);
       this.logger.log(error);
       return await ctx.send(`An unknown error occured, shwoops!`);
     }
