@@ -11,27 +11,30 @@ export class MemeBusterPlugin extends DiscordPlugin {
 
   @Event(DiscordEvent.Message)
   async onMessage(_client: Client, message: Message) {
-    if (message.partial) {
-      await message.fetch();
-    }
+    try {
+      if (message.partial) {
+        await message.fetch();
+      }
 
-    const channel = message.guild.channels.cache.get(message.channel.id);
+      const channel = message.guild.channels.cache.get(message.channel.id);
 
-    if (!channel) return;
+      if (!channel) return;
 
-    const messages = await message.channel.messages.fetch({ limit: 20 });
+      const messages = await message.channel.messages.fetch({ limit: 20 });
 
-    for (const [, oldMessage] of messages) {
-      const member = message.guild.members.cache.get(oldMessage.author.id);
+      for (const [, oldMessage] of messages) {
+        const member = message.guild.members.cache.get(oldMessage.author.id);
+        const name = member.nickname || member.displayName;
 
-      if (message.content.includes(member.nickname) && message.content.includes('Today at')) {
-        try {
+        if (member.user.bot) continue;
+
+        if (message.content.includes(name) && message.content.includes('Today at')) {
           await message.delete();
           break;
-        } catch (error) {
-          this.logger.error(error);
         }
       }
+    } catch (error) {
+      this.logger.error(error);
     }
   }
 }
