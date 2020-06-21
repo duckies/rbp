@@ -109,6 +109,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
         return await ctx.send('Invalid or missing API key for WarcraftLogs, aborting!');
       }
 
+      console.log(error);
       this.logger.log(error);
       return await ctx.send(`An unknown error occured, shwoops!`);
     }
@@ -143,73 +144,77 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   @Loop('LogRetrieval')
   public async loop() {
     while (true) {
-      const { key } = await this.config.getGlobal();
-      let hasActive = false;
+      try {
+        const { key } = await this.config.getGlobal();
+        let hasActive = false;
 
-      // If we don't have a key, keep the loop going but wait.
-      if (!key) {
-        await sleep(300000);
-        continue;
-      }
-
-      // Loop through each guild and check for logs.
-      for (const [, guild] of this.discordService.client.guilds.cache) {
-        const { channel: id, watching } = await this.config.getGuild(guild);
-        const nowWatching: Record<string, string> = {};
-
-        // Guilds without an announcement channel aren't setup yet.
-        if (!id) continue;
-
-        const channel = guild.channels.cache.get(id);
-
-        // Cannot locate the channel, abort. This is likely an error, e.g. deleted channel
-        // and something should be done about this. Update the setting or check perms, perhaps.
-        if (!channel) continue;
-
-        const reports = (await this.getReports(key)).slice(0, 5);
-        const [active, inactive] = partition(reports, (r) => moment(Date.now()).diff(r.end, 'hours') < 1);
-        hasActive = active.length > 0;
-
-        // Send final embed to watched reports that are now outdated, then remove them.
-        for (const report of inactive) {
-          if (watching.hasOwnProperty(report.id)) {
-            const message = await (<TextChannel>channel).messages.fetch(watching[report.id]);
-
-            // If the message is missing, e.g. deleted, don't bother doing any more.
-            if (!message) continue;
-
-            const embed = await this.getReportEmbed(report.id, false);
-            await message.edit(embed);
-          }
+        // If we don't have a key, keep the loop going but wait.
+        if (!key) {
+          await sleep(300000);
+          continue;
         }
 
-        // Active reports could be new or continuing.
-        for (const report of active) {
-          const embed = await this.getReportEmbed(report.id, true);
-          // Edit the existing message if possible.
-          if (watching.hasOwnProperty(report.id)) {
-            const message = await (<TextChannel>channel).messages.fetch(watching[report.id]);
+        // Loop through each guild and check for logs.
+        for (const [, guild] of this.discordService.client.guilds.cache) {
+          const { channel: id, watching } = await this.config.getGuild(guild);
+          const nowWatching: Record<string, string> = {};
 
-            if (message) {
+          // Guilds without an announcement channel aren't setup yet.
+          if (!id) continue;
+
+          const channel = guild.channels.cache.get(id);
+
+          // Cannot locate the channel, abort. This is likely an error, e.g. deleted channel
+          // and something should be done about this. Update the setting or check perms, perhaps.
+          if (!channel) continue;
+
+          const reports = (await this.getReports(key)).slice(0, 5);
+          const [active, inactive] = partition(reports, (r) => moment(Date.now()).diff(r.end, 'hours') < 1);
+          hasActive = active.length > 0;
+
+          // Send final embed to watched reports that are now outdated, then remove them.
+          for (const report of inactive) {
+            if (watching.hasOwnProperty(report.id)) {
+              const message = await (<TextChannel>channel).messages.fetch(watching[report.id]);
+
+              // If the message is missing, e.g. deleted, don't bother doing any more.
+              if (!message) continue;
+
+              const embed = await this.getReportEmbed(report.id, false);
               await message.edit(embed);
-              nowWatching[report.id] = message.id;
-              // Intentionally skip this loop as we want to otherwise fall-through if
-              // a message wasn't found, e.g. someone deleted it.
-              continue;
             }
           }
 
-          const message = await (<TextChannel>channel).send(embed);
-          nowWatching[report.id] = message.id;
+          // Active reports could be new or continuing.
+          for (const report of active) {
+            const embed = await this.getReportEmbed(report.id, true);
+            // Edit the existing message if possible.
+            if (watching.hasOwnProperty(report.id)) {
+              const message = await (<TextChannel>channel).messages.fetch(watching[report.id]);
+
+              if (message) {
+                await message.edit(embed);
+                nowWatching[report.id] = message.id;
+                // Intentionally skip this loop as we want to otherwise fall-through if
+                // a message wasn't found, e.g. someone deleted it.
+                continue;
+              }
+            }
+
+            const message = await (<TextChannel>channel).send(embed);
+            nowWatching[report.id] = message.id;
+          }
+
+          if (!isEqual(watching, nowWatching)) {
+            await this.config.setGuild(guild, { watching: nowWatching });
+          }
         }
 
-        if (!isEqual(watching, nowWatching)) {
-          await this.config.setGuild(guild, { watching: nowWatching });
-        }
+        // Scan every 5 minutes until we find a log, then every 1 while active.
+        await sleep(hasActive ? 60000 : 300000);
+      } catch (error) {
+        this.logger.error(error);
       }
-
-      // Scan every 5 minutes until we find a log, then every 1 while active.
-      await sleep(hasActive ? 60000 : 300000);
     }
   }
 
