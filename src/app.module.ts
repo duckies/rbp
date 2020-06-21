@@ -1,6 +1,6 @@
 import * as Joi from '@hapi/joi';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { AccessControlModule } from 'nest-access-control';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
@@ -18,6 +18,7 @@ import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
 import { UserModule } from './user/user.module';
+import { SentryModule } from '@ntegral/nestjs-sentry';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserModule } from './user/user.module';
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3000),
+        SENTRY_DSN: Joi.string().required(),
         JWT_SECRET: Joi.string().default('testing'),
         BLIZZARD_CLIENTID: Joi.string().required(),
         BLIZZARD_SECRET: Joi.string().required(),
@@ -55,6 +57,14 @@ import { UserModule } from './user/user.module';
           'GUILD_MESSAGE_REACTIONS',
         ],
       },
+    }),
+    SentryModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
+        dsn: config.get('SENTRY_DSN'),
+        debug: true,
+      }),
+      inject: [ConfigService],
     }),
     ConfigModule,
     UserModule,
