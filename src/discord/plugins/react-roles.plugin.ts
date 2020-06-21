@@ -59,6 +59,7 @@ export class ReactRolesPlugin extends DiscordPlugin {
     const toAdd = user.guild.roles.cache.get(role.id);
 
     for (const [rid, react] of reaction.message.reactions.cache) {
+      // This is incredibly expensive, look into alternatives.
       if (!react.users.cache.size) await react.users.fetch();
 
       // If we remove a roll, the onMessageReactionRemove method is called.
