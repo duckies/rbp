@@ -1,4 +1,4 @@
-import { OnQueueCompleted, Process, Processor } from '@nestjs/bull';
+import { OnQueueCompleted, Process, Processor, OnQueueError } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { EntityRepository } from 'mikro-orm';
@@ -69,6 +69,11 @@ export class FormCharacterQueue {
           try {
             const formCharacter = await this.formCharacterService.create(findCharacterDto);
 
+            // Remove properties we don't want to be overwritten.
+            delete formCharacter.isMain;
+            delete formCharacter.createdAt;
+            delete formCharacter.updatedAt;
+
             character.assign(formCharacter);
             success++;
           } catch (error) {
@@ -82,6 +87,11 @@ export class FormCharacterQueue {
     await this.formCharacterRepository.flush();
 
     return Promise.resolve({ success, deleted, failed });
+  }
+
+  @OnQueueError()
+  private onError(job: Job<number>, error: Error) {
+    this.logger.error(error);
   }
 
   @OnQueueCompleted()
