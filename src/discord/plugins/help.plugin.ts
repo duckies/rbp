@@ -24,6 +24,8 @@ export class HelpPlugin {
         ...this._buildHelp(plugin.commands),
       ]);
 
+      if (!helpText.length) continue;
+
       embed.addField(name, helpText.map((text) => `**${ctx.prefix}${text.name}**: ${text.value}`).join('\n'));
     }
 
