@@ -1,22 +1,18 @@
 import {
   Body,
+  CacheInterceptor,
   Controller,
   Get,
   Param,
   Post,
   Put,
   Query,
-  UseGuards,
   UseInterceptors,
-  CacheInterceptor,
 } from '@nestjs/common';
-import { UseRoles } from 'nest-access-control';
-import { AccessControlGuard } from '../auth/guards/compose.guard';
-import { RaiderIOGuild } from '../raiderIO/raiderIO.interface';
+import { Auth } from '../auth/decorators/auth.decorator';
 import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { CreateRaidDto } from './dto/create-raid.dto';
 import { UpdateRaidDto } from './dto/update-raid.dto';
-import { Raid } from './raid.entity';
 import { RaidService } from './raid.service';
 
 @Controller('raids')
@@ -24,41 +20,35 @@ import { RaidService } from './raid.service';
 export class RaidController {
   constructor(private readonly raidService: RaidService, private readonly raiderIOService: RaiderIOService) {}
 
+  @Auth({ resource: 'raid', action: 'create', possession: 'any' })
   @Post()
-  @UseGuards(AccessControlGuard)
-  @UseRoles({ resource: 'raid', action: 'create', possession: 'any' })
-  create(@Body() createRaidDto: CreateRaidDto): Promise<Raid> {
+  create(@Body() createRaidDto: CreateRaidDto) {
     return this.raidService.create(createRaidDto);
   }
 
   @Get('guild')
-  getGuildRaiderIO(): Promise<RaiderIOGuild> {
+  getGuildRaiderIO() {
     return this.raiderIOService.getGuildRaiderIO();
   }
 
   @Get('featured')
-  findAllFeatured(
-    @Query('take') take?: number,
-    @Query('skip') skip?: number,
-  ): Promise<{ result: Raid[]; total: number }> {
+  findAllFeatured(@Query('take') take?: number, @Query('skip') skip?: number) {
     return this.raidService.findAllFeatured(take, skip);
   }
 
   @Get()
-  findAll(
-    @Query('take') take?: number,
-    @Query('skip') skip?: number,
-  ): Promise<{ result: Raid[]; total: number }> {
+  findAll(@Query('take') take?: number, @Query('skip') skip?: number) {
     return this.raidService.findAll(take, skip);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number): Promise<Raid> {
+  findOne(@Param('id') id: number) {
     return this.raidService.findOne(id);
   }
 
+  @Auth({ resource: 'raid', action: 'update', possession: 'any' })
   @Put(':id')
-  update(@Param('id') id: number, @Body() updateRaidDto: UpdateRaidDto): Promise<Raid> {
+  update(@Param('id') id: number, @Body() updateRaidDto: UpdateRaidDto) {
     return this.raidService.update(id, updateRaidDto);
   }
 }
