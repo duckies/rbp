@@ -1,112 +1,105 @@
-import { OnQueueCompleted, Process, Processor, OnQueueError, OnQueueFailed } from '@nestjs/bull';
-import { Injectable, Logger } from '@nestjs/common';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Job } from 'bull';
-import { EntityRepository } from 'mikro-orm';
-import { InjectRepository } from 'nestjs-mikro-orm';
-import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { ProfileService } from '../blizzard/profile.service';
+import { EntityManager, MikroORM } from 'mikro-orm';
+import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { FormCharacter } from './form-character.entity';
 import { FormCharacterService } from './form-character.service';
 
-interface FormCharacterUpdateResult {
-  deleted: number;
-  failed: number;
+interface Results {
+  total: number;
+  processed: number;
   success: number;
+  failed: number;
+  deleted: number;
 }
 
 @Injectable()
 @Processor('form-character')
 export class FormCharacterQueue {
   private readonly logger: Logger = new Logger(FormCharacterQueue.name);
+  private readonly em: EntityManager;
 
   constructor(
-    @InjectRepository(FormCharacter)
-    private readonly formCharacterRepository: EntityRepository<FormCharacter>,
     private readonly formCharacterService: FormCharacterService,
     private readonly profileService: ProfileService,
-  ) {}
+    orm: MikroORM,
+  ) {
+    this.em = orm.em.fork();
+  }
 
   @Process({ name: 'characterUpdate', concurrency: 1 })
   private async updateSubmissionCharacters(job: Job<number>) {
-    let progress = 0,
-      success = 0,
-      deleted = 0,
-      failed = 0;
+    const results: Results = {
+      processed: 0,
+      success: 0,
+      deleted: 0,
+      failed: 0,
+      total: 0,
+    };
 
-    const characters = await this.formCharacterService.findAll();
+    const formCharacters = await this.em.find(FormCharacter, null);
 
-    await Promise.all(
-      characters.map(async (character) => {
-        const findCharacterDto = new FindCharacterDto(character.name, character.realm, character.region);
-        let shouldDelete = false;
+    results.total = formCharacters.length;
 
-        // Characters must be deleted if this endpoint returns 404, the 'is_valid' attribute
-        // is false, or if the id of the character provided does not match stored records.
-        try {
-          const status = await this.profileService.getCharacterProfileStatus(findCharacterDto);
+    // Characters must be deleted if the status endpoint:
+    // 1. Returns 404.
+    // 2. The `is_valid` attribute is false.
+    // 3. The character id does not match.
+    for (const formCharacter of formCharacters) {
+      let mustDelete: boolean;
 
-          if (status.id !== character.character_id || status.is_valid === false) {
-            shouldDelete = true;
-            deleted++;
-          }
-        } catch (error) {
-          if (error.response && error.response.code === 404) {
-            this.logger.error(`Deleting application character ${character.name}-${character.realm}`);
-            shouldDelete = true;
-            deleted++;
-          }
+      try {
+        const status = await this.profileService.getCharacterProfileStatus(
+          formCharacter.getFindCharacterDTO(),
+        );
 
-          this.logger.error(`${error}`);
-
-          failed++;
-        } finally {
-          job.progress(++progress / characters.length);
+        if (status.id !== formCharacter.character_id || status.is_valid === false) {
+          mustDelete = true;
         }
+      } catch (error) {
+        if (error instanceof NotFoundException) mustDelete = true;
 
-        if (shouldDelete) {
-          this.formCharacterRepository.removeLater(character);
-        } else {
-          try {
-            const formCharacter = await this.formCharacterService.create(findCharacterDto);
+        this.logger.error('Status retrieval error', error.stack);
+        results.failed++;
 
-            // Remove properties we don't want to be overwritten.
-            delete formCharacter.isMain;
-            delete formCharacter.createdAt;
-            delete formCharacter.updatedAt;
+        continue;
+      }
 
-            character.assign(formCharacter);
-            success++;
-          } catch (error) {
-            this.logger.error('Error updating form character: ', error);
-            failed++;
-          }
-        }
-      }),
-    );
+      if (mustDelete) {
+        this.em.remove(FormCharacter, formCharacter);
+        results.deleted++;
+        results.processed++;
+        continue;
+      }
 
-    await this.formCharacterRepository.flush();
+      await this.formCharacterService.populateFormCharacter(formCharacter);
 
-    return Promise.resolve({ success, deleted, failed });
+      await this.em.flush();
+
+      results.success++;
+      job.progress(++results.processed / formCharacters.length);
+    }
+
+    return results;
   }
 
   @OnQueueFailed()
   private onFailed(job: Job<number>, error: Error) {
     console.error(error);
-    this.logger.error(error);
+    this.logger.error(error, error.stack);
   }
 
   @OnQueueError()
   private onError(job: Job<number>, error: Error) {
-    console.error(error);
-    this.logger.error(error);
+    console.error(error.stack);
+    this.logger.error(error, error.stack);
   }
 
   @OnQueueCompleted()
-  private onCompleted(job: Job<number>, result: FormCharacterUpdateResult) {
+  private onCompleted(job: Job<number>, { total, success, failed, deleted }: Results) {
     if (job.name === 'characterUpdate') {
-      this.logger.log(
-        `Applicant characters updated with ${result.success} updated, ${result.failed} failed, and ${result.deleted} deleted.`,
-      );
+      this.logger.log(`${success} updated, ${failed} failed, and ${deleted} deleted of ${total} total.`);
     }
   }
 }

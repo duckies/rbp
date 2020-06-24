@@ -1,4 +1,5 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property, Unique, WrappedEntity } from 'mikro-orm';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
 import * as ProfileAPI from '../blizzard/interfaces/profile';
@@ -11,6 +12,8 @@ import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.in
 @Entity()
 @Unique({ name: 'unique_main', properties: ['id', 'name', 'realm', 'region', 'isMain'] })
 export class FormCharacter {
+  private findCharacterDTO: FindCharacterDto;
+
   constructor(name: string, realm: RealmSlug = RealmSlug.Area52, region: Region = Region.US) {
     this.name = name;
     this.realm = realm;
@@ -144,6 +147,17 @@ export class FormCharacter {
 
   setCharacterRaiderIO(data: RaiderIOCharacter) {
     this.raiderIO = data;
+  }
+
+  /**
+   * DTO Methods
+   */
+  getFindCharacterDTO() {
+    if (!this.findCharacterDTO) {
+      this.findCharacterDTO = new FindCharacterDto(this.name, this.realm, this.region);
+    }
+
+    return this.findCharacterDTO;
   }
 }
 

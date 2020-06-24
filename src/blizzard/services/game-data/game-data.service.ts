@@ -1,11 +1,11 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { EntityRepository, EntityManager } from 'mikro-orm';
+import { EntityManager, EntityRepository } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
-import { WoWAsset } from './assets.entity';
-import { AssetType } from './enums/asset-type.enum';
-import { GameDataEndpoint } from './enums/game-data-api.enum';
-import * as GameData from './interfaces/game-data';
-import { TokenService } from './token.service';
+import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
+import { AssetType } from '../../enums/asset-type.enum';
+import { GameDataEndpoint } from '../../enums/game-data-api.enum';
+import * as GameData from '../../interfaces/game-data';
+import { TokenService } from '../token.service';
 
 export type GameDataReturnType = {
   [GameDataEndpoint.AchievementCategoriesIndex]: void;
@@ -83,22 +83,20 @@ export type GameDataReturnType = {
 @Injectable()
 export class GameDataService {
   constructor(
-    @InjectRepository(WoWAsset)
-    private readonly assetRepository: EntityRepository<WoWAsset>,
+    @InjectRepository(BlizzardAsset)
+    private readonly assetRepository: EntityRepository<BlizzardAsset>,
     private readonly tokenService: TokenService,
     private readonly http: HttpService,
     private readonly em: EntityManager,
   ) {}
 
-  async getGameItemMedia(id: number, download?: boolean): Promise<GameData.ItemMedia> {
-    if (!download) return this.getGameData(GameDataEndpoint.ItemMedia, id);
-
+  async getGameItemMedia(id: number): Promise<GameData.ItemMedia> {
     const asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
 
     if (!asset) {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);
 
-      this.em
+      await this.em
         .getConnection()
         .execute(`insert into "wow_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`, [
           id,

@@ -2,15 +2,16 @@ import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } fro
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
+import { EntityManager, MikroORM } from 'mikro-orm';
+import moment from 'moment';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
 import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
-import { ProfileService } from '../blizzard/profile.service';
+import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { GuildCharacter } from './character.entity';
 import { CharacterService, PurgeResult } from './character.service';
-import moment from 'moment';
 
 export interface GuildUpdateResult {
   success: number;
@@ -21,6 +22,7 @@ export interface GuildUpdateResult {
 @Processor('character')
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
+  private readonly em: EntityManager;
 
   private guildLookup: FindGuildDto = {
     name: 'really-bad-players',
@@ -34,8 +36,10 @@ export class CharacterQueue {
     private readonly characterService: CharacterService,
     private readonly profileService: ProfileService,
     private readonly config: ConfigService,
+    private readonly orm: MikroORM,
   ) {
     this.minimumCharacterLevel = Math.max(this.config.get<number>('MINIMUM_CHARACTER_LEVEL'), 10);
+    this.em = orm.em.fork();
   }
 
   /**
@@ -76,6 +80,7 @@ export class CharacterQueue {
           } else if (error.message && error.message.error) {
             this.logger.error(error.message.error);
           } else {
+            console.log(error);
             this.logger.error(`${error}`);
           }
           failed++;

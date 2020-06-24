@@ -2,7 +2,7 @@ import { HttpService, Injectable, Logger, UnauthorizedException } from '@nestjs/
 import { MessageEmbed, TextChannel } from 'discord.js';
 import { chunk, isEqual, partition } from 'lodash';
 import moment from 'moment';
-import { sleep } from '../../utils/shared.utils';
+import { sleep } from '../../app.utils';
 import { PluginConfig } from '../discord-config.class';
 import { Context } from '../discord.context';
 import { Command, CommandGroup, Loop, Plugin } from '../discord.decorators';
@@ -13,7 +13,7 @@ import {
   Report,
   ReportInfo,
   ReportList,
-  Zone,
+  Zone
 } from '../interfaces/warcraftlogs.interface';
 import { DiscordPlugin } from './plugin.class';
 import { SettingsPlugin } from './settings.plugin';

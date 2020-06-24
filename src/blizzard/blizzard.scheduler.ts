@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NestSchedule, Timeout } from 'nest-schedule';
-import { TokenService } from './token.service';
+import { TokenService } from './services/token.service';
 
 @Injectable()
 export class BlizzardScheduler extends NestSchedule {

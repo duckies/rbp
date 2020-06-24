@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { RateLimiter } from './rate-limiter.service';
+import { RateLimiter } from '../../blizzard.rate-limiter';
 
 @Injectable()
 export class BattleNetService {

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../user/user.entity';
-import { FindCharacterDto } from './dto/find-character.dto';
-import { ProfileEndpoints } from './enums/profile-api.enum';
-import { GameDataService } from './game-data.service';
-import * as Profile from './interfaces/profile';
-import { RateLimiter } from './rate-limiter.service';
+import { User } from '../../../user/user.entity';
+import { RateLimiter } from '../../blizzard.rate-limiter';
+import { FindCharacterDto } from '../../dto/find-character.dto';
+import { ProfileEndpoints } from '../../enums/profile-api.enum';
+import * as Profile from '../../interfaces/profile';
+import { GameDataService } from '../game-data/game-data.service';
 
 export interface ProfileParams {
   realmId?: number;
@@ -146,7 +146,7 @@ export class ProfileService {
       data.equipped_items = await Promise.all(
         data.equipped_items.map(async (slot) => {
           try {
-            const media = await this.gameDataService.getGameItemMedia(slot.item.id, true);
+            const media = await this.gameDataService.getGameItemMedia(slot.item.id);
 
             slot.media.assets = {
               key: media.assets[0].key,

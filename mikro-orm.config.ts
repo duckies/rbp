@@ -1,7 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
+import dotenv from 'dotenv';
 import { Options } from 'mikro-orm';
 import { Article } from './src/article/article.entity';
-import { WoWAsset } from './src/blizzard/assets.entity';
+import { BlizzardAsset } from './src/blizzard-asset/blizzard-asset.entity';
 import { DiscordConfig } from './src/discord/discord-plugin.entity';
 import { FileUpload } from './src/file/file.entity';
 import { FormCharacter } from './src/form-character/form-character.entity';
@@ -14,12 +15,12 @@ import { Raid } from './src/raid/raid.entity';
 import { Slide } from './src/slide/slide.entity';
 import { User } from './src/user/user.entity';
 
-require('dotenv').config();
+dotenv.config();
 
 const config: Options = {
   entities: [
     Article,
-    WoWAsset,
+    BlizzardAsset,
     GuildCharacter,
     FileUpload,
     Form,
@@ -37,7 +38,7 @@ const config: Options = {
   port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
   user: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
-  dbName: process.env.DATABASE_DATABASE || 'backend',
+  dbName: process.env.DATABASE_NAME || 'backend',
   cache: { options: { cacheDir: './dist/temp' } },
   debug: false,
   findOneOrFailHandler: (entityName: string) => {

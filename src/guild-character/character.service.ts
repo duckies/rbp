@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { EntityRepository, QueryOrder } from 'mikro-orm';
 import moment from 'moment';
 import { InjectRepository } from 'nestjs-mikro-orm';
-import { BattleNetService } from '../blizzard/battle.net.service';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { ProfileService } from '../blizzard/profile.service';
+import { BattleNetService } from '../blizzard/services/battle-net/battle-net.service';
+import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { User } from '../user/user.entity';
 import { GuildCharacter } from './character.entity';
 

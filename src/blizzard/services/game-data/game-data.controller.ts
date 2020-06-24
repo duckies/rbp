@@ -1,6 +1,6 @@
-import { Controller, Body, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param } from '@nestjs/common';
+import { GameDataAggregateDto } from '../../dto/game-data-endpoints.dto';
 import { GameDataService } from './game-data.service';
-import { GameDataAggregateDto } from './dto/game-data-endpoints.dto';
 
 @Controller('game-data')
 export class GameDataController {
@@ -8,7 +8,7 @@ export class GameDataController {
 
   @Get('/item/:id')
   cacheItem(@Param('id') id: number) {
-    return this.gameDataService.getGameItemMedia(id, true);
+    return this.gameDataService.getGameItemMedia(id);
   }
 
   @Get('/aggregate')

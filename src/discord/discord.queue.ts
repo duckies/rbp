@@ -1,4 +1,4 @@
-import { Process, Processor, OnQueueCompleted, OnQueueError, OnQueueFailed } from '@nestjs/bull';
+import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
@@ -20,10 +20,7 @@ export class DiscordQueue {
 
   @Process({ name: 'APP_CREATE_NOTIFICATION' })
   private async sendCreateNotification(job: Job<FormSubmission>) {
-    console.log('Started');
     const member = await this.discord.getGuildMember(job.data.author.discord_id);
-
-    console.log('Finding member');
 
     const embed = new MessageEmbed();
     embed.setColor(0xc328ff);
@@ -35,7 +32,9 @@ export class DiscordQueue {
     );
     embed.addField('Links', `[Application](${this.config.get('BASE_URL')}/applications/${job.data.id})`);
 
-    member.send(embed);
+    await member.send(embed);
+
+    this.logger.log(`Sent app. creation notification to ${member.nickname || member.displayName}.`);
   }
 
   @Process({ name: 'APP_STATUS_NOTIFICATION' })
@@ -68,7 +67,11 @@ export class DiscordQueue {
       );
     }
 
-    member.send(embed);
+    await member.send(embed);
+
+    this.logger.log(
+      `Sent app. status notification to ${member.nickname || member.displayName} with ${job.data.status}.`,
+    );
   }
 
   @Process({ name: 'USER_JOINED' })

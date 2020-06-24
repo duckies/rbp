@@ -1,17 +1,17 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
-import { WoWAsset } from './assets.entity';
-import { BattleNetService } from './battle.net.service';
+import { BlizzardAsset } from '../blizzard-asset/blizzard-asset.entity';
+import { RateLimiter } from './blizzard.rate-limiter';
 import { BlizzardScheduler } from './blizzard.scheduler';
-import { GameDataController } from './game-data.controller';
-import { GameDataService } from './game-data.service';
-import { BlizzardController } from './profile.controller';
-import { ProfileService } from './profile.service';
-import { RateLimiter } from './rate-limiter.service';
-import { TokenService } from './token.service';
+import { BattleNetService } from './services/battle-net/battle-net.service';
+import { GameDataController } from './services/game-data/game-data.controller';
+import { GameDataService } from './services/game-data/game-data.service';
+import { ProfileController } from './services/profile/profile.controller';
+import { ProfileService } from './services/profile/profile.service';
+import { TokenService } from './services/token.service';
 
 @Module({
-  imports: [MikroOrmModule.forFeature({ entities: [WoWAsset] }), HttpModule],
+  imports: [MikroOrmModule.forFeature({ entities: [BlizzardAsset] }), HttpModule],
   providers: [
     ProfileService,
     GameDataService,
@@ -20,7 +20,7 @@ import { TokenService } from './token.service';
     RateLimiter,
     BlizzardScheduler,
   ],
-  controllers: [BlizzardController, GameDataController],
+  controllers: [ProfileController, GameDataController],
   exports: [ProfileService, BattleNetService, GameDataService, TokenService, RateLimiter],
 })
 export class BlizzardModule {}

@@ -3,11 +3,11 @@ import {
   DISCORD_CLIENT,
   DISCORD_PLUGIN,
   DISCORD_PLUGIN_COMMAND,
+  DISCORD_PLUGIN_EVENT,
   DISCORD_PLUGIN_GROUP,
   DISCORD_PLUGIN_LOOP,
-  DISCORD_PLUGIN_EVENT,
 } from '../app.constants';
-import { isString } from '../utils/shared.utils';
+import { isString } from '../app.utils';
 import { DiscordEvent } from './interfaces/events.enum';
 
 export interface PluginOptions {

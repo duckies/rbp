@@ -1,9 +1,9 @@
 import { Entity, Enum, PrimaryKey, Property, Unique } from 'mikro-orm';
-import { AssetType } from './enums/asset-type.enum';
+import { AssetType } from '../blizzard/enums/asset-type.enum';
 
-@Entity({ tableName: 'wow_asset' })
+@Entity()
 @Unique({ properties: ['id', 'type'] })
-export class WoWAsset {
+export class BlizzardAsset {
   constructor(id: number, type: AssetType, value: string) {
     this.id = id;
     this.type = type;

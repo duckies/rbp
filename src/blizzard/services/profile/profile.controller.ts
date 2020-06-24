@@ -1,14 +1,14 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { AccessControlGuard } from '../auth/guards';
-import { BattleNetService } from './battle.net.service';
-import { FindCharacterDto } from './dto/find-character.dto';
-import { FindGuildDto } from './dto/find-guild.dto';
-import * as Profile from './interfaces/profile';
+import { AccessControlGuard } from '../../../auth/guards';
+import { FindCharacterDto } from '../../dto/find-character.dto';
+import { FindGuildDto } from '../../dto/find-guild.dto';
+import * as Profile from '../../interfaces/profile';
+import { BattleNetService } from '../battle-net/battle-net.service';
 import { ProfileService } from './profile.service';
 
 @Controller('blizzard')
 @UseGuards(AccessControlGuard)
-export class BlizzardController {
+export class ProfileController {
   constructor(
     private readonly battleNetService: BattleNetService,
     private readonly profileService: ProfileService,

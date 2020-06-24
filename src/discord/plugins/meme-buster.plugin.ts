@@ -20,6 +20,8 @@ export class MemeBusterPlugin extends DiscordPlugin {
 
       if (!channel) return;
 
+      await channel.guild.members.fetch();
+
       const messages = await message.channel.messages.fetch({ limit: 20 });
 
       for (const [, oldMessage] of messages) {
@@ -34,6 +36,7 @@ export class MemeBusterPlugin extends DiscordPlugin {
         }
       }
     } catch (error) {
+      console.error(error);
       this.logger.error(error);
     }
   }
