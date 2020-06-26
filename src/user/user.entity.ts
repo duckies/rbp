@@ -1,4 +1,11 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property, WrappedEntity } from 'mikro-orm';
+import {
+  Collection,
+  Entity,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  WrappedEntity,
+} from 'mikro-orm';
 import { EnumArray } from '../../config/types/enum-array.type';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
@@ -20,26 +27,26 @@ export class User {
   @Property()
   discord_discriminator!: string;
 
-  @Property({ hidden: true })
+  @Property({ hidden: true, nullable: true })
   discord_access_token?: string;
 
-  @Property({ hidden: true })
+  @Property({ hidden: true, nullable: true })
   discord_refresh_token?: string;
 
-  @Property()
+  @Property({ nullable: true })
   discord_avatar?: string;
 
-  @Property({ hidden: true })
+  @Property({ hidden: true, nullable: true })
   blizzard_token?: string;
 
   @Property({ type: EnumArray })
   roles: Roles[] = [];
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 
   @OneToMany(() => Article, (article) => article.author)
   articles: Article[];

@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder } from 'mikro-orm';
+import {
+  EntityRepository,
+  FilterQuery,
+  QueryOrder,
+  QueryOrderMap,
+} from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import slugify from 'slugify';
 import { User } from '../user/user.entity';
 import { Article } from './article.entity';
-import { CreateArticleDto } from './dto/create-article.dto';
+import { CreateArticleDTO } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
@@ -14,7 +19,13 @@ export class ArticleService {
     private readonly articleRepository: EntityRepository<Article>,
   ) {}
 
-  async create(user: User, createArticleDto: CreateArticleDto) {
+  /**
+   * Creates a new article.
+   *
+   * @param user author of the article
+   * @param createArticleDto article properties
+   */
+  public async create(user: User, createArticleDto: CreateArticleDTO) {
     const article = this.articleRepository.create(createArticleDto);
 
     article.slug = slugify(createArticleDto.title, {
@@ -28,23 +39,78 @@ export class ArticleService {
     return article;
   }
 
-  async findAll(take = 8, skip = 0) {
+  /**
+   * Retrieves all articles starting with the newest first
+   * with optional pagination.
+   *
+   * @param limit maximum number of articles to retrieve
+   * @param offset number of articles to skip
+   */
+  public async findAll(limit = 8, offset = 0) {
     const [result, total] = await this.articleRepository.findAndCount(
       {},
-      { orderBy: { id: QueryOrder.DESC }, limit: take, offset: skip },
+      { orderBy: { id: QueryOrder.DESC }, limit, offset },
     );
 
     return { result, total };
   }
 
-  findOne(id: number) {
-    return this.articleRepository.findOneOrFail(id);
+  /**
+   * Retrieves an individual article, or fails.
+   *
+   * @param id id of the article
+   */
+  public findOneOrFail(
+    id: number,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ): Promise<Article>;
+
+  /**
+   * Retrieves an article by its slug or fails.
+   *
+   * @param slug slug of the article
+   */
+  public findOneOrFail(
+    slug: string,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ): Promise<Article>;
+
+  /**
+   * Retrieves an article using a query object or fails.
+   *
+   * @param where
+   * @param populate
+   * @param orderBy
+   */
+  public findOneOrFail(
+    where: FilterQuery<Article>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ): Promise<Article>;
+
+  public findOneOrFail(
+    param: number | string | FilterQuery<Article>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ) {
+    const where =
+      typeof param === 'number'
+        ? { id: param }
+        : typeof param === 'string'
+        ? { slug: param }
+        : param;
+
+    return this.articleRepository.findOneOrFail(where, populate, orderBy);
   }
 
-  findBySlug(slug: string) {
-    return this.articleRepository.findOneOrFail({ slug });
-  }
-
+  /**
+   * Updates an article with full privileges.
+   *
+   * @param id id of the article
+   * @param updateArticleDto properties to update
+   */
   async update(id: number, updateArticleDto: UpdateArticleDto) {
     const article = await this.articleRepository.findOneOrFail(id);
 
@@ -55,10 +121,17 @@ export class ArticleService {
     return article;
   }
 
+  /**
+   * Deletes an article.
+   *
+   * @param id id of the article
+   */
   async delete(id: number) {
     const article = await this.articleRepository.findOneOrFail(id);
 
-    await this.articleRepository.remove(article);
+    this.articleRepository.remove(article);
+
+    await this.articleRepository.flush();
 
     return article;
   }

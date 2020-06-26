@@ -9,15 +9,16 @@ export class FormComment {
   @Property()
   message!: string;
 
-  @ManyToOne()
-  user!: User;
-
-  @ManyToOne()
-  author!: User;
-
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
+
+  /**
+   * Relationships
+   */
+
+  @ManyToOne(() => User)
+  author!: User;
 }

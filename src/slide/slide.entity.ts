@@ -11,9 +11,9 @@ export class Slide {
   @Property()
   title!: string;
 
-  @Property()
+  @Property({ nullable: true })
   subtitle?: string;
 
-  @Property()
+  @Property({ nullable: true })
   link?: string;
 }

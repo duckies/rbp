@@ -25,12 +25,14 @@ export class ProfileController {
   // }
 
   @Get('character/:region/:realm/:name')
-  getCharacter(@Param() findCharacterDto: FindCharacterDto): Promise<Profile.CharacterProfileSummary> {
-    return this.profileService.getCharacterProfileSummary(findCharacterDto);
+  private async getCharacter(
+    @Param() findCharacterDto: FindCharacterDto,
+  ): Promise<Profile.CharacterProfileSummary> {
+    return (await this.profileService.getCharacterProfileSummary(findCharacterDto)).data;
   }
 
   @Get('guild/:region/:realm/:name')
-  getGuild(@Param() findGuildDto: FindGuildDto): Promise<Profile.GuildRoster> {
-    return this.profileService.getGuildRoster(findGuildDto);
+  private async getGuild(@Param() findGuildDto: FindGuildDto): Promise<Profile.GuildRoster> {
+    return (await this.profileService.getGuildRoster(findGuildDto)).data;
   }
 }

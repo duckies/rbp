@@ -8,24 +8,24 @@ import { FileTypes } from './enums/file-types.enum';
 @Entity()
 export class FormQuestion {
   @PrimaryKey()
-  id = v4();
+  id: string = v4();
 
   @Property()
   question!: string;
 
-  @Property()
+  @Property({ nullable: true })
   label?: string;
 
-  @Property()
+  @Property({ nullable: true })
   hint?: string;
 
   @Property()
   required!: boolean;
 
-  @Property()
+  @Property({ nullable: true })
   choices?: string[];
 
-  @Property()
+  @Property({ nullable: true })
   multiple?: number;
 
   @Property()
@@ -34,24 +34,25 @@ export class FormQuestion {
   @Enum(() => FieldType)
   type!: FieldType;
 
-  @Property({ type: EnumArray })
+  @Property({ type: EnumArray, nullable: true })
   fileTypes?: FileTypes[];
 
   @Property()
-  deleted = false;
+  deleted: boolean = false;
 
   @Property()
-  hasAnswers = false;
-
-  @Property({ persist: false })
-  form_id: number;
-
-  @ManyToOne()
-  form!: Form;
+  hasAnswers: boolean = false;
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
+
+  /**
+   * Relationships
+   */
+
+  @ManyToOne(() => Form)
+  form!: Form;
 }

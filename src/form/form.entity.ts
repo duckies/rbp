@@ -1,4 +1,11 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property, QueryOrder } from 'mikro-orm';
+import {
+  Collection,
+  Entity,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  QueryOrder,
+} from 'mikro-orm';
 import { FormQuestion } from '../form-question/question.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
@@ -10,6 +17,16 @@ export class Form {
   @Property()
   name!: string;
 
+  @Property()
+  createdAt: Date = new Date();
+
+  @Property({ onUpdate: () => new Date() })
+  updatedAt: Date = new Date();
+
+  /**
+   * Relationships
+   */
+
   @OneToMany(() => FormQuestion, (question) => question.form, {
     eager: true,
     orderBy: { order: QueryOrder.ASC },
@@ -18,10 +35,4 @@ export class Form {
 
   @OneToMany(() => FormSubmission, (submission) => submission.form)
   submissions = new Collection<FormSubmission>(this);
-
-  @Property()
-  createdAt = new Date();
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
 }

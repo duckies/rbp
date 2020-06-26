@@ -20,27 +20,31 @@ export class RateLimiter {
     });
   }
 
-  async getBlizzard(uri: string, user?: User): Promise<any> {
+  public async get<T>(uri: string, lastModified?: string, user?: User) {
     try {
       await this.tokenService.getToken();
 
-      const config = user
-        ? {
-            headers: { Authorization: `Bearer ${user.blizzard_token}` },
-          }
-        : null;
+      const config = lastModified || user ? { headers: {} } : null;
 
-      return (
-        await this.blizzard.add(() =>
-          this.http.get(uri + '?namespace=profile-us&locale=en_US', config).toPromise(),
-        )
-      ).data;
+      if (lastModified) {
+        config.headers['If-Modified-Since'] = lastModified;
+      }
+
+      if (user) {
+        config.headers['Authorization'] = `Bearer ${user.blizzard_token}`;
+      }
+
+      return await this.blizzard.add(() =>
+        this.http.get<T>(uri + '?namespace=profile-us&locale=en_US', config).toPromise(),
+      );
     } catch (error) {
       this.sentry.instance().captureException(error);
 
       if (error.response) {
         throw new HttpException(error.response.data, error.response.status);
       }
+
+      console.error(error);
 
       throw new BadGatewayException(error);
     }

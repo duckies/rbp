@@ -1,5 +1,10 @@
 import { InjectQueue } from '@nestjs/bull';
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Queue } from 'bull';
 import { EntityManager, EntityRepository, QueryOrder, wrap } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
@@ -29,13 +34,16 @@ export class SubmissionService {
    * @param author Form submission author.
    * @param createSubmissionDto CreateSubmissionDto
    */
-  async create(author: User, { formId, answers, files, characters }: CreateFormSubmissionDto) {
+  async create(
+    author: User,
+    { formId, answers, files, characters }: CreateFormSubmissionDto,
+  ) {
     const formSubmission = new FormSubmission();
 
     const openForm = await this.formSubmissionRepository.find(
       {
         status: FormSubmissionStatus.Open,
-        author_id: author.id,
+        author: { id: author.id },
       },
       ['author'],
     );
@@ -60,20 +68,15 @@ export class SubmissionService {
 
     const formCharacters = await Promise.all(
       characters.map((character) =>
-        this.formCharacterService.create({
-          name: character.name,
-          realm: character.realm,
-          region: character.region,
-        }),
+        this.formCharacterService.upsert(character),
       ),
     );
 
     formSubmission.form = this.em.getReference(Form, formId);
     formSubmission.author = author;
     formSubmission.characters.set(formCharacters);
+    formSubmission.mainCharacter = formCharacters[0];
     formSubmission.answers = answers;
-
-    formCharacters[0].isMain = true;
 
     await this.formSubmissionRepository.persistAndFlush(formSubmission);
 
@@ -95,9 +98,13 @@ export class SubmissionService {
    */
   findFirstByStatus(status: FormSubmissionStatus) {
     // This intentionally does not fail so it does not pass the 404 error.
-    return this.formSubmissionRepository.findOneOrFail({ status }, ['form', 'author', 'characters'], {
-      id: QueryOrder.DESC,
-    });
+    return this.formSubmissionRepository.findOneOrFail(
+      { status },
+      ['form', 'author', 'characters'],
+      {
+        id: QueryOrder.DESC,
+      },
+    );
   }
 
   /**
@@ -119,7 +126,10 @@ export class SubmissionService {
    * @param user Form submission author.
    */
   findOpenByUser(user: User): Promise<Pick<FormSubmission, 'id' | 'status'>> {
-    return this.formSubmissionRepository.findOne({ author_id: user.id, status: FormSubmissionStatus.Open });
+    return this.formSubmissionRepository.findOne({
+      author: { id: user.id },
+      status: FormSubmissionStatus.Open,
+    });
   }
 
   /**
@@ -138,7 +148,12 @@ export class SubmissionService {
    * @param id Form submission id.
    */
   async findOne(id: number) {
-    return this.formSubmissionRepository.findOne({ id }, ['author', 'characters', 'files', 'form']);
+    return this.formSubmissionRepository.findOne({ id }, [
+      'author',
+      'characters',
+      'files',
+      'form',
+    ]);
   }
 
   /**
@@ -164,8 +179,16 @@ export class SubmissionService {
    * @param updateFormSubmissionDto UpdateFormSubmissionDto
    * @param updateAny Describes if the user has has officer-level permissions over applications.
    */
-  async update(id: number, user: User, updateFormSubmissionDto: UpdateFormSubmissionDto, updateAny: boolean) {
-    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id, ['author']);
+  async update(
+    id: number,
+    user: User,
+    updateFormSubmissionDto: UpdateFormSubmissionDto,
+    updateAny: boolean,
+  ) {
+    const formSubmission = await this.formSubmissionRepository.findOneOrFail(
+      id,
+      ['author'],
+    );
 
     if (!updateAny && formSubmission.author.id !== user.id) {
       throw new ForbiddenException();
@@ -201,7 +224,9 @@ export class SubmissionService {
    * @param id
    */
   async delete(id: number) {
-    const submission = await this.formSubmissionRepository.findOneOrFail(id, ['characters']);
+    const submission = await this.formSubmissionRepository.findOneOrFail(id, [
+      'characters',
+    ]);
 
     this.formSubmissionRepository.remove(submission, true);
 

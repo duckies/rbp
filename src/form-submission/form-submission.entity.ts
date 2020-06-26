@@ -3,6 +3,7 @@ import {
   Collection,
   Entity,
   Enum,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryKey,
@@ -27,20 +28,30 @@ export class FormSubmission {
   @Property({ type: 'jsonb' })
   answers: Answers;
 
-  @Property({ persist: false })
-  form_id!: number;
+  @Property()
+  createdAt: Date = new Date();
 
-  @ManyToOne()
+  @Property({ onUpdate: () => new Date() })
+  updatedAt: Date = new Date();
+
+  /**
+   * Relationships
+   */
+
+  @ManyToOne(() => Form)
   form!: Form;
 
-  @OneToMany(() => FormCharacter, (char) => char.submission, { cascade: [Cascade.ALL] })
+  @ManyToOne(() => User, { eager: true })
+  author!: User;
+
+  @ManyToMany(() => FormCharacter, (char) => char.submission, {
+    cascade: [Cascade.ALL],
+    owner: true,
+  })
   characters = new Collection<FormCharacter>(this);
 
-  @Property({ persist: false })
-  author_id!: number;
-
-  @ManyToOne({ eager: true })
-  author!: User;
+  @ManyToOne(() => FormCharacter, { nullable: true })
+  mainCharacter?: FormCharacter;
 
   @OneToMany(() => FileUpload, (file) => file.submission, {
     eager: true,
@@ -51,14 +62,9 @@ export class FormSubmission {
   /**
    * Instructs the frontend the submission is new.
    */
+
   @Property({ persist: false })
   justSubmitted?: boolean;
-
-  @Property()
-  createdAt = new Date();
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

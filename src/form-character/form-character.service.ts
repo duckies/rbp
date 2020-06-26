@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository } from 'mikro-orm';
+import { EntityRepository, wrap } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
@@ -16,6 +16,18 @@ export class FormCharacterService {
     private readonly profileService: ProfileService,
     private readonly raiderIOService: RaiderIOService,
   ) {}
+
+  public async upsert(findCharacterDto: FindCharacterDto) {
+    const formCharacter = await this.formCharacterRepository.findOne({ ...findCharacterDto });
+
+    if (!formCharacter) {
+      return await this.create(findCharacterDto);
+    }
+
+    await this.populateFormCharacter(formCharacter);
+
+    return formCharacter;
+  }
 
   public async create(findCharacterDto: FindCharacterDto, flush = false) {
     const formCharacter = new FormCharacter(
@@ -39,44 +51,42 @@ export class FormCharacterService {
   }
 
   public async populateFormCharacter(formCharacter: FormCharacter) {
-    const [summary, specs, media, raids, equipment, raiderIO] = await Promise.all(
-      [
-        this.profileService.getCharacterProfileSummary(formCharacter.getFindCharacterDTO()),
-        this.profileService.getCharacterSpecializationsSummary(formCharacter.getFindCharacterDTO()),
-        this.profileService.getCharacterMediaSummary(formCharacter.getFindCharacterDTO()),
-        this.profileService.getCharacterRaids(formCharacter.getFindCharacterDTO()),
-        this.profileService.getCharacterEquipmentSummary(formCharacter.getFindCharacterDTO()),
-        this.raiderIOService.getCharacterRaiderIO(formCharacter.getFindCharacterDTO(), [
-          RaiderIOCharacterFields.GEAR,
-          RaiderIOCharacterFields.RAID_PROGRESSION,
-          RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
-          RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-        ]),
-      ].map((p: any) => p.catch((e: Error) => e)),
-    );
+    const [summary, specs, media, raids, equipment, raiderIO] = await Promise.allSettled([
+      this.profileService.getCharacterProfileSummary(formCharacter.getFindCharacterDTO()),
+      this.profileService.getCharacterSpecializationsSummary(formCharacter.getFindCharacterDTO()),
+      this.profileService.getCharacterMediaSummary(formCharacter.getFindCharacterDTO()),
+      this.profileService.getCharacterRaids(formCharacter.getFindCharacterDTO()),
+      this.profileService.getCharacterEquipmentSummary(formCharacter.getFindCharacterDTO()),
+      this.raiderIOService.getCharacterRaiderIO(formCharacter.getFindCharacterDTO(), [
+        RaiderIOCharacterFields.GEAR,
+        RaiderIOCharacterFields.RAID_PROGRESSION,
+        RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
+        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+      ]),
+    ]);
 
-    if (!(summary instanceof Error)) {
-      formCharacter.setCharacterProfileSummary(summary);
+    if (summary.status === 'fulfilled') {
+      formCharacter.setCharacterProfileSummary(summary.value.data);
     }
 
-    if (!(specs instanceof Error)) {
-      formCharacter.setCharacterSpecializationsSummary(specs);
+    if (specs.status === 'fulfilled') {
+      formCharacter.setCharacterSpecializationsSummary(specs.value.data);
     }
 
-    if (!(media instanceof Error)) {
-      formCharacter.setCharacterMediaSummary(media);
+    if (media.status === 'fulfilled') {
+      formCharacter.setCharacterMediaSummary(media.value.data);
     }
 
-    if (!(raids instanceof Error)) {
-      formCharacter.setCharacterRaidEncounterSummary(raids);
+    if (raids.status === 'fulfilled') {
+      formCharacter.setCharacterRaidEncounterSummary(raids.value.data);
     }
 
-    if (!(equipment instanceof Error)) {
-      formCharacter.setCharacterEquipmentSummary(equipment);
+    if (equipment.status === 'fulfilled') {
+      formCharacter.setCharacterEquipmentSummary(equipment.value);
     }
 
-    if (!(raiderIO instanceof Error)) {
-      formCharacter.setCharacterRaiderIO(raiderIO);
+    if (raiderIO.status === 'fulfilled') {
+      formCharacter.setCharacterRaiderIO(raiderIO.value);
     }
 
     return formCharacter;
@@ -89,7 +99,7 @@ export class FormCharacterService {
   public async update(id: number, updateFormCharacterDto: UpdateFormCharacterDto) {
     const formCharacter = await this.formCharacterRepository.findOneOrFail(id);
 
-    formCharacter.assign(updateFormCharacterDto);
+    wrap(formCharacter).assign(updateFormCharacterDto);
 
     await this.formCharacterRepository.flush();
 

@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import dotenv from 'dotenv';
-import { Options } from 'mikro-orm';
+import { Options, ReflectMetadataProvider } from 'mikro-orm';
 import { Article } from './src/article/article.entity';
 import { BlizzardAsset } from './src/blizzard-asset/blizzard-asset.entity';
 import { DiscordConfig } from './src/discord/discord-plugin.entity';
@@ -10,6 +10,7 @@ import { FormComment } from './src/form-comment/form-comment.entity';
 import { FormQuestion } from './src/form-question/question.entity';
 import { FormSubmission } from './src/form-submission/form-submission.entity';
 import { Form } from './src/form/form.entity';
+import { Character } from './src/guild-character/character.base.entity';
 import { GuildCharacter } from './src/guild-character/character.entity';
 import { Raid } from './src/raid/raid.entity';
 import { Slide } from './src/slide/slide.entity';
@@ -21,6 +22,7 @@ const config: Options = {
   entities: [
     Article,
     BlizzardAsset,
+    Character,
     GuildCharacter,
     FileUpload,
     Form,
@@ -39,7 +41,8 @@ const config: Options = {
   user: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   dbName: process.env.DATABASE_NAME || 'backend',
-  cache: { options: { cacheDir: './dist/temp' } },
+  metadataProvider: ReflectMetadataProvider,
+  cache: { enabled: false },
   debug: false,
   findOneOrFailHandler: (entityName: string) => {
     return new NotFoundException(`${entityName} was not found.`);

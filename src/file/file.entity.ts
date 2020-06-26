@@ -20,11 +20,15 @@ export class FileUpload {
   size!: number;
 
   @Property()
-  immune = false;
+  immune: boolean = false;
 
-  @ManyToOne()
+  /**
+   * Relationships
+   */
+
+  @ManyToOne(() => User)
   author: User;
 
-  @ManyToOne()
+  @ManyToOne(() => FormSubmission, { nullable: true })
   submission?: FormSubmission;
 }

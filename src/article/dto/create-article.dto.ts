@@ -1,17 +1,17 @@
-import { IsNotEmpty, Length } from 'class-validator';
+import { IsString, Length } from 'class-validator';
 
-export class CreateArticleDto {
-  @IsNotEmpty()
+export class CreateArticleDTO {
+  @IsString()
   @Length(10, 120)
-  readonly title: string;
+  readonly title!: string;
 
-  @IsNotEmpty()
+  @IsString()
   @Length(10, 120)
-  readonly subtitle: string;
+  readonly subtitle!: string;
 
-  @IsNotEmpty()
-  content: string;
+  @IsString()
+  readonly content!: string;
 
-  @IsNotEmpty()
-  header: string;
+  @IsString()
+  readonly header!: string;
 }

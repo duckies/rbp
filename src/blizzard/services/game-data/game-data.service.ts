@@ -98,10 +98,10 @@ export class GameDataService {
 
       await this.em
         .getConnection()
-        .execute(`insert into "wow_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`, [
-          id,
-          data.assets[0].value,
-        ]);
+        .execute(
+          `insert into "blizzard_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`,
+          [id, data.assets[0].value],
+        );
 
       return data;
     }

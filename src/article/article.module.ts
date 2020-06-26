@@ -5,7 +5,10 @@ import { Article } from './article.entity';
 import { ArticleService } from './article.service';
 
 @Module({
-  imports: [MikroOrmModule.forFeature({ entities: [Article] }), CacheModule.register()],
+  imports: [
+    MikroOrmModule.forFeature({ entities: [Article] }),
+    CacheModule.register(),
+  ],
   controllers: [ArticleController],
   providers: [ArticleService],
   exports: [ArticleService],
