@@ -229,7 +229,8 @@ describe('Articles', () => {
     test('should fail on subsequent deletion attempts', async () => {
       await request(app.getHttpServer())
         .delete('/article/2')
-        .set('Authorization', `Bearer ${jwt}`);
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(404);
     });
   });
 });

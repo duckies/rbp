@@ -9,4 +9,5 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: ['./src/**/*.{ts,js}', '!./src/**/*.spec.{ts,js}'],
   testEnvironment: 'node',
+  verbose: true,
 };
