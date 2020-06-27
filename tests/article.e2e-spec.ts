@@ -1,3 +1,4 @@
+import Joi from '@hapi/joi';
 import {
   Connection,
   EntityManager,
@@ -9,14 +10,20 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
+import { AccessControlModule } from 'nest-access-control';
+import { MikroOrmModule } from 'nestjs-mikro-orm';
 import request from 'supertest';
 import MikroOMRConfig from '../mikro-orm.config';
-import { AppModule } from '../src/app.module';
-import { Roles } from '../src/app.roles';
+import { roleBuilder, Roles } from '../src/app.roles';
+import { ArticleModule } from '../src/article/article.module';
 import { CreateArticleDTO } from '../src/article/dto/create-article.dto';
+import { AuthModule } from '../src/auth/auth.module';
 import { AuthService } from '../src/auth/auth.service';
 import { User } from '../src/user/user.entity';
+import { UserModule } from '../src/user/user.module';
 
 MikroOMRConfig.dbName = 'rbp_test';
 
@@ -38,14 +45,32 @@ describe('Articles', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        MikroOrmModule.forRoot(MikroOMRConfig),
+        ConfigModule.forRoot({
+          isGlobal: true,
+          validationSchema: Joi.object({
+            NODE_ENV: Joi.string().default('test'),
+            PORT: Joi.number().default(3000),
+            JWT_SECRET: Joi.string().default('testing'),
+            DISCORD_CLIENT_ID: Joi.string().default('null'),
+            DISCORD_SECRET: Joi.string().default('null'),
+            DISCORD_WEBHOOK: Joi.string().default('null'),
+            DISCORD_CALLBACK: Joi.string().default(
+              'http://localhost:3030/callback',
+            ),
+            BLIZZARD_CLIENTID: Joi.string().default('null'),
+            BLIZZARD_SECRET: Joi.string().default('null'),
+            BLIZZARD_CALLBACK: Joi.string().default('null'),
+          }),
+        }),
+        PassportModule.register({ defaultStrategy: 'blizzard' }),
+        AccessControlModule.forRoles(roleBuilder),
+        UserModule,
+        AuthModule,
+        ArticleModule,
+      ],
     })
-      .overrideProvider(MikroORM)
-      .useFactory({
-        factory: async () => {
-          return await MikroORM.init(MikroOMRConfig);
-        },
-      })
       .overrideInterceptor(CacheInterceptor)
       .useValue({})
       .compile();
@@ -202,11 +227,9 @@ describe('Articles', () => {
     });
 
     test('should fail on subsequent deletion attempts', async () => {
-      const resp = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .delete('/article/2')
         .set('Authorization', `Bearer ${jwt}`);
-
-      console.log(resp);
     });
   });
 });
