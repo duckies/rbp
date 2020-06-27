@@ -1,7 +1,13 @@
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import {
+  OnQueueCompleted,
+  OnQueueError,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
 import { BadRequestException, Logger, Injectable } from '@nestjs/common';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from 'mikro-orm';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { Raid } from './raid.entity';
 
@@ -11,7 +17,10 @@ export class RaidQueue {
   private readonly logger: Logger = new Logger(RaidQueue.name);
   private readonly em: EntityManager;
 
-  constructor(private readonly orm: MikroORM, private readonly raiderIOService: RaiderIOService) {
+  constructor(
+    private readonly orm: MikroORM,
+    private readonly raiderIOService: RaiderIOService,
+  ) {
     this.em = orm.em.fork();
   }
 
@@ -20,10 +29,14 @@ export class RaidQueue {
     const data = await this.raiderIOService.getGuildRaiderIO();
 
     if (!data.raid_progression || !data.raid_rankings) {
-      throw new BadRequestException('No data available for RaiderIO guild update.');
+      throw new BadRequestException(
+        'No data available for RaiderIO guild update.',
+      );
     }
 
-    const raids = await this.em.find(Raid, { slug: { $in: Object.keys(data.raid_rankings) } });
+    const raids = await this.em.find(Raid, {
+      slug: { $in: Object.keys(data.raid_rankings) },
+    });
 
     for (const slug of Object.keys(data.raid_rankings)) {
       let raid = raids.find((r) => r.slug === slug);
@@ -37,9 +50,12 @@ export class RaidQueue {
 
       raid.summary = data.raid_progression[raid.slug].summary;
       raid.bosses = data.raid_progression[raid.slug].total_bosses;
-      raid.normal_bosses_killed = data.raid_progression[raid.slug].normal_bosses_killed;
-      raid.heroic_bosses_killed = data.raid_progression[raid.slug].heroic_bosses_killed;
-      raid.mythic_bosses_killed = data.raid_progression[raid.slug].mythic_bosses_killed;
+      raid.normal_bosses_killed =
+        data.raid_progression[raid.slug].normal_bosses_killed;
+      raid.heroic_bosses_killed =
+        data.raid_progression[raid.slug].heroic_bosses_killed;
+      raid.mythic_bosses_killed =
+        data.raid_progression[raid.slug].mythic_bosses_killed;
 
       if (data.raid_rankings[raid.slug].mythic.world > 0) {
         raid.difficulty = 'Mythic';
@@ -80,6 +96,8 @@ export class RaidQueue {
 
   @OnQueueFailed()
   private onFailed(job: Job<number>, error: Error): void {
-    this.logger.error(`Job[${job.id}] failed: ${JSON.stringify(error.message)}`);
+    this.logger.error(
+      `Job[${job.id}] failed: ${JSON.stringify(error.message)}`,
+    );
   }
 }

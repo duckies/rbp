@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany } from 'mikro-orm';
+import { Collection, Entity, ManyToMany } from '@mikro-orm/core';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 import { Character } from '../guild-character/character.base.entity';
 

@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import {
+  EntityManager,
+  EntityRepository,
+  QueryOrder,
+  wrap,
+} from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { Form } from '../form/form.entity';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';

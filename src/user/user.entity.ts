@@ -1,12 +1,12 @@
 import {
+  ArrayType,
+  BaseEntity,
   Collection,
   Entity,
   OneToMany,
   PrimaryKey,
   Property,
-  WrappedEntity,
-} from 'mikro-orm';
-import { EnumArray } from '../../config/types/enum-array.type';
+} from '@mikro-orm/core';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
 import { FileUpload } from '../file/file.entity';
@@ -14,7 +14,7 @@ import { FormComment } from '../form-comment/form-comment.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
 @Entity()
-export class User {
+export class User extends BaseEntity<User, 'id'> {
   @PrimaryKey()
   id!: number;
 
@@ -39,7 +39,7 @@ export class User {
   @Property({ hidden: true, nullable: true })
   blizzard_token?: string;
 
-  @Property({ type: EnumArray })
+  @Property({ type: ArrayType })
   roles: Roles[] = [];
 
   @Property()
@@ -48,8 +48,12 @@ export class User {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  @OneToMany(() => Article, (article) => article.author)
-  articles: Article[];
+  /**
+   * Relationships
+   */
+
+  @OneToMany({ entity: () => Article, mappedBy: 'author' })
+  articles = new Collection<Article>(this);
 
   @OneToMany(() => FormSubmission, (submission) => submission.author)
   submissions = new Collection<FormSubmission>(this);
@@ -58,8 +62,5 @@ export class User {
   comments = new Collection<FormComment>(this);
 
   @OneToMany(() => FileUpload, (fileUpload) => fileUpload.author)
-  files: FileUpload[];
+  files = new Collection<FileUpload>(this);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface User extends WrappedEntity<User, 'id'> {}

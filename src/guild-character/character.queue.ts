@@ -1,8 +1,14 @@
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import {
+  OnQueueCompleted,
+  OnQueueError,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
 import { HttpException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from 'mikro-orm';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
@@ -41,7 +47,10 @@ export class CharacterQueue {
     private readonly config: ConfigService,
     orm: MikroORM,
   ) {
-    this.minLVL = Math.max(this.config.get<number>('MINIMUM_CHARACTER_LEVEL'), 10);
+    this.minLVL = Math.max(
+      this.config.get<number>('MINIMUM_CHARACTER_LEVEL'),
+      10,
+    );
     this.em = orm.em.fork();
     this.setup();
   }
@@ -70,7 +79,9 @@ export class CharacterQueue {
 
     await Promise.all(
       roster.data.members.map(async (member) => {
-        let guildCharacter = guildCharacters.find((c) => c.id === member.character.id);
+        let guildCharacter = guildCharacters.find(
+          (c) => c.id === member.character.id,
+        );
 
         try {
           if (!guildCharacter) {
@@ -88,7 +99,10 @@ export class CharacterQueue {
               guildCharacter.last_modified,
             );
 
-            if (status.data.is_valid === false || status.data.id !== guildCharacter.id) {
+            if (
+              status.data.is_valid === false ||
+              status.data.id !== guildCharacter.id
+            ) {
               this.results.deleted++;
               return this.em.remove(GuildCharacter, guildCharacter);
             }
@@ -130,7 +144,9 @@ export class CharacterQueue {
 
     const ids = roster.data.members.map((m) => m.character.id);
 
-    const notInGuild = await this.em.find(GuildCharacter, { id: { $nin: ids } });
+    const notInGuild = await this.em.find(GuildCharacter, {
+      id: { $nin: ids },
+    });
 
     this.logger.log(`Removing member(s) ${notInGuild.map((m) => m.name)}`);
 

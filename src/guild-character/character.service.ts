@@ -1,6 +1,7 @@
+import { EntityRepository } from '@mikro-orm/knex';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EntityRepository, QueryOrder } from 'mikro-orm';
+import { QueryOrder } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
@@ -8,7 +9,9 @@ import { GuildCharacter } from './character.entity';
 
 @Injectable()
 export class CharacterService {
-  private readonly minCharacterLevel: number = this.config.get<number>('MINIMUM_CHARACTER_LEVEL');
+  private readonly minCharacterLevel: number = this.config.get<number>(
+    'MINIMUM_CHARACTER_LEVEL',
+  );
 
   constructor(
     @InjectRepository(GuildCharacter)
@@ -31,7 +34,9 @@ export class CharacterService {
     await this.populateGuildCharacter(guildCharacter);
 
     if (guildCharacter.level < this.minCharacterLevel) {
-      throw new BadRequestException(`Below min level: ${this.minCharacterLevel}`);
+      throw new BadRequestException(
+        `Below min level: ${this.minCharacterLevel}`,
+      );
     }
 
     await this.characterRepository.persist(guildCharacter, true);
@@ -41,8 +46,12 @@ export class CharacterService {
 
   public async populateGuildCharacter(guildCharacter: GuildCharacter) {
     const [summary, media] = await Promise.allSettled([
-      this.profileService.getCharacterProfileSummary(guildCharacter.getFindCharacterDTO()),
-      this.profileService.getCharacterMediaSummary(guildCharacter.getFindCharacterDTO()),
+      this.profileService.getCharacterProfileSummary(
+        guildCharacter.getFindCharacterDTO(),
+      ),
+      this.profileService.getCharacterMediaSummary(
+        guildCharacter.getFindCharacterDTO(),
+      ),
     ]);
 
     if (summary.status === 'fulfilled') {
@@ -100,7 +109,9 @@ export class CharacterService {
   }
 
   async delete(findCharacterDto: FindCharacterDto) {
-    const character = await this.characterRepository.findOneOrFail(findCharacterDto);
+    const character = await this.characterRepository.findOneOrFail(
+      findCharacterDto,
+    );
 
     return this.characterRepository.remove(character);
   }

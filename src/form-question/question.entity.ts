@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { EnumArray } from '../../config/types/enum-array.type';
 import { Form } from '../form/form.entity';

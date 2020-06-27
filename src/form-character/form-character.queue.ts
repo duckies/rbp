@@ -1,7 +1,13 @@
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import {
+  OnQueueCompleted,
+  OnQueueError,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from 'mikro-orm';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { GuildUpdateResult } from '../guild-character/character.queue';
 import { FormCharacter } from './form-character.entity';
@@ -63,7 +69,10 @@ export class FormCharacterQueue {
             formCharacter.last_modified,
           );
 
-          if (status.data.id !== formCharacter.id || status.data.is_valid === false) {
+          if (
+            status.data.id !== formCharacter.id ||
+            status.data.is_valid === false
+          ) {
             this.results.deleted++;
             return this.em.remove(FormCharacter, formCharacter);
           }

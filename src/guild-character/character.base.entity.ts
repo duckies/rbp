@@ -1,4 +1,4 @@
-import { Enum, PrimaryKey, Property, Unique } from 'mikro-orm';
+import { Enum, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';

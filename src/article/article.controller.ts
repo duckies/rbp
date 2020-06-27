@@ -6,8 +6,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
   UseInterceptors,
 } from '@nestjs/common';
@@ -43,8 +43,11 @@ export class ArticleController {
   }
 
   @Auth({ resource: 'article', action: 'update', possession: 'any' })
-  @Put(':id')
-  update(@Param() { id }: FindArticleDTO, @Body() updateArticleDto: UpdateArticleDto) {
+  @Patch(':id')
+  update(
+    @Param() { id }: FindArticleDTO,
+    @Body() updateArticleDto: UpdateArticleDto,
+  ) {
     return this.articleService.update(id, updateArticleDto);
   }
 

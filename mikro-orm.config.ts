@@ -1,6 +1,6 @@
+import { Options } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
 import dotenv from 'dotenv';
-import { Options, ReflectMetadataProvider } from 'mikro-orm';
 import { Article } from './src/article/article.entity';
 import { BlizzardAsset } from './src/blizzard-asset/blizzard-asset.entity';
 import { DiscordConfig } from './src/discord/discord-plugin.entity';
@@ -41,11 +41,10 @@ const config: Options = {
   user: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   dbName: process.env.DATABASE_NAME || 'backend',
-  metadataProvider: ReflectMetadataProvider,
-  cache: { enabled: false },
   debug: false,
-  findOneOrFailHandler: (entityName: string) => {
-    return new NotFoundException(`${entityName} was not found.`);
+  strict: true,
+  findOneOrFailHandler: () => {
+    return new NotFoundException();
   },
 };
 

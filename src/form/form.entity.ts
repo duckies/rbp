@@ -5,7 +5,7 @@ import {
   PrimaryKey,
   Property,
   QueryOrder,
-} from 'mikro-orm';
+} from '@mikro-orm/core';
 import { FormQuestion } from '../form-question/question.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 

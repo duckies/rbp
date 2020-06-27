@@ -1,3 +1,4 @@
+import { EntityRepository } from '@mikro-orm/knex';
 import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
@@ -6,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Queue } from 'bull';
-import { EntityManager, EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FileService } from '../file/file.service';
 import { FormCharacterService } from '../form-character/form-character.service';

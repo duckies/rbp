@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Cascade,
   Collection,
   Entity,
@@ -8,8 +9,7 @@ import {
   OneToMany,
   PrimaryKey,
   Property,
-  WrappedEntity,
-} from 'mikro-orm';
+} from '@mikro-orm/core';
 import { FileUpload } from '../file/file.entity';
 import { FormCharacter } from '../form-character/form-character.entity';
 import { Form } from '../form/form.entity';
@@ -18,7 +18,7 @@ import { Answers } from './dto';
 import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 
 @Entity()
-export class FormSubmission {
+export class FormSubmission extends BaseEntity<FormSubmission, 'id'> {
   @PrimaryKey()
   id!: number;
 
@@ -66,6 +66,3 @@ export class FormSubmission {
   @Property({ persist: false })
   justSubmitted?: boolean;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface FormSubmission extends WrappedEntity<FormSubmission, 'id'> {}

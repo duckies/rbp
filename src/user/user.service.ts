@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { EntityRepository, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { DiscordProfile, Provider } from '../auth/auth.service';
 import { JWTPayload } from '../auth/dto/jwt.dto';
@@ -15,7 +15,12 @@ export class UserService {
     private readonly userRepository: EntityRepository<User>,
   ) {}
 
-  async create(discord_id: string, access_token: string, refresh_token: string, profile: DiscordProfile) {
+  async create(
+    discord_id: string,
+    access_token: string,
+    refresh_token: string,
+    profile: DiscordProfile,
+  ) {
     const user = this.userRepository.create({
       discord_id,
       discord_username: profile.username,
@@ -49,12 +54,18 @@ export class UserService {
   }
 
   async findOneByJwtPayload(payload: JWTPayload) {
-    return this.userRepository.findOne({ id: payload.id });
+    return this.userRepository.findOne({ id: payload.id }, true);
   }
 
-  async findOneByProviderId(thirdPartyId: number | string, provider: Provider): Promise<User> {
+  async findOneByProviderId(
+    thirdPartyId: number | string,
+    provider: Provider,
+  ): Promise<User> {
     if (provider === Provider.DISCORD) {
-      return this.userRepository.findOne({ discord_id: thirdPartyId as string }, { fields: ['discord_id'] });
+      return this.userRepository.findOne(
+        { discord_id: thirdPartyId as string },
+        { fields: ['discord_id'] },
+      );
     }
 
     throw new BadRequestException('Invalid provider');

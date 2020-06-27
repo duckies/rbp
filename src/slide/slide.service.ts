@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import { EntityRepository, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateSlideDto } from './dto/create-slide.dto';
 import { UpdateSlideDto } from './dto/update-slide.dto';

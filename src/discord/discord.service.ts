@@ -1,11 +1,17 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'discord.js';
-import { EntityRepository } from 'mikro-orm';
+import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { PluginConfig } from './discord-config.class';
 import { DiscordConfig } from './discord-plugin.entity';
-import { CommandMeta, GroupMeta, InjectClient, LoopMeta, PluginOptions } from './discord.decorators';
+import {
+  CommandMeta,
+  GroupMeta,
+  InjectClient,
+  LoopMeta,
+  PluginOptions,
+} from './discord.decorators';
 import { DiscordPlugin } from './plugins/plugin.class';
 
 export interface PluginMap {
@@ -86,7 +92,10 @@ export class DiscordService {
       if (command.group) {
         const group = groupCollection.get(command.group);
 
-        if (!group) throw new InternalServerErrorException(`Unknown plugin group ${command.group}`);
+        if (!group)
+          throw new InternalServerErrorException(
+            `Unknown plugin group ${command.group}`,
+          );
 
         group.commands.set(command.name, command);
       } else {
@@ -127,7 +136,9 @@ export class DiscordService {
   }
 
   public getGuildMember(user_id: string) {
-    return this.client.guilds.cache.get(this.config.get('DISCORD_GUILD_ID')).members.fetch(user_id);
+    return this.client.guilds.cache
+      .get(this.config.get('DISCORD_GUILD_ID'))
+      .members.fetch(user_id);
   }
 
   public getGuildChannel(id: string) {

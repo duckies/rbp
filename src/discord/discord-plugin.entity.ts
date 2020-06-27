@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, WrappedEntity } from 'mikro-orm';
+import { Entity, PrimaryKey, Property, WrappedEntity } from '@mikro-orm/core';
 
 @Entity()
 export class DiscordConfig {

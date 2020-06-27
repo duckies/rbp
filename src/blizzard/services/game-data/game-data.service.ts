@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { EntityManager, EntityRepository } from 'mikro-orm';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
 import { AssetType } from '../../enums/asset-type.enum';
@@ -91,7 +91,10 @@ export class GameDataService {
   ) {}
 
   async getGameItemMedia(id: number): Promise<GameData.ItemMedia> {
-    const asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
+    const asset = await this.assetRepository.findOne({
+      id,
+      type: AssetType.Icon,
+    });
 
     if (!asset) {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);

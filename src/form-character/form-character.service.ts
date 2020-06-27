@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, wrap } from 'mikro-orm';
+import { EntityRepository, wrap } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
@@ -18,7 +18,9 @@ export class FormCharacterService {
   ) {}
 
   public async upsert(findCharacterDto: FindCharacterDto) {
-    const formCharacter = await this.formCharacterRepository.findOne({ ...findCharacterDto });
+    const formCharacter = await this.formCharacterRepository.findOne({
+      ...findCharacterDto,
+    });
 
     if (!formCharacter) {
       return await this.create(findCharacterDto);
@@ -51,18 +53,38 @@ export class FormCharacterService {
   }
 
   public async populateFormCharacter(formCharacter: FormCharacter) {
-    const [summary, specs, media, raids, equipment, raiderIO] = await Promise.allSettled([
-      this.profileService.getCharacterProfileSummary(formCharacter.getFindCharacterDTO()),
-      this.profileService.getCharacterSpecializationsSummary(formCharacter.getFindCharacterDTO()),
-      this.profileService.getCharacterMediaSummary(formCharacter.getFindCharacterDTO()),
-      this.profileService.getCharacterRaids(formCharacter.getFindCharacterDTO()),
-      this.profileService.getCharacterEquipmentSummary(formCharacter.getFindCharacterDTO()),
-      this.raiderIOService.getCharacterRaiderIO(formCharacter.getFindCharacterDTO(), [
-        RaiderIOCharacterFields.GEAR,
-        RaiderIOCharacterFields.RAID_PROGRESSION,
-        RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
-        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-      ]),
+    const [
+      summary,
+      specs,
+      media,
+      raids,
+      equipment,
+      raiderIO,
+    ] = await Promise.allSettled([
+      this.profileService.getCharacterProfileSummary(
+        formCharacter.getFindCharacterDTO(),
+      ),
+      this.profileService.getCharacterSpecializationsSummary(
+        formCharacter.getFindCharacterDTO(),
+      ),
+      this.profileService.getCharacterMediaSummary(
+        formCharacter.getFindCharacterDTO(),
+      ),
+      this.profileService.getCharacterRaids(
+        formCharacter.getFindCharacterDTO(),
+      ),
+      this.profileService.getCharacterEquipmentSummary(
+        formCharacter.getFindCharacterDTO(),
+      ),
+      this.raiderIOService.getCharacterRaiderIO(
+        formCharacter.getFindCharacterDTO(),
+        [
+          RaiderIOCharacterFields.GEAR,
+          RaiderIOCharacterFields.RAID_PROGRESSION,
+          RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
+          RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+        ],
+      ),
     ]);
 
     if (summary.status === 'fulfilled') {
@@ -96,7 +118,10 @@ export class FormCharacterService {
     return this.formCharacterRepository.find({});
   }
 
-  public async update(id: number, updateFormCharacterDto: UpdateFormCharacterDto) {
+  public async update(
+    id: number,
+    updateFormCharacterDto: UpdateFormCharacterDto,
+  ) {
     const formCharacter = await this.formCharacterRepository.findOneOrFail(id);
 
     wrap(formCharacter).assign(updateFormCharacterDto);

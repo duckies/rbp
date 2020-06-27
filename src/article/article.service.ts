@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import {
   EntityRepository,
   FilterQuery,
   QueryOrder,
   QueryOrderMap,
-} from 'mikro-orm';
+} from '@mikro-orm/core';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import slugify from 'slugify';
 import { User } from '../user/user.entity';
@@ -46,13 +46,15 @@ export class ArticleService {
    * @param limit maximum number of articles to retrieve
    * @param offset number of articles to skip
    */
-  public async findAll(limit = 8, offset = 0) {
-    const [result, total] = await this.articleRepository.findAndCount(
+  public findAll(limit = 8, offset = 0) {
+    return this.articleRepository.findAndCount(
       {},
-      { orderBy: { id: QueryOrder.DESC }, limit, offset },
+      {
+        orderBy: { id: QueryOrder.DESC },
+        limit,
+        offset,
+      },
     );
-
-    return { result, total };
   }
 
   /**

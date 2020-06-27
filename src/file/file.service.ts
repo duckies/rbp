@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import fs from 'fs';
-import { EntityRepository } from 'mikro-orm';
+import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { User } from '../user/user.entity';
 import { FileUpload } from './file.entity';
@@ -10,7 +10,10 @@ const { unlink } = fs.promises;
 
 @Injectable()
 export class FileService {
-  constructor(@InjectRepository(FileUpload) private readonly fileRepository: EntityRepository<FileUpload>) {}
+  constructor(
+    @InjectRepository(FileUpload)
+    private readonly fileRepository: EntityRepository<FileUpload>,
+  ) {}
 
   async create(files: File[], user?: User) {
     const fileEntities = files.map((file) => {

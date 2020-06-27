@@ -2,6 +2,7 @@ import * as Joi from '@hapi/joi';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { SentryModule } from '@ntegral/nestjs-sentry';
 import { AccessControlModule } from 'nest-access-control';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import MikroOrmConfig from '../mikro-orm.config';
@@ -18,14 +19,15 @@ import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
 import { UserModule } from './user/user.module';
-import { SentryModule } from '@ntegral/nestjs-sentry';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
         PORT: Joi.number().default(3000),
         SENTRY_DSN: Joi.string().required(),
         JWT_SECRET: Joi.string().default('testing'),
@@ -37,7 +39,9 @@ import { SentryModule } from '@ntegral/nestjs-sentry';
         DISCORD_CLIENT_ID: Joi.string().required(),
         DISCORD_SECRET: Joi.string().required(),
         DISCORD_WEBHOOK: Joi.string().required(),
-        DISCORD_CALLBACK: Joi.string().default('http://localhost:3030/callback'),
+        DISCORD_CALLBACK: Joi.string().default(
+          'http://localhost:3030/callback',
+        ),
         BASE_URL: Joi.string().default('http://localhost:3030/'),
       }),
     }),
