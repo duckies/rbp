@@ -1,15 +1,14 @@
 import {
-  Cascade,
+  BaseEntity,
   Entity,
   ManyToOne,
   PrimaryKey,
   Property,
-  WrappedEntity,
-} from 'mikro-orm';
+} from '@mikro-orm/core';
 import { User } from '../user/user.entity';
 
 @Entity()
-export class Article {
+export class Article extends BaseEntity<Article, 'id'> {
   @PrimaryKey()
   id!: number;
 
@@ -38,9 +37,6 @@ export class Article {
    * Relationships
    */
 
-  @ManyToOne(() => User, { eager: true, cascade: [Cascade.ALL] })
-  author: User;
+  @ManyToOne({ entity: () => User })
+  author!: User;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Article extends WrappedEntity<Article, 'id'> {}
