@@ -1,6 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { FindFormDto } from '../form/dto';
+import { FindFormDto } from '../form/dto/find-form.dto';
 import { CreateQuestionDto, FindQuestionDto, UpdateQuestionDto } from './dto';
 import { FormQuestion } from './question.entity';
 import { FormQuestionService } from './question.service';

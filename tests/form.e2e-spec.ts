@@ -18,10 +18,10 @@ import { MikroOrmModule } from 'nestjs-mikro-orm';
 import request from 'supertest';
 import MikroORMConfig from '../mikro-orm.config';
 import { roleBuilder, Roles } from '../src/app.roles';
-import { ArticleModule } from '../src/article/article.module';
-import { CreateArticleDTO } from '../src/article/dto/create-article.dto';
 import { AuthModule } from '../src/auth/auth.module';
 import { AuthService } from '../src/auth/auth.service';
+import { CreateFormDto } from '../src/form/dto/create-form.dto';
+import { FormModule } from '../src/form/form.module';
 import { User } from '../src/user/user.entity';
 import { UserModule } from '../src/user/user.module';
 
@@ -29,16 +29,11 @@ MikroORMConfig.dbName = 'rbp_test';
 delete MikroORMConfig.user;
 delete MikroORMConfig.password;
 
-describe('Articles', () => {
+describe('Forms', () => {
   let app: INestApplication;
   let orm: MikroORM;
   let authService: AuthService;
   let em: EntityManager<IDatabaseDriver<Connection>>;
-
-  /**
-   * Seed Data
-   */
-
   let user: User;
   let jwt: string;
 
@@ -67,7 +62,7 @@ describe('Articles', () => {
         AccessControlModule.forRoles(roleBuilder),
         UserModule,
         AuthModule,
-        ArticleModule,
+        FormModule,
       ],
     })
       .overrideInterceptor(CacheInterceptor)
@@ -111,118 +106,84 @@ describe('Articles', () => {
     jwt = authService.signToken(user);
   });
 
-  describe(`POST /article`, () => {
+  describe('POST /form', () => {
     test('throws 401 for unauthenticated', async () => {
-      await request(app.getHttpServer()).post('/article').expect(401);
+      await request(app.getHttpServer()).post('/form').expect(401);
     });
 
-    test('creating an article', async () => {
-      const data: CreateArticleDTO = {
-        title: 'Example Article',
-        subtitle: 'Example Subtitle',
-        content: 'Example Content',
-        header: 'nul',
+    test('should create forms', async () => {
+      const data: CreateFormDto = {
+        name: 'Test Form',
       };
 
-      await request(app.getHttpServer())
-        .post('/article')
-        .send(data)
-        .set('Authorization', `Bearer ${jwt}`)
-        .expect(201);
-    });
-  });
-
-  describe('GET /article', () => {
-    test('the presence of created articles', async () => {
       const resp = await request(app.getHttpServer())
-        .get('/article')
-        .expect(200);
-
-      expect(Array.isArray(resp.body)).toBe(true);
-      expect(Array.isArray(resp.body[0])).toBe(true);
-      expect(resp.body[0][0].title).toBe('Example Article');
-      expect(resp.body[1]).toBe(1);
-    });
-
-    test('article should show pagination structure', async () => {
-      const data: CreateArticleDTO = {
-        title: 'Example Article 2',
-        subtitle: 'Example Subtitle 2',
-        content: 'Example Content2 ',
-        header: 'nul 2',
-      };
-
-      await request(app.getHttpServer())
-        .post('/article')
+        .post('/form')
         .send(data)
         .set('Authorization', `Bearer ${jwt}`)
         .expect(201);
 
-      const resp = await request(app.getHttpServer())
-        .get('/article')
-        .expect(200);
+      expect(resp.body.id).toBe(1);
+      expect(resp.body.name).toBe('Test Form');
+    });
+  });
+
+  describe('GET /form', () => {
+    test('should return all forms', async () => {
+      const resp = await request(app.getHttpServer()).get('/form').expect(200);
 
       expect(Array.isArray(resp.body)).toBe(true);
-      expect(Array.isArray(resp.body[0])).toBe(true);
-      expect(resp.body[0][0].title).toBe('Example Article 2');
-      expect(resp.body[0][1].title).toBe('Example Article');
-      expect(resp.body[1]).toBe(2);
+      expect(resp.body[0].id).toBe(1);
+      expect(resp.body[0].name).toBe('Test Form');
     });
   });
 
-  describe('GET /article/:id', () => {
-    test('finding one article', async () => {
-      const first = await request(app.getHttpServer())
-        .get('/article/1')
-        .expect(200);
-
-      expect(first.body.title).toBe('Example Article');
-
-      const second = await request(app.getHttpServer())
-        .get('/article/2')
-        .expect(200);
-
-      expect(second.body.title).toBe('Example Article 2');
-    });
-  });
-
-  describe('PATCH /article/:id', () => {
-    test('should fail for unauthorized users', async () => {
-      await request(app.getHttpServer()).patch('/article/1').expect(401);
-    });
-
-    test('should update only targeted attributes', async () => {
-      await request(app.getHttpServer())
-        .patch('/article/2')
-        .send({ content: 'Changed Content' })
-        .set('Authorization', `Bearer ${jwt}`)
-        .expect(200);
-
+  describe('GET /form/:id', () => {
+    test('should return single forms', async () => {
       const resp = await request(app.getHttpServer())
-        .get('/article/2')
+        .get('/form/1')
         .expect(200);
 
-      expect(resp.body.id).toBe(2);
-      expect(resp.body.title).toBe('Example Article 2');
-      expect(resp.body.content).toBe('Changed Content');
+      expect(resp.body.id).toBe(1);
+      expect(resp.body.name).toBe('Test Form');
+    });
+
+    test('should 404 on missing forms', async () => {
+      await request(app.getHttpServer()).get('/form/5').expect(404);
     });
   });
 
-  describe('DELETE /article/:id', () => {
-    test('should fail for unauthorized users', async () => {
-      await request(app.getHttpServer()).delete('/article/2').expect(401);
+  describe('UPDATE /form/:id', () => {
+    test('should fail for unauthenticated users', async () => {
+      await request(app.getHttpServer()).patch('/form/1').expect(401);
     });
 
-    test('should delete articles', async () => {
+    test('should modify forms', async () => {
+      const resp = await request(app.getHttpServer())
+        .patch('/form/1')
+        .send({ name: 'Modified Title' })
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+
+      expect(resp.body.id).toBe(1);
+      expect(resp.body.name).toBe('Modified Title');
+    });
+  });
+
+  describe('DELETE /form/:id', () => {
+    test('should fail for unauthenticated users', async () => {
+      await request(app.getHttpServer()).delete('/form/1').expect(401);
+    });
+
+    test('should delete forms', async () => {
       await request(app.getHttpServer())
-        .delete('/article/2')
+        .delete('/form/1')
         .set('Authorization', `Bearer ${jwt}`)
         .expect(200);
     });
 
-    test('should fail on subsequent deletion attempts', async () => {
+    test('should throw 404 on sequential deletion calls', async () => {
       await request(app.getHttpServer())
-        .delete('/article/2')
+        .delete('/form/1')
         .set('Authorization', `Bearer ${jwt}`)
         .expect(404);
     });
