@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Collection,
   Entity,
   OneToMany,
@@ -10,7 +11,7 @@ import { FormQuestion } from '../form-question/question.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
 @Entity()
-export class Form {
+export class Form extends BaseEntity<Form, 'id'> {
   @PrimaryKey()
   id!: number;
 
