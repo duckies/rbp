@@ -94,6 +94,19 @@
               </v-row>
             </div>
           </v-card>
+
+          <v-card
+            class="discord-notif hidden-sm-and-down mt-4"
+            href="https://discord.gg/mbwbzAs"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <v-card-title>Want Notifications?</v-card-title>
+            <v-card-text
+              >Join our Discord to receive notifications from our server bot when the status of your application
+              changes.
+            </v-card-text>
+          </v-card>
         </v-col>
 
         <v-col v-if="!submissions.length">
@@ -284,6 +297,33 @@ export default class Applications extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.discord-notif:hover::before {
+  transform: scale3d(1.2);
+  transform: rotate(-25deg);
+}
+
+.discord-notif::before {
+  background-image: url('~assets/images/svg/discord-logo-white.svg');
+  background-repeat: no-repeat;
+  background-position: right;
+  color: transparent;
+  opacity: 0.9;
+  position: absolute;
+  top: 25px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  height: 115px;
+  content: '';
+  transform: scale3d(1); // doesn't work at the moment, but oh well
+  transform: rotate(-30deg);
+  transition: transform cubic-bezier(0.075, 0.82, 0.165, 1) 500ms;
+}
+
+.discord-notif {
+  overflow: hidden;
+}
+
 .class-avatar {
   border-width: 3px;
   border-style: solid;

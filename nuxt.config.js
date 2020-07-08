@@ -15,12 +15,6 @@ const NuxtConfiguration = {
     port: process.env.FRONTEND_PORT || 3030,
   },
 
-  typescript: {
-    typeCheck: {
-      eslint: true,
-    },
-  },
-
   head: {
     title: 'Really Bad Players',
     meta: [

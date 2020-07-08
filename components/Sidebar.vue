@@ -67,7 +67,6 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import InfoBox from '@/components/InfoBox.vue'
 
 export interface Ranking {
   rank: number
@@ -75,11 +74,7 @@ export interface Ranking {
   background: string
 }
 
-@Component({
-  components: {
-    InfoBox,
-  },
-})
+@Component
 export default class Sidebar extends Vue {}
 </script>
 

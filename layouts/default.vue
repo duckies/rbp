@@ -143,9 +143,6 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { User } from '~/store/user'
-import Footer from '~/components/Footer.vue'
-import SkullLogo from '~/components/svg/SkullLogo.vue'
-import DiscordLogo from '~/components/svg/discord.vue'
 
 export interface Link {
   icon?: string
@@ -155,13 +152,7 @@ export interface Link {
   submenu?: Link[]
 }
 
-@Component({
-  components: {
-    SkullLogo,
-    DiscordLogo,
-    Footer,
-  },
-})
+@Component
 export default class DefaultLayout extends Vue {
   drawer = false
   title = 'Really Bad Players'

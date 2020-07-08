@@ -1,6 +1,8 @@
 import { NuxtCookies } from 'cookie-universal-nuxt'
 import { Auth } from '~/plugins/auth'
 
+declare module 'vue-flickity'
+
 declare module 'vue/types/vue' {
   interface Vue {
     $auth: Auth

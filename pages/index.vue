@@ -1,6 +1,8 @@
 <template>
   <div>
-    <carousel />
+    <client-only>
+      <carousel />
+    </client-only>
 
     <v-container grid-list-lg class="hero-nudge--home">
       <v-layout row wrap>
