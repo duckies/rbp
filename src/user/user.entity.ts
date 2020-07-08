@@ -52,15 +52,19 @@ export class User extends BaseEntity<User, 'id'> {
    * Relationships
    */
 
-  @OneToMany({ entity: () => Article, mappedBy: 'author' })
+  @OneToMany(() => Article, (a) => a.author, { hidden: true })
   articles = new Collection<Article>(this);
 
-  @OneToMany(() => FormSubmission, (submission) => submission.author)
+  @OneToMany(() => FormSubmission, (submission) => submission.author, {
+    hidden: true,
+  })
   submissions = new Collection<FormSubmission>(this);
 
-  @OneToMany(() => FormComment, (comment) => comment.author)
+  @OneToMany(() => FormComment, (comment) => comment.author, { hidden: true })
   comments = new Collection<FormComment>(this);
 
-  @OneToMany(() => FileUpload, (fileUpload) => fileUpload.author)
+  @OneToMany(() => FileUpload, (fileUpload) => fileUpload.author, {
+    hidden: true,
+  })
   files = new Collection<FileUpload>(this);
 }

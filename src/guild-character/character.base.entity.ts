@@ -88,21 +88,21 @@ export abstract class Character {
   @Property({ nullable: true })
   specialization_name?: string;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: 'jsonb' })
   specializations?: SpecializationMeta[];
 
   /**
    * Profile Raids
    */
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: 'jsonb' })
   raids?: RaidExpansion[];
 
   /**
    * Profile Equipment
    */
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: 'jsonb' })
   equipment?: EquippedItem[];
 
   /**

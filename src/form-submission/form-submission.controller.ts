@@ -43,7 +43,10 @@ export class SubmissionController {
   @Post()
   @UseGuards(JWTGuard)
   @UsePipes(CreateSubmissionPipe)
-  create(@Usr() user: User, @Body() createSubmissionDto: CreateFormSubmissionDto) {
+  create(
+    @Usr() user: User,
+    @Body() createSubmissionDto: CreateFormSubmissionDto,
+  ) {
     return this.submissionService.create(user, createSubmissionDto);
   }
 
@@ -83,7 +86,9 @@ export class SubmissionController {
 
   @Get('/user/open')
   @UseGuards(JWTGuard)
-  findOpenByUser(@Usr() user: User): Promise<Pick<FormSubmission, 'id' | 'status'>> {
+  findOpenByUser(
+    @Usr() user: User,
+  ): Promise<Pick<FormSubmission, 'id' | 'status'>> {
     return this.submissionService.findOpenByUser(user);
   }
 
@@ -110,9 +115,16 @@ export class SubmissionController {
     @Usr() user: User,
     @Body() updateFormSubmissionDto: UpdateFormSubmissionDto,
   ) {
-    const canUpdateAny = this.rolebuilder.can(user.roles).updateAny('form-submission').granted;
+    const canUpdateAny = this.rolebuilder
+      .can(user.roles)
+      .updateAny('form-submission').granted;
 
-    return this.submissionService.update(id, user, updateFormSubmissionDto, canUpdateAny);
+    return this.submissionService.update(
+      id,
+      user,
+      updateFormSubmissionDto,
+      canUpdateAny,
+    );
   }
 
   @Auth({ action: 'delete', possession: 'any', resource: 'form-submission' })

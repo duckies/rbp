@@ -164,11 +164,17 @@ export class SubmissionService {
    * @param take Number of submissions to retrieve.
    * @param skip Number of submissions to skip.
    */
-  async findAll(limit: number, offset: number, status?: FormSubmissionStatus) {
+  async findAll(
+    limit?: number,
+    offset?: number,
+    status?: FormSubmissionStatus,
+  ) {
     const submissions = await this.formSubmissionRepository.findAndCount(
       { status },
       ['author', 'characters'],
       { id: QueryOrder.DESC },
+      limit,
+      offset,
     );
 
     return submissions;

@@ -8,6 +8,6 @@ export class FormCharacter extends Character {
    * Relations
    */
 
-  @ManyToMany(() => FormSubmission, (fs) => fs.characters)
+  @ManyToMany(() => FormSubmission, (fs) => fs.characters, { hidden: true })
   submission = new Collection<FormSubmission>(this);
 }

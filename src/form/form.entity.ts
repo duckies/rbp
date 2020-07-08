@@ -34,6 +34,8 @@ export class Form extends BaseEntity<Form, 'id'> {
   })
   questions = new Collection<FormQuestion>(this);
 
-  @OneToMany(() => FormSubmission, (submission) => submission.form)
+  @OneToMany(() => FormSubmission, (submission) => submission.form, {
+    hidden: true,
+  })
   submissions = new Collection<FormSubmission>(this);
 }

@@ -6,7 +6,7 @@ export class FindAllFormSubmissionsDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  take = 12;
+  take = 10;
 
   @IsOptional()
   @Type(() => Number)
