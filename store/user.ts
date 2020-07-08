@@ -81,7 +81,7 @@ export const actions: ActionTree<UserState, RootState> = {
     try {
       commit('setStatus', 'loading')
 
-      const resp = await this.app.$axios.$get('/user/me')
+      const resp = await this.$axios.$get('/user/me')
 
       commit('setStatus', 'success')
       commit('setUser', resp)
