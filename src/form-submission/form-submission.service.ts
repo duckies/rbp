@@ -153,6 +153,8 @@ export class SubmissionService {
       { status },
       ['author', 'characters'],
       { id: QueryOrder.DESC },
+      limit,
+      offset,
     );
 
     return submissions;
