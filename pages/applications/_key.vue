@@ -112,14 +112,14 @@
 
     <!-- Image Dialog -->
     <v-dialog v-model="lightbox" max-width="80%">
-      <v-img :src="lightbox_image" contain @click="lightbox = !lightbox" />
+      <v-img :src="lightbox_image" @click="lightbox = !lightbox" />
     </v-dialog>
 
     <!-- Images -->
     <v-row v-if="submission && submission.files && submission.files.length">
       <v-col v-for="file in submission.files" :key="file.id" md="4">
         <v-card>
-          <v-img :src="baseFileURL + file.path" contain @click="createLightbox(file)" />
+          <v-img :src="baseFileURL + file.path" aspect-ratio="1.7778" @click="createLightbox(file)" />
         </v-card>
       </v-col>
     </v-row>
