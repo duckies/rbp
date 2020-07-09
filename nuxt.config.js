@@ -28,8 +28,7 @@ const NuxtConfiguration = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Khand:700,900' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900' },
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Khand:700,900&display=swap' },
     ],
   },
 
@@ -37,7 +36,7 @@ const NuxtConfiguration = {
 
   css: ['~/assets/style/global.scss'],
 
-  plugins: ['~/plugins/auth', '~/plugins/axios', '~/plugins/vee-validate', { src: '~/plugins/flickity', ssr: false }],
+  plugins: ['~/plugins/auth', '~/plugins/axios', '~/plugins/vee-validate', { src: '~/plugins/swiper', mode: 'client' }],
 
   modules: ['@nuxtjs/axios', 'cookie-universal-nuxt'],
 
@@ -80,16 +79,7 @@ const NuxtConfiguration = {
   buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
 
   build: {
-    extractCSS: process.env.NODE_ENV === 'production',
     transpile: ['vee-validate/dist/rules'],
-    babel: {
-      plugins: ['@babel/plugin-proposal-optional-chaining'],
-    },
-    extend: (config) => {
-      config.node = {
-        fs: 'empty',
-      }
-    },
   },
 }
 

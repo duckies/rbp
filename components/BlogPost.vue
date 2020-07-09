@@ -1,6 +1,6 @@
 <template>
-  <v-card elevation="5" height="250" class="article mb-4 justify-end-image-content">
-    <v-img :src="post.header" height="250" class="image-hover" gradient="to bottom, transparent, #202124">
+  <v-card elevation="5" height="270" class="article mb-4 justify-end-image-content">
+    <v-img :src="post.header" height="270" class="image-hover" gradient="to bottom, transparent, #202124">
       <v-card-title>
         <div class="article--header">
           <div class="article__title" v-text="post.title" />
@@ -40,26 +40,28 @@ export default class BlogPost extends Vue {
 
 <style lang="scss" scoped>
 .article {
+  &--header {
+    flex-grow: 0;
+    margin-bottom: 5%;
+    word-break: break-word;
+  }
+
   &__title {
     font-family: Khand, sans-serif;
     font-size: 36px;
     font-weight: 700;
     text-transform: uppercase;
     line-height: 1.1;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85);
+    text-shadow: 0 2px 5px #000;
   }
 
   &__subtitle {
     font-size: 18px;
+    text-shadow: 0 2px 5px #000;
   }
 
   &--category {
     background-color: #854feb;
-  }
-
-  &--header {
-    flex-grow: 0;
-    margin-bottom: 5%;
   }
 
   &--footer {

@@ -1,9 +1,5 @@
 <template>
-  <div>
-    <client-only>
-      <carousel />
-    </client-only>
-
+  <carousel>
     <v-container grid-list-lg class="hero-nudge--home">
       <v-layout row wrap>
         <v-flex sm8>
@@ -14,7 +10,7 @@
         </v-flex>
       </v-layout>
     </v-container>
-  </div>
+  </carousel>
 </template>
 
 <script lang="ts">
@@ -32,13 +28,3 @@ import Component from 'vue-class-component'
 })
 export default class Index extends Vue {}
 </script>
-
-<style lang="scss">
-.hero-nudge {
-  margin-top: -500px;
-
-  &--home {
-    transform: translateY(-120px);
-  }
-}
-</style>

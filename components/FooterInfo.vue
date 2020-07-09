@@ -1,6 +1,5 @@
 <template>
   <v-footer color="#0f1011">
-    <!-- <v-container class="footer-push"> -->
     <v-container>
       <v-layout row wrap>
         <v-row>
@@ -70,13 +69,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import Discord from '@/components/Discord.vue'
 
-@Component({
-  components: {
-    Discord,
-  },
-})
+@Component
 export default class Footer extends Vue {
   navItems = [
     {
@@ -133,10 +127,6 @@ export default class Footer extends Vue {
   height: 100%;
   display: flex;
   justify-content: center;
-}
-
-.footer-push {
-  transform: translateY(-90px);
 }
 
 .footer-bottom {

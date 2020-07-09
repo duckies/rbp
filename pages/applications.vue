@@ -1,11 +1,5 @@
 <template>
   <div>
-    <hero
-      :background="submissionBackground"
-      title="Really Bad Applications"
-      caption="Blizzard's #1 source of transfer income since 2004"
-    />
-
     <!-- Invalid Character Information Dialog -->
     <v-dialog v-model="invalidDialog" max-width="500">
       <v-card>
@@ -26,7 +20,11 @@
       </v-card>
     </v-dialog>
 
-    <v-container class="hero-nudge">
+    <hero
+      :background="submissionBackground"
+      title="Really Bad Applications"
+      caption="Blizzard's #1 source of transfer income since 2004"
+    >
       <v-row>
         <!-- Left Sidebar -->
         <v-col cols="12" xs="12" md="5" lg="4" xl="3">
@@ -123,7 +121,7 @@
           </v-row>
         </v-col>
       </v-row>
-    </v-container>
+    </hero>
   </div>
 </template>
 

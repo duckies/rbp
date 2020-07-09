@@ -14,39 +14,31 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.11.0",
-    "@types/vue-markdown": "^2.2.1",
     "babel-runtime": "^6.26.0",
     "cookie": "^0.4.1",
     "cookie-universal-nuxt": "^2.1.4",
     "cross-env": "^7.0.2",
     "date-fns": "^2.14.0",
-    "flickity-bg-lazyload": "^1.0.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "nanoid": "^3.1.10",
     "nuxt": "^2.13.3",
     "nuxt-dropzone": "^1.0.4",
-    "nuxt-webfontloader": "^1.1.0",
-    "slugify": "^1.4.4",
+    "swiper": "^6.0.1",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.6",
     "vee-validate": "^3.3.7",
+    "vue-awesome-swiper": "^4.1.1",
     "vue-class-component": "^7.2.3",
-    "vue-flickity": "^1.2.1",
-    "vue-markdown": "^2.2.4",
     "vue-property-decorator": "^9.0.0",
-    "vue-upload-component": "^2.8.20",
-    "vuebar": "0.0.20",
-    "vuex-class-component": "^2.3.3"
+    "vuebar": "0.0.20"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-optional-chaining": "^7.10.4",
     "@nuxt/types": "^2.13.3",
     "@nuxt/typescript-build": "^2.0.0",
     "@nuxtjs/eslint-config-typescript": "^2.0.0",
     "@nuxtjs/vuetify": "^2.0.0-beta.0",
     "@types/cookie": "^0.4.0",
     "@types/dotenv-webpack": "^1.8.0",
-    "@types/flickity": "^2.2.3",
     "@types/lodash": "^4.14.157",
     "@types/nanoid": "^2.1.0",
     "deepmerge": "^4.2.2",
@@ -56,8 +48,7 @@
     "eslint-plugin-nuxt": "^1.0.0",
     "eslint-plugin-prettier": "^3.1.4",
     "fibers": "^5.0.0",
-    "prettier": "^2.0.5",
-    "vuex-module-decorators": "0.17.0"
+    "prettier": "^2.0.5"
   },
   "renovate-config": {
     "default": {

@@ -1,130 +1,120 @@
 <template>
-  <div>
-    <hero :background="background" :title="title" :caption="caption" />
+  <hero :background="background" :title="title" :caption="caption">
+    <v-row>
+      <v-col>
+        <v-card elevation="3">
+          <v-row>
+            <v-col md="8" sm="12">
+              <v-card-title>Application Process</v-card-title>
+              <v-card-text>
+                <v-alert dismissible color="info">
+                  Our site is still under construction, if you encounter any issues contact Duckies#1999 on Discord.
+                  Apologies for the lack of polish and any missing information.
+                </v-alert>
+                <p>
+                  Our current recruitment goals are often posted where we advertise, but anyone who thinks they have the
+                  skill or determination to raid with us should apply. We only ask that you fill out your application
+                  completely or it will reflect poorly on you're desire to join us. After submitting your application,
+                  you will be redirected to your submitted application.
+                </p>
+                <p>
+                  Currently, notification support is not available, however you may check back on your application to
+                  see its status or join our Discord and ask us directly. If approved, or further discussion is
+                  warranted, we will contact you through Discord.
+                </p>
+              </v-card-text>
+            </v-col>
+            <v-col>
+              <v-card-title>Raiding Information</v-card-title>
+              <v-card-text>
+                <ul>
+                  <li>Raids Sunday & Monday 7:00 to 11:00 PM PST</li>
+                  <li>Discord Voice Communication</li>
+                  <li>Loot Council</li>
+                  <li>At least 90% attendance requirement.</li>
+                </ul>
+              </v-card-text>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+    </v-row>
 
-    <v-container class="hero-nudge">
-      <v-row>
-        <v-col>
-          <v-card elevation="3">
-            <v-row>
-              <v-col md="8" sm="12">
-                <v-card-title>Application Process</v-card-title>
-                <v-card-text>
-                  <v-alert dismissible color="info">
-                    Our site is still under construction, if you encounter any issues contact Duckies#1999 on Discord.
-                    Apologies for the lack of polish and any missing information.
-                  </v-alert>
-                  <p>
-                    Our current recruitment goals are often posted where we advertise, but anyone who thinks they have
-                    the skill or determination to raid with us should apply. We only ask that you fill out your
-                    application completely or it will reflect poorly on you're desire to join us. After submitting your
-                    application, you will be redirected to your submitted application.
-                  </p>
-                  <p>
-                    Currently, notification support is not available, however you may check back on your application to
-                    see its status or join our Discord and ask us directly. If approved, or further discussion is
-                    warranted, we will contact you through Discord.
-                  </p>
-                </v-card-text>
-              </v-col>
-              <v-col>
-                <v-card-title>Raiding Information</v-card-title>
-                <v-card-text>
-                  <ul>
-                    <li>Raids Sunday & Monday 7:00 to 11:00 PM PST</li>
-                    <li>Discord Voice Communication</li>
-                    <li>Loot Council</li>
-                    <li>At least 90% attendance requirement.</li>
-                  </ul>
-                </v-card-text>
-              </v-col>
-            </v-row>
-          </v-card>
-        </v-col>
-      </v-row>
+    <v-row v-if="!$store.getters['user/isLoggedIn']">
+      <v-col>
+        <v-card>
+          <v-card-title>Login to submit an application</v-card-title>
+          <v-card-text
+            >Fill out an application for our guild quickly by logging in with your Discord account.</v-card-text
+          >
+          <v-card-actions>
+            <v-btn color="primary" @click="$auth.login()">Login with Discord</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
 
-      <v-row v-if="!$store.getters['user/isLoggedIn']">
-        <v-col>
-          <v-card>
-            <v-card-title>Login to submit an application</v-card-title>
-            <v-card-text
-              >Fill out an application for our guild quickly by logging in with your Discord account.</v-card-text
+    <v-row v-else-if="hasOpenApplication">
+      <v-col>
+        <v-card>
+          <v-card-title>
+            Pending Open Application
+          </v-card-title>
+
+          <v-card-text>
+            You may
+            <nuxt-link :to="`/applications/${openApplicationId}`">visit your currently open application</nuxt-link>
+            to review it, or cancel it to submit another application.
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row v-else>
+      <v-col>
+        <validation-observer ref="form" v-slot="{ invalid, handleSubmit }">
+          <v-form @submit.prevent="handleSubmit(submit)">
+            <character-picker />
+            <character-panel
+              v-for="(character, i) in $store.state.submission.characters"
+              :key="character.name + ' ' + character.realm"
+              :name="character.name"
+              :realm="character.realm"
+              :realm-name="character.realm_name"
+              :region="character.region"
+              :blizzard="character.blizzard"
+              :raider-i-o="character.raiderIO"
+              :applying="true"
+              :order="i"
+            />
+            <form-field v-for="question in $store.getters['form/questions']" :key="question.id" :question="question" />
+
+            <v-card class="mb-4">
+              <v-card-title>Upload your UI and transmogs (Optional).</v-card-title>
+              <v-card-subtitle>It's proven that a good transmog can increase performance by up to 10%.</v-card-subtitle>
+              <dropzone
+                id="drop"
+                ref="drop"
+                :options="dropOptions"
+                :destroy-dropzone="true"
+                @vdropzone-success="uploadSuccess"
+                @vdropzone-removed-file="removeFile"
+              />
+            </v-card>
+
+            <v-btn
+              :loading="$store.state.form.isLoading || $store.state.submission.isLoading"
+              type="submit"
+              x-large
+              color="primary"
             >
-            <v-card-actions>
-              <v-btn color="primary" @click="$auth.login()">Login with Discord</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row v-else-if="hasOpenApplication">
-        <v-col>
-          <v-card>
-            <v-card-title>
-              Pending Open Application
-            </v-card-title>
-
-            <v-card-text>
-              You may
-              <nuxt-link :to="`/applications/${openApplicationId}`">visit your currently open application</nuxt-link>
-              to review it, or cancel it to submit another application.
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row v-else>
-        <v-col>
-          <validation-observer ref="form" v-slot="{ invalid, handleSubmit }">
-            <v-form @submit.prevent="handleSubmit(submit)">
-              <character-picker />
-              <character-panel
-                v-for="(character, i) in $store.state.submission.characters"
-                :key="character.name + ' ' + character.realm"
-                :name="character.name"
-                :realm="character.realm"
-                :realm-name="character.realm_name"
-                :region="character.region"
-                :blizzard="character.blizzard"
-                :raider-i-o="character.raiderIO"
-                :applying="true"
-                :order="i"
-              />
-              <form-field
-                v-for="question in $store.getters['form/questions']"
-                :key="question.id"
-                :question="question"
-              />
-
-              <v-card class="mb-4">
-                <v-card-title>Upload your UI and transmogs (Optional).</v-card-title>
-                <v-card-subtitle
-                  >It's proven that a good transmog can increase performance by up to 10%.</v-card-subtitle
-                >
-                <dropzone
-                  id="drop"
-                  ref="drop"
-                  :options="dropOptions"
-                  :destroy-dropzone="true"
-                  @vdropzone-success="uploadSuccess"
-                  @vdropzone-removed-file="removeFile"
-                />
-              </v-card>
-
-              <v-btn
-                :loading="$store.state.form.isLoading || $store.state.submission.isLoading"
-                type="submit"
-                x-large
-                color="primary"
-              >
-                Submit
-              </v-btn>
-            </v-form>
-          </validation-observer>
-        </v-col>
-      </v-row>
-    </v-container>
-  </div>
+              Submit
+            </v-btn>
+          </v-form>
+        </validation-observer>
+      </v-col>
+    </v-row>
+  </hero>
 </template>
 
 <script lang="ts">
