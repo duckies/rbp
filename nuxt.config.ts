@@ -38,6 +38,10 @@ const config: NuxtConfig = {
         rel: 'stylesheet',
         href: 'https://fonts.googleapis.com/css2?family=Khand:wght@700&family=Roboto:wght@400;500;700;900&display=swap',
       },
+      {
+        rel: 'stylesheet',
+        href: 'https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css',
+      },
     ],
   },
 
@@ -53,7 +57,12 @@ const config: NuxtConfig = {
     { src: '~/plugins/swiper', mode: 'client' },
   ],
 
-  modules: ['@nuxtjs/axios', 'cookie-universal-nuxt', '@aceforth/nuxt-optimized-images'],
+  modules: [
+    '@nuxtjs/axios',
+    'cookie-universal-nuxt',
+    '@aceforth/nuxt-optimized-images',
+    ['@nuxtjs/google-analytics', { id: 'UA-129680177-1' }],
+  ],
 
   optimizedImages: {
     optimizeImages: true,
