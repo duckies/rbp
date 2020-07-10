@@ -6,7 +6,8 @@
           <v-col cols="12" md="3">
             <v-row align="center" justify="center">
               <v-img
-                src="https://s3.amazonaws.com/files.enjin.com/632721/material/images/logo_medium.png"
+                :src="require('@/assets/images/logo_medium.png')"
+                :srcset="require('@/assets/images/logo_medium.png?.webp')"
                 max-height="172"
                 max-width="220"
               />
@@ -54,7 +55,12 @@
           <div class="footer-bottom--right">
             <span>
               Created by
-              <a href="https://worldofwarcraft.com/en-us/character/area-52/duckys" target="blank">
+              <a
+                href="https://worldofwarcraft.com/en-us/character/area-52/duckys"
+                target="blank"
+                rel="noreferrer"
+                class="author"
+              >
                 Duckie
               </a>
               with hate.
@@ -109,6 +115,10 @@ export default class Footer extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.author {
+  color: #b187ff;
+}
+
 .transparent-list {
   background-color: transparent !important;
 }

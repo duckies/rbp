@@ -28,7 +28,10 @@ const NuxtConfiguration = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Khand:700,900&display=swap' },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Khand:wght@700&display=swap',
+      },
     ],
   },
 
@@ -38,7 +41,12 @@ const NuxtConfiguration = {
 
   plugins: ['~/plugins/auth', '~/plugins/axios', '~/plugins/vee-validate', { src: '~/plugins/swiper', mode: 'client' }],
 
-  modules: ['@nuxtjs/axios', 'cookie-universal-nuxt'],
+  modules: ['@nuxtjs/axios', 'cookie-universal-nuxt', '@aceforth/nuxt-optimized-images'],
+
+  optimizedImages: {
+    optimizeImages: true,
+    optimizeImagesInDev: true,
+  },
 
   components: true,
 

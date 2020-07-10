@@ -23,6 +23,7 @@
     "nanoid": "^3.1.10",
     "nuxt": "^2.13.3",
     "nuxt-dropzone": "^1.0.4",
+    "sharp": "^0.25.4",
     "swiper": "^6.0.1",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.6",
@@ -33,6 +34,7 @@
     "vuebar": "0.0.20"
   },
   "devDependencies": {
+    "@aceforth/nuxt-optimized-images": "^1.0.1",
     "@nuxt/types": "^2.13.3",
     "@nuxt/typescript-build": "^2.0.0",
     "@nuxtjs/eslint-config-typescript": "^2.0.0",
@@ -48,7 +50,15 @@
     "eslint-plugin-nuxt": "^1.0.0",
     "eslint-plugin-prettier": "^3.1.4",
     "fibers": "^5.0.0",
-    "prettier": "^2.0.5"
+    "imagemin-gifsicle": "^7.0.0",
+    "imagemin-mozjpeg": "^9.0.0",
+    "imagemin-pngquant": "^9.0.0",
+    "imagemin-svgo": "^8.0.0",
+    "lqip-loader": "^2.2.0",
+    "prettier": "^2.0.5",
+    "responsive-loader": "^1.2.0",
+    "sqip-loader": "^1.0.0",
+    "webp-loader": "^0.6.0"
   },
   "renovate-config": {
     "default": {

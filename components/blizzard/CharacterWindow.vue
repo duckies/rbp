@@ -1,11 +1,11 @@
 <template>
   <div
-    class="character elevation-5"
+    class="character elevation-5 border-card"
     :data-name="character.name"
     :data-class="character.class"
     :data-race="character.race"
   >
-    <v-img class="character--bg__image" :src="character.render_url" height="280">
+    <v-img class="character--bg__image card-expand" :src="character.render_url" height="280">
       <div class="character--content">
         <div class="character--avatars">
           <v-img

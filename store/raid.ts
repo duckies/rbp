@@ -35,17 +35,17 @@ export const getters: GetterTree<RaidState, RootState> = {
           {
             rank: state.raids[0].world,
             title: 'World',
-            background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/azeroth.jpg',
+            background: require('@/assets/images/sidebar/azeroth.jpg'),
           },
           {
             rank: state.raids[0].region,
             title: 'Region',
-            background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/barrens.jpg',
+            background: require('@/assets/images/sidebar/barrens.jpg'),
           },
           {
             rank: state.raids[0].realm,
             title: 'Realm',
-            background: 'https://s3.amazonaws.com/files.enjin.com/632721/material/images/icons/blackrock.jpg',
+            background: require('@/assets/images/sidebar/area-52.jpg'),
           },
         ]
       : [],

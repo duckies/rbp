@@ -1,16 +1,14 @@
 <template>
-  <v-card class="mb-4" height="300">
-    <v-img :src="background" height="300" gradient="to bottom, rgba(32, 33, 36, 0.3), #202124">
+  <v-card class="border-card mb-4" height="300">
+    <v-img :src="background" height="300" class="card-expand" gradient="to bottom, rgba(32, 33, 36, 0.3), #202124">
       <v-layout fill-height>
         <v-row no-gutters align-content="end">
           <v-col class="px-3">
-            <v-card-title class="pa-4">
-              <span class="headline" v-text="title" />
-              <span class="subtitle" v-text="subtitle" />
-            </v-card-title>
+            <v-card-title class="headline" v-text="title" />
+            <v-card-subtitle v-text="subtitle" />
 
             <v-card-actions>
-              <v-btn text :href="buttonLink" color="primary" class="button">
+              <v-btn tile :href="buttonLink" color="primary" class="button">
                 {{ buttonText }}
                 <v-icon right>mdi-arrow-right</v-icon>
               </v-btn>

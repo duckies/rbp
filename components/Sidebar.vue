@@ -1,11 +1,11 @@
 <template>
   <div class="raiderIO">
-    <v-card v-for="tier in $store.state.raid.raids" :key="tier.slug" height="200" class="mb-4">
+    <v-card v-for="tier in $store.state.raid.raids" :key="tier.slug" height="200" class="border-card mb-4">
       <!-- Fix this to ignore raids without backgrounds -->
       <v-img
         v-if="tier.background"
         :src="tier.background"
-        class="image-hover"
+        class="card-expand"
         height="200"
         gradient="to bottom, rgba(32, 33, 36, 0.2), #202124"
       >
@@ -34,12 +34,12 @@
 
     <v-layout v-if="$store.getters['raid/rankings'].length" wrap>
       <v-flex v-for="(raid, index) in $store.getters['raid/rankings']" :key="index" xs4>
-        <v-card height="120" class="mb-4">
-          <v-img :src="raid.background">
+        <v-card height="120" class="raiderIO--rankings mb-4 border-card">
+          <v-img :src="raid.background" class="card-expand">
             <v-card-title>
               <div class="raiderIO--ranking">
-                <span class="raiderIO--ranking__title">{{ raid.rank }}</span>
-                <span class="raiderIO--ranking__value">{{ raid.title }}</span>
+                <span class="raiderIO--ranking__title">{{ raid.title }}</span>
+                <span class="raiderIO--ranking__value">{{ raid.rank }}</span>
               </div>
             </v-card-title>
           </v-img>
@@ -52,14 +52,14 @@
       subtitle="We are always looking for really bad players to bolster our ranks."
       button-text="More info &amp; apply now"
       button-link="/apply"
-      background="https://s3.amazonaws.com/files.enjin.com/632721/material/images/sidebar/recruitment.jpg"
+      :background="require('@/assets/images/sidebar/recruitment.jpg')"
     />
     <info-box
       title="Discord"
       :subtitle="$store.getters['discord/online'] + ' members currently online.'"
       button-text="Join Our Discord"
       button-link="https://discord.gg/mbwbzAs"
-      background="https://s3.amazonaws.com/files.enjin.com/632721/material/images/sidebar/WLOP.jpg"
+      :background="require('@/assets/images/sidebar/sylvanas.jpg')"
     />
   </div>
 </template>
@@ -92,14 +92,17 @@ export default class Sidebar extends Vue {}
     text-shadow: #000 0 0 3px;
 
     &__title {
+      font-size: 1.1rem;
+      text-transform: uppercase;
       flex-basis: 100%;
       line-height: 1;
     }
 
     &__value {
-      font-size: 0.9rem;
+      font-family: 'Roboto Mono', sans-serif;
     }
   }
+
   &--summary {
     position: absolute;
     top: 15px;
@@ -112,7 +115,7 @@ export default class Sidebar extends Vue {}
 
     &__text {
       color: #fff;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
     }
   }
 
@@ -130,7 +133,7 @@ export default class Sidebar extends Vue {}
     }
 
     &__title {
-      font-size: 1.2rem;
+      font-size: 1.5rem;
     }
   }
 }
