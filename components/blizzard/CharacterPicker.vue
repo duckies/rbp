@@ -112,5 +112,5 @@ export default class CharacterPicker extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/style/blizzard/classes.scss';
+@import '@/assets/styles/blizzard/classes.scss';
 </style>

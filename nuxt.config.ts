@@ -1,6 +1,9 @@
+import { NuxtConfig } from '@nuxt/types'
+import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
+
 require('dotenv').config()
 
-const NuxtConfiguration = {
+const config: NuxtConfig = {
   mode: 'universal',
 
   env: {
@@ -17,6 +20,9 @@ const NuxtConfiguration = {
 
   head: {
     title: 'Really Bad Players',
+    htmlAttrs: {
+      lang: 'en',
+    },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -30,16 +36,22 @@ const NuxtConfiguration = {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Khand:wght@700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Khand:wght@700&family=Roboto:wght@400;500;700;900&display=swap',
       },
     ],
   },
 
   loading: { color: '#854feb', continuous: true },
 
-  css: ['~/assets/style/global.scss'],
+  css: ['~/assets/styles/global.scss'],
 
-  plugins: ['~/plugins/auth', '~/plugins/axios', '~/plugins/vee-validate', { src: '~/plugins/swiper', mode: 'client' }],
+  plugins: [
+    '~/plugins/vuetify',
+    '~/plugins/auth',
+    '~/plugins/axios',
+    '~/plugins/vee-validate',
+    { src: '~/plugins/swiper', mode: 'client' },
+  ],
 
   modules: ['@nuxtjs/axios', 'cookie-universal-nuxt', '@aceforth/nuxt-optimized-images'],
 
@@ -49,6 +61,12 @@ const NuxtConfiguration = {
   },
 
   components: true,
+
+  render: {
+    http2: {
+      push: true,
+    },
+  },
 
   vuetify: {
     customVariables: ['~/assets/styles/vuetify.scss'],
@@ -84,11 +102,24 @@ const NuxtConfiguration = {
 
   modern: process.env.NODE_ENV === 'production',
 
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/vuetify'],
+  buildModules: ['@nuxt/typescript-build'],
 
   build: {
-    transpile: ['vee-validate/dist/rules'],
+    // Currently causing performance issues, investigate.
+    // extractCSS: process.env.NODE_ENV === 'production',
+    transpile: ['vee-validate/dist/rules', 'vuetify'],
+    plugins: [new VuetifyLoaderPlugin()],
+    loaders: {
+      sass: {
+        implementation: require('sass'),
+        sassOptions: {
+          fiber: require('fibers'),
+          indentedSyntax: true,
+        },
+        additionalData: "@import '@/assets/styles/vuetify.scss'",
+      },
+    },
   },
 }
 
-export default NuxtConfiguration
+export default config

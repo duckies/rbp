@@ -101,7 +101,7 @@ export default class CharacterWindow extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/style/blizzard/classes.scss';
+@import '@/assets/styles/blizzard/classes.scss';
 
 // Different races require different positionings
 

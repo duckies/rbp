@@ -21,11 +21,11 @@
       "@types/nanoid",
       "@types/lodash",
       "@types/cookie",
-      "@types/vue-markdown",
       "@nuxt/types",
       "@nuxtjs/axios",
+      "vuetify",
       "cookie-universal-nuxt"
     ]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".nuxt"]
 }

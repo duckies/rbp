@@ -102,7 +102,14 @@
           </v-btn>
         </template>
 
-        <v-btn text small href="https://discord.gg/mbwbzAs" target="_blank">
+        <v-btn
+          text
+          small
+          href="https://discord.gg/mbwbzAs"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Discord Invite"
+        >
           <discord-logo />
         </v-btn>
 
@@ -180,6 +187,7 @@ export default class Navigation extends Vue {
 </script>
 
 <style lang="scss">
+@import '~vuetify/src/styles/styles.sass';
 @import '~vuetify/src/components/VGrid/_mixins';
 
 .v-app-bar {

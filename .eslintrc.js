@@ -2,10 +2,10 @@ module.exports = {
   root: true,
   env: {
     browser: true,
-    node: true
+    node: true,
   },
   parserOptions: {
-    parser: '@typescript-eslint/parser'
+    parser: '@typescript-eslint/parser',
   },
   extends: [
     '@nuxtjs',
@@ -14,7 +14,7 @@ module.exports = {
     'plugin:prettier/recommended',
     'prettier',
     'prettier/vue',
-    'plugin:nuxt/recommended'
+    'plugin:nuxt/recommended',
   ],
   plugins: ['@typescript-eslint'],
   // add your custom rules here
@@ -22,13 +22,13 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     'no-explicit-any': 'off',
-    '@typescript-eslint/camelcase': 'off'
+    '@typescript-eslint/camelcase': 'off',
   },
   overrides: [
     {
       // The auth config uses camel case not within our control.
       files: ['nuxt.config.ts', 'nuxt.config.js'],
-      rules: { '@typescript-eslint/camelcase': 'off' }
-    }
-  ]
+      rules: { '@typescript-eslint/camelcase': 'off' },
+    },
+  ],
 }

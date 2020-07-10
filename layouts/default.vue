@@ -2,11 +2,11 @@
   <v-app dark>
     <navigation />
 
-    <v-content class="pa-0">
+    <v-main class="pa-0">
       <nuxt />
-    </v-content>
+    </v-main>
 
-    <footer-info />
+    <footer-nav />
   </v-app>
 </template>
 

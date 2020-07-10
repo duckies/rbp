@@ -5,14 +5,15 @@
   "author": "John Gilbert",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
-    "build": "nuxt build",
-    "start": "nuxt start",
-    "generate": "nuxt generate",
+    "dev": "nuxt-ts",
+    "build": "nuxt-ts build",
+    "generate": "nuxt-ts generate",
+    "start": "nuxt-ts start",
     "lint": "eslint --fix --ext .ts,.js,.vue .",
     "precommit": "npm run lint"
   },
   "dependencies": {
+    "@nuxt/typescript-runtime": "^1.0.0",
     "@nuxtjs/axios": "^5.11.0",
     "babel-runtime": "^6.26.0",
     "cookie": "^0.4.1",
@@ -31,14 +32,15 @@
     "vue-awesome-swiper": "^4.1.1",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^9.0.0",
-    "vuebar": "0.0.20"
+    "vuebar": "0.0.20",
+    "vuetify": "^2.3.4",
+    "vuetify-loader": "^1.5.0"
   },
   "devDependencies": {
     "@aceforth/nuxt-optimized-images": "^1.0.1",
     "@nuxt/types": "^2.13.3",
     "@nuxt/typescript-build": "^2.0.0",
     "@nuxtjs/eslint-config-typescript": "^2.0.0",
-    "@nuxtjs/vuetify": "^2.0.0-beta.0",
     "@types/cookie": "^0.4.0",
     "@types/dotenv-webpack": "^1.8.0",
     "@types/lodash": "^4.14.157",
@@ -57,6 +59,8 @@
     "lqip-loader": "^2.2.0",
     "prettier": "^2.0.5",
     "responsive-loader": "^1.2.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.2",
     "sqip-loader": "^1.0.0",
     "webp-loader": "^0.6.0"
   },

@@ -290,8 +290,8 @@ export default class CharacterPanel extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/style/blizzard/classes.scss';
-@import '@/assets/style/blizzard/items.scss';
+@import '@/assets/styles/blizzard/classes.scss';
+@import '@/assets/styles/blizzard/items.scss';
 
 .fill-height {
   height: 100%;
