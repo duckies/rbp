@@ -27,7 +27,6 @@ import { DiscordQueue } from './discord.queue';
 import { DiscordService } from './discord.service';
 import { AudioPlugin } from './plugins/audio.plugin';
 import { HelpPlugin } from './plugins/help.plugin';
-import { MemeBusterPlugin } from './plugins/meme-buster.plugin';
 import { PingPlugin } from './plugins/ping.plugin';
 import { DiscordPlugin } from './plugins/plugin.class';
 import { ReactRolesPlugin } from './plugins/react-roles.plugin';
@@ -55,7 +54,6 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     DiscordService,
     ReactRolesPlugin,
     ReactionsPlugin,
-    MemeBusterPlugin,
   ],
   controllers: [DiscordController],
   exports: [DiscordService],
