@@ -1,3 +1,4 @@
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 import {
   OnQueueCompleted,
   OnQueueError,
@@ -8,30 +9,19 @@ import {
 import { HttpException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from '@mikro-orm/core';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { GuildCharacter } from './character.entity';
 import { CharacterService } from './character.service';
-
-export interface GuildUpdateResult {
-  processed: number;
-  added: number;
-  success: number;
-  deleted: number;
-  ignored: number;
-  missing: number;
-  failed: number;
-  total: number;
-}
+import { CharacterRemoveResult } from './interfaces/character-remove.interface';
+import { CharacterUpdateResult } from './interfaces/character-update.interface';
 
 @Processor('character')
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
   private readonly em: EntityManager;
-  private results: GuildUpdateResult;
 
   private findGuildDTO: FindGuildDto = {
     name: 'really-bad-players',
@@ -52,30 +42,23 @@ export class CharacterQueue {
       10,
     );
     this.em = orm.em.fork();
-    this.setup();
-  }
-
-  private setup() {
-    this.results = {
-      processed: 0,
-      added: 0,
-      success: 0,
-      deleted: 0,
-      ignored: 0,
-      missing: 0,
-      failed: 0,
-      total: 0,
-    };
   }
 
   @Process({ name: 'update-guild-members', concurrency: 1 })
-  private async updateGuildMembers(job: Job) {
+  private async updateGuildMembers(job: Job): Promise<CharacterUpdateResult> {
     const [guildCharacters, roster] = await Promise.all([
       this.em.find(GuildCharacter, null),
       this.profileService.getGuildRoster(this.findGuildDTO, this.minLVL),
     ]);
 
-    this.results.total = roster.data.members.length;
+    const results: CharacterUpdateResult = {
+      total: roster.data.members.length,
+      processed: 0,
+      success: 0,
+      deleted: 0,
+      ignored: 0,
+      failed: 0,
+    };
 
     await Promise.all(
       roster.data.members.map(async (member) => {
@@ -92,7 +75,7 @@ export class CharacterQueue {
             );
 
             this.em.persist(guildCharacter);
-            this.results.added++;
+            results.added++;
           } else {
             const status = await this.profileService.getCharacterProfileStatus(
               guildCharacter.getFindCharacterDTO(),
@@ -103,7 +86,7 @@ export class CharacterQueue {
               status.data.is_valid === false ||
               status.data.id !== guildCharacter.id
             ) {
-              this.results.deleted++;
+              results.deleted++;
               return this.em.remove(GuildCharacter, guildCharacter);
             }
 
@@ -114,11 +97,11 @@ export class CharacterQueue {
 
           await this.characterService.populateGuildCharacter(guildCharacter);
 
-          this.results.success++;
+          results.success++;
         } catch (error) {
           if (error instanceof HttpException) {
             if (error.getStatus() === 304) {
-              this.results.ignored++;
+              results.ignored++;
               return;
             }
 
@@ -128,18 +111,21 @@ export class CharacterQueue {
             }
           }
 
+          console.error(error);
           this.logger.error(`Updating Error ${error}`, error.trace);
         }
 
-        job.progress(++this.results.processed / this.results.total);
+        job.progress(++results.processed / results.total);
       }),
     );
 
     await this.em.flush();
+
+    return results;
   }
 
   @Process({ name: 'add-remove-members', concurrency: 1 })
-  private async addOrRemoveMembers() {
+  private async addOrRemoveMembers(): Promise<CharacterRemoveResult> {
     const roster = await this.profileService.getGuildRoster(this.findGuildDTO);
 
     const ids = roster.data.members.map((m) => m.character.id);
@@ -148,28 +134,56 @@ export class CharacterQueue {
       id: { $nin: ids },
     });
 
-    this.logger.log(`Removing member(s) ${notInGuild.map((m) => m.name)}`);
+    const names = notInGuild.map((m) => m.name);
 
     this.em.remove(GuildCharacter, notInGuild);
 
     await this.em.flush();
+
+    return { names };
   }
 
   @OnQueueError()
   private onError(_job: Job<number>, error: Error): void {
+    console.error(error);
     this.logger.error('Global Error: ' + error);
   }
 
   @OnQueueCompleted()
-  private onCompleted(job: Job<number>): void {
+  private onCompleted(
+    job: Job<number>,
+    results: CharacterUpdateResult | CharacterRemoveResult,
+  ): void {
     if (job.name === 'update-guild-members') {
-      // this.logger.log(`${result.success} updated ${result.failed} failed and ${result.ignored} ignored.`);
-      this.logger.log(this.results);
+      const statuses = [];
+
+      Object.keys(results).forEach((r) => {
+        if (r === 'processed' || r === 'total' || results[r] === 0) return;
+
+        statuses.push(
+          `${results[r]} ${r.charAt(0).toUpperCase() + r.slice(1)}`,
+        );
+      });
+
+      this.logger.log(
+        `[Updated ${
+          (results as CharacterUpdateResult).total
+        } Guild Characters]: ${statuses.join(', ')}`,
+      );
+    }
+
+    if (job.name === 'add-remove-members') {
+      const len = (results as CharacterRemoveResult).names.length;
+      this.logger.log(
+        `Removed ${len} Character${
+          len === 0 ? 's' : len === 1 ? ':' : 's:'
+        } ${(results as CharacterRemoveResult).names.join(', ')}`,
+      );
     }
   }
 
   @OnQueueFailed()
   private onFailed(_job: Job<number>, error: Error): void {
-    this.logger.error(`${error}`);
+    this.logger.error(error);
   }
 }

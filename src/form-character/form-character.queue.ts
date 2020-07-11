@@ -1,3 +1,4 @@
+import { EntityManager, MikroORM } from '@mikro-orm/core';
 import {
   OnQueueCompleted,
   OnQueueError,
@@ -7,26 +8,16 @@ import {
 } from '@nestjs/bull';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from '@mikro-orm/core';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
-import { GuildUpdateResult } from '../guild-character/character.queue';
+import { CharacterUpdateResult } from '../guild-character/interfaces/character-update.interface';
 import { FormCharacter } from './form-character.entity';
 import { FormCharacterService } from './form-character.service';
-
-interface Results {
-  total: number;
-  processed: number;
-  success: number;
-  failed: number;
-  deleted: number;
-}
 
 @Injectable()
 @Processor('form-character')
 export class FormCharacterQueue {
   private readonly logger: Logger = new Logger(FormCharacterQueue.name);
   private readonly em: EntityManager;
-  private results: GuildUpdateResult;
 
   constructor(
     private readonly formCharacterService: FormCharacterService,
@@ -34,20 +25,6 @@ export class FormCharacterQueue {
     orm: MikroORM,
   ) {
     this.em = orm.em.fork();
-    this.setup();
-  }
-
-  private setup() {
-    this.results = {
-      processed: 0,
-      added: 0,
-      success: 0,
-      deleted: 0,
-      ignored: 0,
-      missing: 0,
-      failed: 0,
-      total: 0,
-    };
   }
 
   // Characters must be deleted if the status endpoint:
@@ -55,11 +32,18 @@ export class FormCharacterQueue {
   // 2. The `is_valid` attribute is false.
   // 3. The character id does not match.
 
-  @Process({ name: 'characterUpdate', concurrency: 1 })
-  private async updateSubmissionCharacters(job: Job) {
+  @Process({ name: 'character-update', concurrency: 1 })
+  private async updateFormCharacters(job: Job): Promise<CharacterUpdateResult> {
     const formCharacters = await this.em.find(FormCharacter, null);
 
-    this.results.total = formCharacters.length;
+    const results: CharacterUpdateResult = {
+      total: formCharacters.length,
+      processed: 0,
+      success: 0,
+      deleted: 0,
+      ignored: 0,
+      failed: 0,
+    };
 
     await Promise.all(
       formCharacters.map(async (formCharacter) => {
@@ -73,7 +57,7 @@ export class FormCharacterQueue {
             status.data.id !== formCharacter.id ||
             status.data.is_valid === false
           ) {
-            this.results.deleted++;
+            results.deleted++;
             return this.em.remove(FormCharacter, formCharacter);
           }
 
@@ -81,30 +65,32 @@ export class FormCharacterQueue {
 
           await this.formCharacterService.populateFormCharacter(formCharacter);
 
-          this.results.success++;
+          results.success++;
         } catch (error) {
           if (error instanceof HttpException) {
             if (error.getStatus() === 304) {
-              this.results.ignored++;
+              results.ignored++;
               return;
             }
 
             if (error.getStatus() === 404) {
               this.em.remove(FormCharacter, formCharacter);
-              this.results.deleted++;
+              results.deleted++;
               return;
             }
 
-            this.results.failed++;
+            results.failed++;
             this.logger.error(`Updating Error ${error}`, error.stack);
           }
         }
 
-        job.progress(++this.results.processed / this.results.total);
+        job.progress(++results.processed / results.total);
       }),
     );
 
     await this.em.flush();
+
+    return results;
   }
 
   @OnQueueFailed()
@@ -120,9 +106,19 @@ export class FormCharacterQueue {
   }
 
   @OnQueueCompleted()
-  private onCompleted(job: Job) {
+  private onCompleted(job: Job, results: CharacterUpdateResult) {
+    const statuses = [];
+
+    Object.keys(results).forEach((r) => {
+      if (r === 'processed' || r === 'total' || results[r] === 0) return;
+
+      statuses.push(`${results[r]} ${r.charAt(0).toUpperCase() + r.slice(1)}`);
+    });
+
     if (job.name === 'characterUpdate') {
-      this.logger.log(this.results);
+      this.logger.log(
+        `[Updated ${results.total} Form Characters]: ${statuses.join(', ')}`,
+      );
     }
   }
 }
