@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import {
   EntityManager,
   EntityRepository,
   QueryOrder,
   wrap,
 } from '@mikro-orm/core';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { Form } from '../form/form.entity';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
@@ -52,16 +52,6 @@ export class FormQuestionService {
   }
 
   /**
-   * Finds all of the questions in a form of the specified type.
-   * Used primarily for retrieving file upload fields for multer.
-   * @param id Form id
-   * @param type Question FieldType
-   */
-  findByFormAndType(id: number, type: FieldType) {
-    return this.formQuestionRepository.find({ form: id, type });
-  }
-
-  /**
    * Finds a question by id.
    * @param id Question UUID
    */
@@ -73,10 +63,8 @@ export class FormQuestionService {
    * Updates a question from a valid DTO.
    * @param updateQuestionDto UpdateQuestionDto
    */
-  async update(updateQuestionDto: UpdateQuestionDto) {
-    const question = await this.formQuestionRepository.findOneOrFail(
-      updateQuestionDto.id,
-    );
+  async update(id: string, updateQuestionDto: UpdateQuestionDto) {
+    const question = await this.formQuestionRepository.findOneOrFail(id);
 
     wrap(question).assign(updateQuestionDto);
 
@@ -94,7 +82,9 @@ export class FormQuestionService {
   async delete(id: string) {
     const question = await this.formQuestionRepository.findOneOrFail(id);
 
-    await this.formQuestionRepository.remove(question);
+    this.formQuestionRepository.remove(question);
+
+    await this.formQuestionRepository.flush();
 
     return question;
   }

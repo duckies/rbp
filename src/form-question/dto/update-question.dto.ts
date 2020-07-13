@@ -5,49 +5,44 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   Min,
 } from 'class-validator';
 import { FileTypes } from '../enums/file-types.enum';
 
 export class UpdateQuestionDto {
-  // Required for validation logic.
-  @IsUUID()
-  id: string;
-
-  @IsString()
   @IsOptional()
-  question?: string;
-
   @IsString()
-  @IsOptional()
-  label?: string;
+  readonly question?: string;
 
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  hint?: string;
+  readonly label?: string;
 
+  @IsOptional()
+  @IsString()
+  readonly hint?: string;
+
+  @IsOptional()
   @IsBoolean()
-  @IsOptional()
-  required?: boolean;
+  readonly required?: boolean;
 
   @IsOptional()
   @IsString({ each: true })
-  choices?: string[];
+  readonly choices?: string[];
 
   @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(10)
-  multiple?: number;
+  readonly multiple?: number;
 
-  @IsNumber()
   @IsOptional()
-  order?: number;
+  @IsNumber()
+  readonly order?: number;
 
   @IsOptional()
   @IsArray()
   @IsEnum(FileTypes, { each: true })
-  fileTypes?: FileTypes[];
+  readonly fileTypes?: FileTypes[];
 }
