@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { EntityRepository, wrap } from '@mikro-orm/core';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
@@ -23,7 +23,7 @@ export class FormCharacterService {
     });
 
     if (!formCharacter) {
-      return await this.create(findCharacterDto);
+      return this.create(findCharacterDto);
     }
 
     await this.populateFormCharacter(formCharacter);
@@ -53,6 +53,7 @@ export class FormCharacterService {
   }
 
   public async populateFormCharacter(formCharacter: FormCharacter) {
+    const findCharacterDto = formCharacter.getFindCharacterDTO();
     const [
       summary,
       specs,
@@ -61,30 +62,17 @@ export class FormCharacterService {
       equipment,
       raiderIO,
     ] = await Promise.allSettled([
-      this.profileService.getCharacterProfileSummary(
-        formCharacter.getFindCharacterDTO(),
-      ),
-      this.profileService.getCharacterSpecializationsSummary(
-        formCharacter.getFindCharacterDTO(),
-      ),
-      this.profileService.getCharacterMediaSummary(
-        formCharacter.getFindCharacterDTO(),
-      ),
-      this.profileService.getCharacterRaids(
-        formCharacter.getFindCharacterDTO(),
-      ),
-      this.profileService.getCharacterEquipmentSummary(
-        formCharacter.getFindCharacterDTO(),
-      ),
-      this.raiderIOService.getCharacterRaiderIO(
-        formCharacter.getFindCharacterDTO(),
-        [
-          RaiderIOCharacterFields.GEAR,
-          RaiderIOCharacterFields.RAID_PROGRESSION,
-          RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
-          RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
-        ],
-      ),
+      this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
+      this.profileService.getCharacterMediaSummary(findCharacterDto),
+      this.profileService.getCharacterRaids(findCharacterDto),
+      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
+      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+        RaiderIOCharacterFields.GEAR,
+        RaiderIOCharacterFields.RAID_PROGRESSION,
+        RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
+        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+      ]),
     ]);
 
     if (summary.status === 'fulfilled') {
