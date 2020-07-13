@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Client, Guild, GuildMember, MessageEmbed, TextChannel } from 'discord.js';
+import {
+  Client,
+  Guild,
+  GuildMember,
+  MessageEmbed,
+  TextChannel,
+} from 'discord.js';
 import { sample } from 'lodash';
 import moment from 'moment';
 import { SubmissionService } from '../../form-submission/form-submission.service';
@@ -15,7 +21,12 @@ import { DiscordPlugin } from './plugin.class';
 @Plugin('Welcomer')
 export class WelcomerPlugin extends DiscordPlugin {
   private readonly logger = new Logger(WelcomerPlugin.name);
-  private readonly config: PluginConfig<{ channel: string; message: string; count: number; date: Date }>;
+  private readonly config: PluginConfig<{
+    channel: string;
+    message: string;
+    count: number;
+    date: Date;
+  }>;
   private readonly goodbyeMessages = [
     '{username} is off to greener pastures.',
     '{username} became a born-again!',
@@ -31,20 +42,33 @@ export class WelcomerPlugin extends DiscordPlugin {
   ) {
     super();
     this.config = discordService.getConfig(WelcomerPlugin.name);
-    this.config.registerGuild({ channel: '', message: '', count: 0, date: new Date() });
+    this.config.registerGuild({
+      channel: '',
+      message: '',
+      count: 0,
+      date: new Date(),
+    });
   }
 
   @CommandGroup({ name: 'welcome' })
   welcome() {}
 
-  @Command({ name: 'channel', group: 'welcome', description: 'Sets the welcome channel' })
+  @Command({
+    name: 'channel',
+    group: 'welcome',
+    description: 'Sets the welcome channel',
+  })
   async setChannel(ctx: Context, cid: string) {
     const channel = ctx.message.guild.channels.cache.get(cid);
 
     if (!channel) {
-      return await ctx.send('Cannot find the given channel id.');
-    } else if (!channel.permissionsFor(ctx.message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS'])) {
-      return await ctx.send('Cannot send messages or embeds to this channel.');
+      return ctx.send('Cannot find the given channel id.');
+    } else if (
+      !channel
+        .permissionsFor(ctx.message.guild.me)
+        .has(['SEND_MESSAGES', 'EMBED_LINKS'])
+    ) {
+      return ctx.send('Cannot send messages or embeds to this channel.');
     }
 
     await this.config.setGuild(ctx.message.guild, { channel: cid });
@@ -62,10 +86,14 @@ export class WelcomerPlugin extends DiscordPlugin {
     const channel = client.channels.cache.get(cid);
 
     if (!channel || channel.type !== 'text') {
-      return this.logger.error('Channel was not found or is not a text channel.');
+      return this.logger.error(
+        'Channel was not found or is not a text channel.',
+      );
     }
 
-    const submission = await this.submissionService.findOpenByUserDiscordID(member.id);
+    const submission = await this.submissionService.findOpenByUserDiscordID(
+      member.id,
+    );
 
     if (submission) {
       const embed = new MessageEmbed({
@@ -76,16 +104,28 @@ export class WelcomerPlugin extends DiscordPlugin {
         fields: [
           {
             name: 'Links',
-            value: `[Application](${this.backendConfig.get('BASE_URL')}/applications/${submission.id})`,
+            value: `[Application](${this.backendConfig.get(
+              'BASE_URL',
+            )}/applications/${submission.id})`,
           },
         ],
       });
 
       member.send(embed);
 
-      await this.sendWelcomeMessage(member.guild, channel as TextChannel, member, true);
+      await this.sendWelcomeMessage(
+        member.guild,
+        channel as TextChannel,
+        member,
+        true,
+      );
     } else {
-      await this.sendWelcomeMessage(member.guild, channel as TextChannel, member, false);
+      await this.sendWelcomeMessage(
+        member.guild,
+        channel as TextChannel,
+        member,
+        false,
+      );
     }
   }
 
@@ -99,7 +139,9 @@ export class WelcomerPlugin extends DiscordPlugin {
     const channel = client.channels.cache.get(cid) as TextChannel;
 
     if (!channel || channel.type !== 'text') {
-      return this.logger.error('Channel was not found or is not a text channel.');
+      return this.logger.error(
+        'Channel was not found or is not a text channel.',
+      );
     }
 
     await this.sendGoobyeMessage(channel, member);
@@ -118,22 +160,34 @@ export class WelcomerPlugin extends DiscordPlugin {
     // Remove the old welcome message, if possible.
     if (mid) {
       try {
-        await channel.messages.cache.get(mid).delete({ reason: 'Removing old welcome message' });
+        await channel.messages.cache
+          .get(mid)
+          .delete({ reason: 'Removing old welcome message' });
       } catch (error) {
         // Intentionally ignoring this error.
       }
     }
 
     const message = await channel.send(
-      `Welcome ${applicant ? 'applicant ' : ''}${member} to RBP, ${newCount} baddie${
+      `Welcome ${
+        applicant ? 'applicant ' : ''
+      }${member} to RBP, ${newCount} baddie${
         newCount > 1 ? 's' : ''
       } joined today.`,
     );
 
-    await this.config.setGuild(guild, { count: newCount, date: new Date(), message: message.id });
+    await this.config.setGuild(guild, {
+      count: newCount,
+      date: new Date(),
+      message: message.id,
+    });
   }
 
-  @Command({ name: 'debug', group: 'welcome', description: 'Prints the current configuration.' })
+  @Command({
+    name: 'debug',
+    group: 'welcome',
+    description: 'Prints the current configuration.',
+  })
   private async debug(ctx: Context) {
     await ctx.send(
       `**Guild**\n\`\`\`JSON\n${JSON.stringify(

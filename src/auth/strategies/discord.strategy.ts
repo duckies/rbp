@@ -27,7 +27,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
     refreshToken: string,
     profile: DiscordProfile,
   ): Promise<User> {
-    return await this.authService.validateDiscordLogin(
+    return this.authService.validateDiscordLogin(
       accessToken,
       refreshToken,
       profile,
