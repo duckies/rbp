@@ -1,5 +1,5 @@
 import { IsEnum, IsString } from 'class-validator';
-import { RealmSlug } from '../enums/realm.enum';
+import { RealmSlug, RealmType } from '../enums/realm.enum';
 import { Region } from '../enums/region.enum';
 
 export class FindCharacterDto {
@@ -7,12 +7,16 @@ export class FindCharacterDto {
   readonly name: string;
 
   @IsEnum(RealmSlug, { message: '$value is not a valid realm slug.' })
-  readonly realm: RealmSlug;
+  readonly realm: RealmType;
 
   @IsEnum(Region)
   readonly region: Region = Region.US;
 
-  constructor(name: string, realm: RealmSlug = RealmSlug.Area52, region: Region = Region.US) {
+  constructor(
+    name: string,
+    realm: RealmType = RealmSlug.Area52,
+    region: Region = Region.US,
+  ) {
     this.name = name;
     this.realm = realm;
     this.region = region;
