@@ -103,7 +103,7 @@ export class FormCharacterService {
   }
 
   public findAll() {
-    return this.formCharacterRepository.find({});
+    return this.formCharacterRepository.findAll();
   }
 
   public async update(

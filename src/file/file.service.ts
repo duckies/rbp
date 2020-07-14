@@ -43,7 +43,7 @@ export class FileService {
     const file = await this.fileRepository.findOneOrFail(id, ['author']);
 
     if (user && file.author.id !== user.id) {
-      throw new UnauthorizedException('You do not own this file.');
+      throw new UnauthorizedException('You do not own this file');
     }
 
     await unlink(file.path);

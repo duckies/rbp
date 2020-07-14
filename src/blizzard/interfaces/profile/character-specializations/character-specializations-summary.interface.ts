@@ -11,7 +11,7 @@ export interface CharacterSpecializationsSummary {
 export interface SpecializationMeta {
   specialization: KeyNameId;
   talents: TalentMeta[];
-  glyphs: KeyNameId[];
+  glyphs?: KeyNameId[];
   pvp_talent_slots: PvPTalent[];
 }
 

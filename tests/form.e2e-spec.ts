@@ -13,11 +13,10 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
-import { AccessControlModule } from 'nest-access-control';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import request from 'supertest';
 import MikroORMConfig from '../mikro-orm.config';
-import { roleBuilder, Roles } from '../src/app.roles';
+import { Roles } from '../src/app.roles';
 import { AuthModule } from '../src/auth/auth.module';
 import { AuthService } from '../src/auth/auth.service';
 import { CreateFormDto } from '../src/form/dto/create-form.dto';
@@ -59,7 +58,6 @@ describe('Forms', () => {
           }),
         }),
         PassportModule.register({ defaultStrategy: 'blizzard' }),
-        AccessControlModule.forRoles(roleBuilder),
         UserModule,
         AuthModule,
         FormModule,

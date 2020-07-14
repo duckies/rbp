@@ -11,7 +11,7 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly config: ConfigService,
+    config: ConfigService,
   ) {
     super({
       clientID: config.get('BLIZZARD_CLIENTID'),

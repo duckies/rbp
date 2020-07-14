@@ -13,19 +13,17 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
-import { AccessControlModule } from 'nest-access-control';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import request from 'supertest';
 import { v4 } from 'uuid';
 import MikroORMConfig from '../mikro-orm.config';
-import { roleBuilder, Roles } from '../src/app.roles';
+import { Roles } from '../src/app.roles';
 import { AuthModule } from '../src/auth/auth.module';
 import { AuthService } from '../src/auth/auth.service';
 import { CreateQuestionDto, UpdateQuestionDto } from '../src/form-question/dto';
 import { FieldType } from '../src/form-question/enums/field-type.enum';
 import { FileTypes } from '../src/form-question/enums/file-types.enum';
 import { FormQuestion } from '../src/form-question/question.entity';
-import { FormQuestionService } from '../src/form-question/question.service';
 import { CreateFormDto } from '../src/form/dto/create-form.dto';
 import { Form } from '../src/form/form.entity';
 import { FormModule } from '../src/form/form.module';
@@ -41,7 +39,6 @@ describe('Form Questions', () => {
   let orm: MikroORM;
   let authService: AuthService;
   let em: EntityManager<IDatabaseDriver<Connection>>;
-  let questionService: FormQuestionService;
 
   /**
    * Seeding Data
@@ -75,7 +72,6 @@ describe('Form Questions', () => {
           }),
         }),
         PassportModule.register({ defaultStrategy: 'blizzard' }),
-        AccessControlModule.forRoles(roleBuilder),
         UserModule,
         AuthModule,
         FormModule,

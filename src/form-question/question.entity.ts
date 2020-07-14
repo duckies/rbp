@@ -1,4 +1,11 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  BaseEntity,
+  Entity,
+  Enum,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { EnumArray } from '../../config/types/enum-array.type';
 import { Form } from '../form/form.entity';
@@ -6,7 +13,7 @@ import { FieldType } from './enums/field-type.enum';
 import { FileTypes } from './enums/file-types.enum';
 
 @Entity()
-export class FormQuestion {
+export class FormQuestion extends BaseEntity<FormQuestion, 'id'> {
   @PrimaryKey()
   id: string = v4();
 

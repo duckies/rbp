@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-discord';
-import { User } from '../../user/user.entity';
 import { AuthService, DiscordProfile } from '../auth.service';
 import { BlizzardStrategy } from './blizzard.strategy';
 
@@ -26,7 +25,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
     accessToken: string,
     refreshToken: string,
     profile: DiscordProfile,
-  ): Promise<User> {
+  ) {
     return this.authService.validateDiscordLogin(
       accessToken,
       refreshToken,

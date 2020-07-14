@@ -1,10 +1,19 @@
 import { Asset } from '../../game-data/item/item-media.interface';
-import { Character, Enum, KeyId, KeyNameId, Link, Links, RGBA } from '../shared-profile.interface';
+import {
+  Character,
+  Enum,
+  KeyId,
+  KeyNameId,
+  Link,
+  Links,
+  RGBA,
+} from '../shared-profile.interface';
 
 export interface CharacterEquipmentSummary {
   _links: Links;
   character: Character;
   equipped_items: EquippedItem[];
+  equipped_item_sets: ItemSet[];
 }
 
 export interface ItemMedia {
@@ -18,7 +27,7 @@ export interface EquippedItem {
   slot: Enum;
   quantity: number;
   context: number;
-  bonus_list: number[];
+  bonus_list?: number[];
   quality: Enum;
   name: string;
   modified_appearance_id?: number;
@@ -33,16 +42,100 @@ export interface EquippedItem {
   spells?: EquipmentSpell[];
   requirements?: Requirements;
   level: Level;
-  transmog: Transmog;
+  transmog?: Transmog;
   is_subclass_hidden?: boolean;
   durability?: Durability;
-  name_description: NameDescription;
+  name_description?: NameDescription;
+  enchantments?: Enchantment[];
+  sell_price?: SellPrice;
+  is_corrupted?: boolean;
+  unique_equipped?: string;
+  limit_category?: string;
+  sockets?: Socket[];
+  weapon?: Weapon;
+  set?: ItemSet;
+  description?: string;
+}
+
+export interface ItemSet {
+  item_set: KeyNameId;
+  items: ItemSetItem[];
+  effects: ItemSetEffects[];
+  display_string: string;
+}
+
+export interface ItemSetEffects {
+  display_string: string;
+  required_count: number;
+}
+
+export interface ItemSetItem {
+  item: KeyNameId;
+  is_equipped?: boolean;
+}
+
+export interface Weapon {
+  damage: WeaponDamage;
+  attack_speed: ValueDisplay;
+  dps: ValueDisplay;
+}
+
+export interface WeaponDamage {
+  min_value: number;
+  max_value: number;
+  display_string: string;
+  damage_class: Enum;
+}
+
+export interface ValueDisplay {
+  value: number;
+  display_string: string;
+}
+
+export interface Socket {
+  socket_type: Enum;
+  item: KeyNameId;
+  display_string: string;
+  media: KeyId;
+}
+
+export interface SellPrice {
+  value: number;
+  display_strings: SellPriceDisplayStrings;
+}
+
+export interface SellPriceDisplayStrings {
+  header: string;
+  gold: string;
+  silver: string;
+  copper: string;
+}
+
+export interface Enchantment {
+  display_string: string;
+  source_item: KeyNameId;
+  enchantment_id: number;
+  enchantment_slot: EnchantmentSlot;
+  spell?: EnchantmentSpell;
+}
+
+export interface EnchantmentSlot {
+  id: number;
+  type: string;
+}
+
+// TODO: This might be a game-data thing.
+export interface EnchantmentSpell {
+  spell: KeyNameId;
+  description: string;
 }
 
 export interface AzeriteDetails {
-  selected_powers: AzeritePower[];
-  selected_powers_string: string;
-  level: HeartLevel;
+  selected_essences?: SelectedEssence[];
+  selected_powers?: AzeritePower[];
+  selected_powers_string?: string;
+  level?: HeartLevel;
+  percentage_to_next_level?: number;
 }
 
 export interface HeartLevel {
@@ -54,7 +147,7 @@ export interface AzeritePower {
   id: number;
   tier: number;
   spell_tooltip: SpellTooltip;
-  is_display_hidden: boolean;
+  is_display_hidden?: boolean;
 }
 
 export interface SpellTooltip {
@@ -63,6 +156,7 @@ export interface SpellTooltip {
   cast_time: string;
   range?: string;
   cooldown?: string;
+  power_cost?: string;
 }
 
 export interface Armor {
@@ -78,11 +172,20 @@ export interface Display {
 export interface Stat {
   type: Enum;
   value: number;
+  is_negated?: boolean;
+  is_equip_bonus?: boolean;
   display: Display;
 }
 
 export interface Requirements {
   level: Level;
+  skill?: ItemSkillRequirement;
+}
+
+export interface ItemSkillRequirement {
+  profession: KeyNameId;
+  level: number;
+  display_string: string;
 }
 
 export interface Level {
@@ -124,4 +227,5 @@ export interface SelectedEssence {
 export interface EquipmentSpell {
   spell: KeyNameId;
   description: string;
+  display_color?: RGBA;
 }
