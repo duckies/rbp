@@ -3,10 +3,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { SentryModule } from '@ntegral/nestjs-sentry';
-import { AccessControlModule } from 'nest-access-control';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import MikroOrmConfig from '../mikro-orm.config';
-import { roleBuilder } from './app.roles';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
@@ -49,7 +47,6 @@ import { UserModule } from './user/user.module';
       defaultStrategy: 'blizzard',
     }),
     MikroOrmModule.forRoot(MikroOrmConfig),
-    AccessControlModule.forRoles(roleBuilder),
     DiscordModule.forRoot({
       partials: ['REACTION', 'CHANNEL', 'MESSAGE', 'USER', 'GUILD_MEMBER'],
       ws: {

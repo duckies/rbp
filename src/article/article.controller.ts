@@ -25,7 +25,7 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
-  @Auth({ resource: 'article', action: 'create', possession: 'any' })
+  @Auth('article', 'create:any')
   @Post()
   create(@Usr() user: User, @Body() createArticleDto: CreateArticleDTO) {
     return this.articleService.create(user, createArticleDto);
@@ -42,7 +42,7 @@ export class ArticleController {
     return this.articleService.findOneOrFail(id);
   }
 
-  @Auth({ resource: 'article', action: 'update', possession: 'any' })
+  @Auth('article', 'update:any')
   @Patch(':id')
   update(
     @Param() { id }: FindArticleDTO,
@@ -51,7 +51,7 @@ export class ArticleController {
     return this.articleService.update(id, updateArticleDto);
   }
 
-  @Auth({ resource: 'article', action: 'delete', possession: 'any' })
+  @Auth('article', 'delete:any')
   @Delete(':id')
   delete(@Param() { id }: FindArticleDTO) {
     return this.articleService.delete(id);

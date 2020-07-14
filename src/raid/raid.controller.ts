@@ -18,9 +18,12 @@ import { RaidService } from './raid.service';
 @Controller('raids')
 @UseInterceptors(CacheInterceptor)
 export class RaidController {
-  constructor(private readonly raidService: RaidService, private readonly raiderIOService: RaiderIOService) {}
+  constructor(
+    private readonly raidService: RaidService,
+    private readonly raiderIOService: RaiderIOService,
+  ) {}
 
-  @Auth({ resource: 'raid', action: 'create', possession: 'any' })
+  @Auth('raid', 'create:any')
   @Post()
   create(@Body() createRaidDto: CreateRaidDto) {
     return this.raidService.create(createRaidDto);
@@ -46,7 +49,7 @@ export class RaidController {
     return this.raidService.findOne(id);
   }
 
-  @Auth({ resource: 'raid', action: 'update', possession: 'any' })
+  @Auth('raid', 'delete:any')
   @Put(':id')
   update(@Param('id') id: number, @Body() updateRaidDto: UpdateRaidDto) {
     return this.raidService.update(id, updateRaidDto);

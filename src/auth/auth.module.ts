@@ -1,15 +1,18 @@
 import { Global, Module } from '@nestjs/common';
-import { ACGuard } from 'nest-access-control';
+import { ACCESS_CONTROL } from '../app.constants';
+import AccessControl from '../app.roles';
 import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AccessControlGuard } from './guards/compose.guard';
-import { ControlGuard } from './guards/control.guard';
-import { JWTGuard } from './guards/jwt.guard';
-import { OptionalAuthGuard } from './guards/optional.guard';
+import { AccessControlGuard } from './guards/access-control.guard';
 import { BlizzardStrategy } from './strategies/blizzard.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { DiscordStrategy } from './strategies/discord.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+
+const AccessControlProvider = {
+  provide: ACCESS_CONTROL,
+  useValue: AccessControl,
+};
 
 @Global()
 @Module({
@@ -19,22 +22,16 @@ import { DiscordStrategy } from './strategies/discord.strategy';
     BlizzardStrategy,
     DiscordStrategy,
     AuthService,
-    JWTGuard,
-    ACGuard,
-    ControlGuard,
     AccessControlGuard,
-    OptionalAuthGuard,
+    AccessControlProvider,
   ],
   controllers: [AuthController],
   exports: [
     AuthService,
     JwtStrategy,
     BlizzardStrategy,
-    JWTGuard,
-    ACGuard,
-    ControlGuard,
     AccessControlGuard,
-    OptionalAuthGuard,
+    AccessControlProvider,
   ],
 })
 export class AuthModule {}

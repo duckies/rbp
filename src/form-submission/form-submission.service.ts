@@ -1,3 +1,4 @@
+import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
 import { InjectQueue } from '@nestjs/bull';
 import {
@@ -7,7 +8,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Queue } from 'bull';
-import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FileService } from '../file/file.service';
 import { FormCharacterService } from '../form-character/form-character.service';
@@ -88,7 +88,10 @@ export class SubmissionService {
 
     // Send notifications.
     await this.formQueue.add('newApplication', formSubmission);
-    await this.discordQueue.add('APP_CREATE_NOTIFICATION', formSubmission);
+    await this.discordQueue.add('app-create-notification', formSubmission, {
+      attempts: 1,
+      removeOnFail: true,
+    });
 
     return formSubmission;
   }

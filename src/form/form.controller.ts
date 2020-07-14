@@ -11,41 +11,37 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { CreateFormDto } from './dto/create-form.dto';
 import { FindFormDto } from './dto/find-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
-import { Form } from './form.entity';
 import { FormService } from './form.service';
 
 @Controller('form')
 export class FormController {
   constructor(private readonly formService: FormService) {}
 
-  @Auth({ resource: 'form', action: 'create', possession: 'any' })
+  @Auth('form', 'create:any')
   @Post()
-  create(@Body() createFormDto: CreateFormDto): Promise<Form> {
+  create(@Body() createFormDto: CreateFormDto) {
     return this.formService.create(createFormDto);
   }
 
   @Get()
-  findAll(): Promise<Form[]> {
+  findAll() {
     return this.formService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param() { id }: FindFormDto): Promise<Form> {
+  findOne(@Param() { id }: FindFormDto) {
     return this.formService.findOne(id);
   }
 
-  @Auth({ resource: 'form', action: 'update', possession: 'any' })
+  @Auth('form', 'update:any')
   @Patch(':id')
-  update(
-    @Param() { id }: FindFormDto,
-    @Body() updateFormDto: UpdateFormDto,
-  ): Promise<Form> {
+  update(@Param() { id }: FindFormDto, @Body() updateFormDto: UpdateFormDto) {
     return this.formService.update(id, updateFormDto);
   }
 
-  @Auth({ resource: 'form', action: 'delete', possession: 'any' })
+  @Auth('form', 'delete:any')
   @Delete(':id')
-  delete(@Param() { id }: FindFormDto): Promise<Form> {
+  delete(@Param() { id }: FindFormDto) {
     return this.formService.delete(id);
   }
 }

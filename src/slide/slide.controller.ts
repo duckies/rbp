@@ -9,11 +9,9 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { UseRoles } from 'nest-access-control';
-import { AccessControlGuard } from '../auth/guards/compose.guard';
+import { Auth } from '../auth/decorators/auth.decorator';
 import { CreateSlideDto } from './dto/create-slide.dto';
 import { UpdateSlideDto } from './dto/update-slide.dto';
 import { Slide } from './slide.entity';
@@ -24,16 +22,18 @@ import { SlideService } from './slide.service';
 export class SlideController {
   constructor(private readonly slideService: SlideService) {}
 
+  @Auth('slide', 'create:any')
   @Post()
-  @UseGuards(AccessControlGuard)
-  @UseRoles({ resource: 'slide', action: 'create', possession: 'any' })
   create(@Body() createSlideDto: CreateSlideDto): Promise<Slide> {
     return this.slideService.create(createSlideDto);
   }
 
   @Get()
   @CacheTTL(600)
-  findAll(@Query('take') take?: number, @Query('skip') skip?: number): Promise<Slide[]> {
+  findAll(
+    @Query('take') take?: number,
+    @Query('skip') skip?: number,
+  ): Promise<Slide[]> {
     return this.slideService.findAll(take, skip);
   }
 
@@ -42,16 +42,17 @@ export class SlideController {
     return this.slideService.findOne(id);
   }
 
+  @Auth('slide', 'update:any')
   @Put(':id')
-  @UseGuards(AccessControlGuard)
-  @UseRoles({ resource: 'slide', action: 'update', possession: 'any' })
-  update(@Param('id') id: number, @Body() updateSlideDto: UpdateSlideDto): Promise<Slide> {
+  update(
+    @Param('id') id: number,
+    @Body() updateSlideDto: UpdateSlideDto,
+  ): Promise<Slide> {
     return this.slideService.update(id, updateSlideDto);
   }
 
+  @Auth('slide', 'delete:any')
   @Delete(':id')
-  @UseGuards(AccessControlGuard)
-  @UseRoles({ resource: 'slide', action: 'delete', possession: 'any' })
   delete(@Param('id') id: number): Promise<Slide> {
     return this.slideService.delete(id);
   }

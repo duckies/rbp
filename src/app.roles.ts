@@ -1,4 +1,4 @@
-import { RolesBuilder } from 'nest-access-control';
+import { AccessControl } from 'accesscontrol';
 
 export enum Roles {
   GuildMaster = 'Rank0',
@@ -12,9 +12,9 @@ export enum Roles {
   Guest = 'Rank8',
 }
 
-export const roleBuilder: RolesBuilder = new RolesBuilder();
+export const accessControl = new AccessControl();
 
-roleBuilder
+accessControl
   .grant(Roles.Guest)
   .updateOwn('user', ['nickname', 'avatar'])
   .updateOwn('form-submission')
@@ -45,6 +45,9 @@ roleBuilder
   .extend(Roles.Officer)
   .grant(Roles.GuildMaster)
   .extend(Roles.Officer)
+  .createAny('file-upload')
+  .updateAny('file-upload')
+  .deleteAny('file-upload')
   .createAny('form')
   .updateAny('form')
   .deleteAny('form')
@@ -52,3 +55,5 @@ roleBuilder
   .updateAny('user')
   .deleteAny('user')
   .updateAny('raid');
+
+export default accessControl;

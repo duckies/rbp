@@ -16,7 +16,7 @@ import { FormQuestionService } from './question.service';
 export class FormQuestionController {
   constructor(private readonly formQuestionService: FormQuestionService) {}
 
-  @Auth({ resource: 'question', action: 'create', possession: 'any' })
+  @Auth('question', 'create:any')
   @Post()
   create(@Body() createQuestionDto: CreateQuestionDto) {
     return this.formQuestionService.create(createQuestionDto);
@@ -32,7 +32,7 @@ export class FormQuestionController {
     return this.formQuestionService.findOne(id);
   }
 
-  @Auth({ resource: 'question', action: 'update', possession: 'any' })
+  @Auth('question', 'update:any')
   @Patch(':id')
   update(
     @Param() { id }: FindQuestionDto,
@@ -41,7 +41,7 @@ export class FormQuestionController {
     return this.formQuestionService.update(id, updateQuestionDto);
   }
 
-  @Auth({ resource: 'question', action: 'delete', possession: 'any' })
+  @Auth('question', 'delete:any')
   @Delete(':id')
   delete(@Param() { id }: FindQuestionDto) {
     return this.formQuestionService.delete(id);
