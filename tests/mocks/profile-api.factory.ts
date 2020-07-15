@@ -21,29 +21,29 @@ export class ProfileServiceMock {
     return Object.assign({}, this.axios, { data });
   }
 
-  async getCharacterProfileSummary() {
+  getCharacterProfileSummary() {
     return this.getAxiosResponse(
       CharacterProfileSummaryMock(this.id, this.name),
     );
   }
 
-  async getCharacterSpecializationsSummary() {
+  getCharacterSpecializationsSummary() {
     return this.getAxiosResponse(
       CharacterSpecializationsSummaryMock(this.id, this.name),
     );
   }
 
-  async getCharacterMediaSummary() {
+  getCharacterMediaSummary() {
     return this.getAxiosResponse(CharacterMediaSummaryMock(this.id, this.name));
   }
 
-  async getCharacterEquipmentSummary() {
+  getCharacterEquipmentSummary() {
     return this.getAxiosResponse(
       CharacterEquipmentSummaryMock(this.id, this.name),
     );
   }
 
-  async getCharacterRaids() {
+  getCharacterRaids() {
     return this.getAxiosResponse(CharacterRaidsMock(this.id, this.name));
   }
 }

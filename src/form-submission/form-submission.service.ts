@@ -107,7 +107,7 @@ export class SubmissionService implements OnModuleInit {
     formSubmission.justSubmitted = true;
 
     // Send notifications.
-    await this.formQueue.add('newApplication', formSubmission);
+    await this.formQueue.add('new-application', formSubmission);
     await this.discordQueue.add('app-create-notification', formSubmission, {
       attempts: 1,
       removeOnFail: true,

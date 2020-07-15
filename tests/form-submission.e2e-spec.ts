@@ -9,11 +9,12 @@ import {
   CacheInterceptor,
   INestApplication,
   ValidationPipe,
+  HttpService,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
-import { Queue } from 'bull';
+import Bull, { Queue } from 'bull';
 import fs from 'fs';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import path from 'path';
@@ -39,6 +40,7 @@ import { User } from '../src/user/user.entity';
 import { UserModule } from '../src/user/user.module';
 import { ProfileServiceMock } from './mocks/profile-api.factory';
 import { RaiderIOServiceMock } from './mocks/raiderio.factory';
+import { AxiosResponse } from 'axios';
 
 describe('Form Submissions', () => {
   let app: INestApplication;
@@ -46,6 +48,9 @@ describe('Form Submissions', () => {
   let authService: AuthService;
   let em: EntityManager<IDatabaseDriver<Connection>>;
   let discordQueue: Queue;
+  let formQueue: Queue;
+  let discordQueueSpy: jest.SpyInstance<Promise<Bull.Job>>;
+  let formQueueSpy: jest.SpyInstance<Promise<Bull.Job>>;
 
   /**
    * Seeding Variables
@@ -99,8 +104,18 @@ describe('Form Submissions', () => {
     orm = moduleRef.get(MikroORM);
     authService = moduleRef.get(AuthService);
     discordQueue = moduleRef.get('BullQueue_discord');
+    formQueue = moduleRef.get('BullQueue_form');
+    const httpService = moduleRef.get(HttpService);
 
     em = orm.em.fork();
+
+    const httpMock: any = {
+      toPromise: () => httpMock,
+    };
+
+    jest.spyOn(httpService, 'post').mockImplementation(() => httpMock);
+    discordQueueSpy = jest.spyOn(discordQueue, 'add');
+    formQueueSpy = jest.spyOn(formQueue, 'add');
 
     const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
@@ -158,6 +173,10 @@ describe('Form Submissions', () => {
 
     jwt = authService.signToken(user);
     guestJwt = authService.signToken(guestUser);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('POST /upload', () => {
@@ -231,6 +250,9 @@ describe('Form Submissions', () => {
           ],
         })
         .expect(201);
+
+      expect(formQueueSpy).toBeCalledTimes(1);
+      expect(discordQueueSpy).toBeCalledTimes(1);
     });
 
     test('should throw if trying to create new submissions with one open', async () => {
@@ -282,6 +304,8 @@ describe('Form Submissions', () => {
 
       expect(Array.isArray(resp.body.files)).toBe(true);
       expect(resp.body.files[0]).toBe(1);
+      expect(formQueueSpy).toBeCalledTimes(1);
+      expect(discordQueueSpy).toBeCalledTimes(1);
     });
 
     test('should reject adding non-owned images to a submission', async () => {
@@ -434,6 +458,7 @@ describe('Form Submissions', () => {
 
       expect(resp.body.id).toBe(2);
       expect(resp.body.status).toBe('rejected');
+      expect(discordQueueSpy).toBeCalledTimes(1);
     });
 
     test('should disallow regular users to update submissions they do not own', async () => {
@@ -444,7 +469,7 @@ describe('Form Submissions', () => {
         .expect(403);
     });
 
-    test('should users to make illegal status changes', async () => {
+    test('should throw on users trying to make illegal status changes', async () => {
       const submission = await request(app.getHttpServer())
         .post('/submission')
         .set('Authorization', `Bearer ${guestJwt}`)
@@ -472,15 +497,13 @@ describe('Form Submissions', () => {
     });
 
     test('should not invoke a discord notification if the status was not changed', async () => {
-      const spy = jest.spyOn(discordQueue, 'add');
-
       await request(app.getHttpServer())
         .patch('/submission/2')
         .send({ status: 'rejected' })
         .set('Authorization', `Bearer ${jwt}`)
         .expect(200);
 
-      expect(spy).not.toBeCalled();
+      expect(discordQueueSpy).not.toBeCalled();
     });
   });
 

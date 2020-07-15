@@ -35,7 +35,7 @@ export class FormSubmissionQueue {
     private readonly config: ConfigService,
   ) {}
 
-  @Process({ name: 'newApplication', concurrency: 1 })
+  @Process({ name: 'new-application', concurrency: 1 })
   private async sendSubmissionWebhook(job: Job<FormSubmission>) {
     const main = job.data.characters[0];
     const color =
