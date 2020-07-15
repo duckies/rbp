@@ -1,6 +1,6 @@
 import CharacterRaiderIOMock from './character-raiderio.mock';
 
-export class RaiderIOFactory {
+export class RaiderIOServiceMock {
   async getCharacterRaiderIO(name: string) {
     return CharacterRaiderIOMock(name);
   }

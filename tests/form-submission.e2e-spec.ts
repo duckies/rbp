@@ -9,7 +9,6 @@ import {
   CacheInterceptor,
   INestApplication,
   ValidationPipe,
-  Logger,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -39,7 +38,7 @@ import { RaiderIOService } from '../src/raiderIO/raiderIO.service';
 import { User } from '../src/user/user.entity';
 import { UserModule } from '../src/user/user.module';
 import { ProfileServiceMock } from './mocks/profile-api.factory';
-import { RaiderIOFactory } from './mocks/raiderio.factory';
+import { RaiderIOServiceMock } from './mocks/raiderio.factory';
 
 describe('Form Submissions', () => {
   let app: INestApplication;
@@ -116,8 +115,6 @@ describe('Form Submissions', () => {
       }),
     );
 
-    app.useLogger(new Logger());
-
     await app.init();
 
     /**
@@ -190,6 +187,7 @@ describe('Form Submissions', () => {
 
     test('should create new submissions', async () => {
       const mock = new ProfileServiceMock(123456789, 'Duckys');
+      const rioMock = new RaiderIOServiceMock();
 
       jest
         .spyOn(ProfileService.prototype, 'getCharacterProfileSummary')
@@ -210,6 +208,10 @@ describe('Form Submissions', () => {
       jest
         .spyOn(ProfileService.prototype, 'getCharacterRaids')
         .mockResolvedValue(mock.getCharacterRaids());
+
+      jest
+        .spyOn(RaiderIOService.prototype, 'getCharacterRaiderIO')
+        .mockResolvedValue(rioMock.getCharacterRaiderIO('Duckys'));
 
       await request(app.getHttpServer())
         .post('/submission')
