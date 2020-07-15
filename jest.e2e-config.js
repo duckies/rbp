@@ -7,7 +7,11 @@ module.exports = {
   },
   coverageDirectory: './coverage',
   collectCoverage: true,
-  collectCoverageFrom: ['./src/**/*.{ts,js}', '!./src/**/*.spec.{ts,js}'],
+  collectCoverageFrom: [
+    './src/**/*.{ts,js}',
+    '!./src/**/*.spec.{ts,js}',
+    '!./src/**/*.dto.ts',
+  ],
   testEnvironment: 'node',
   verbose: true,
 };
