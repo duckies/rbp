@@ -1,7 +1,7 @@
-import { Entity, PrimaryKey, Property, WrappedEntity } from '@mikro-orm/core';
+import { BaseEntity, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
-export class DiscordConfig {
+export class DiscordConfig extends BaseEntity<DiscordConfig, 'id'> {
   @PrimaryKey()
   id!: number;
 
@@ -11,6 +11,3 @@ export class DiscordConfig {
   @Property({ type: 'json' })
   options: any;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface DiscordConfig extends WrappedEntity<DiscordConfig, 'id'> {}
