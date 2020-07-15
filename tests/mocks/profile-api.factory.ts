@@ -1,11 +1,12 @@
 import { AxiosResponse } from 'axios';
+import CharacterEquipmentSummaryMock from './character-equipment-summary.mock';
 import CharacterMediaSummaryMock from './character-media-summary.mock';
 import CharacterProfileSummaryMock from './character-profile-summary.mock';
-import CharacterRaids from './character-raids.mock';
-import CharacterSpecializationSummaryMock from './character-specialization-summary.mock';
+import CharacterRaidsMock from './character-raids.mock';
+import CharacterSpecializationsSummaryMock from './character-specialization-summary.mock';
 
-export class ProfileAPIFactory {
-  private readonly axiosResponse: AxiosResponse = {
+export class ProfileServiceMock {
+  private readonly axios: AxiosResponse = {
     data: null,
     status: 200,
     statusText: 'testing',
@@ -14,35 +15,35 @@ export class ProfileAPIFactory {
     request: null,
   };
 
-  constructor(private readonly id: number, private readonly name: string) {}
+  constructor(public readonly id: number, public readonly name: string) {}
 
-  async getCharacterProfileSummary() {
-    return Object.assign(this.axiosResponse, {
-      data: CharacterProfileSummaryMock(this.id, this.name),
-    });
+  private getAxiosResponse<T>(data: T): AxiosResponse<T> {
+    return Object.assign({}, this.axios, { data });
   }
 
-  async getCharacterSpecializationSummary() {
-    return Object.assign(this.axiosResponse, {
-      data: CharacterSpecializationSummaryMock(this.id, this.name),
-    });
+  async getCharacterProfileSummary() {
+    return this.getAxiosResponse(
+      CharacterProfileSummaryMock(this.id, this.name),
+    );
+  }
+
+  async getCharacterSpecializationsSummary() {
+    return this.getAxiosResponse(
+      CharacterSpecializationsSummaryMock(this.id, this.name),
+    );
   }
 
   async getCharacterMediaSummary() {
-    return Object.assign(this.axiosResponse, {
-      data: CharacterMediaSummaryMock(this.id, this.name),
-    });
-  }
-
-  async getCharacterRaids() {
-    return Object.assign(this.axiosResponse, {
-      data: CharacterRaids(this.id, this.name),
-    });
+    return this.getAxiosResponse(CharacterMediaSummaryMock(this.id, this.name));
   }
 
   async getCharacterEquipmentSummary() {
-    return Object.assign(this.axiosResponse, {
-      data: CharacterSpecializationSummaryMock(this.id, this.name),
-    });
+    return this.getAxiosResponse(
+      CharacterEquipmentSummaryMock(this.id, this.name),
+    );
+  }
+
+  async getCharacterRaids() {
+    return this.getAxiosResponse(CharacterRaidsMock(this.id, this.name));
   }
 }

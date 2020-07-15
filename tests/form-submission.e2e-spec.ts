@@ -9,6 +9,7 @@ import {
   CacheInterceptor,
   INestApplication,
   ValidationPipe,
+  Logger,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -37,7 +38,7 @@ import { FormModule } from '../src/form/form.module';
 import { RaiderIOService } from '../src/raiderIO/raiderIO.service';
 import { User } from '../src/user/user.entity';
 import { UserModule } from '../src/user/user.module';
-import { ProfileAPIFactory } from './mocks/profile-api.factory';
+import { ProfileServiceMock } from './mocks/profile-api.factory';
 import { RaiderIOFactory } from './mocks/raiderio.factory';
 
 describe('Form Submissions', () => {
@@ -115,6 +116,8 @@ describe('Form Submissions', () => {
       }),
     );
 
+    app.useLogger(new Logger());
+
     await app.init();
 
     /**
@@ -186,36 +189,27 @@ describe('Form Submissions', () => {
     });
 
     test('should create new submissions', async () => {
-      const profileApiFactory = new ProfileAPIFactory(177267491, 'Duckys');
-      const raiderIOFactory = new RaiderIOFactory('Duckys');
+      const mock = new ProfileServiceMock(123456789, 'Duckys');
 
       jest
-        .spyOn(ProfileService.prototype, 'getAccountProfileSummary')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterProfileSummary());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterSpecializationsSummary')
-        .mockRejectedValueOnce(
-          profileApiFactory.getCharacterSpecializationSummary(),
-        );
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterMediaSummary')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterMediaSummary());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterRaids')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterRaids());
+        .spyOn(ProfileService.prototype, 'getCharacterProfileSummary')
+        .mockResolvedValue(mock.getCharacterProfileSummary());
 
       jest
         .spyOn(ProfileService.prototype, 'getCharacterEquipmentSummary')
-        .mockRejectedValueOnce(
-          profileApiFactory.getCharacterEquipmentSummary(),
-        );
+        .mockResolvedValue(mock.getCharacterEquipmentSummary());
 
       jest
-        .spyOn(RaiderIOService.prototype, 'getCharacterRaiderIO')
-        .mockRejectedValueOnce(raiderIOFactory.getCharacterRaiderIO());
+        .spyOn(ProfileService.prototype, 'getCharacterSpecializationsSummary')
+        .mockResolvedValue(mock.getCharacterSpecializationsSummary());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterMediaSummary')
+        .mockResolvedValue(mock.getCharacterMediaSummary());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterRaids')
+        .mockResolvedValue(mock.getCharacterRaids());
 
       await request(app.getHttpServer())
         .post('/submission')
@@ -289,37 +283,6 @@ describe('Form Submissions', () => {
     });
 
     test('should reject adding non-owned images to a submission', async () => {
-      const profileApiFactory = new ProfileAPIFactory(112112112, 'Jackson');
-      const raiderIOFactory = new RaiderIOFactory('Jackson');
-
-      jest
-        .spyOn(ProfileService.prototype, 'getAccountProfileSummary')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterProfileSummary());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterSpecializationsSummary')
-        .mockRejectedValueOnce(
-          profileApiFactory.getCharacterSpecializationSummary(),
-        );
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterMediaSummary')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterMediaSummary());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterRaids')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterRaids());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterEquipmentSummary')
-        .mockRejectedValueOnce(
-          profileApiFactory.getCharacterEquipmentSummary(),
-        );
-
-      jest
-        .spyOn(RaiderIOService.prototype, 'getCharacterRaiderIO')
-        .mockRejectedValueOnce(raiderIOFactory.getCharacterRaiderIO());
-
       await request(app.getHttpServer())
         .post('/submission')
         .set('Authorization', `Bearer ${guestJwt}`)
@@ -339,11 +302,6 @@ describe('Form Submissions', () => {
         })
         .expect(401);
     });
-  });
-
-  afterAll(async () => {
-    await orm.close();
-    await app.close();
   });
 
   describe('DELETE /submission/file/:id', () => {
@@ -485,37 +443,6 @@ describe('Form Submissions', () => {
     });
 
     test('should users to make illegal status changes', async () => {
-      const profileApiFactory = new ProfileAPIFactory(123123123, 'Jacob');
-      const raiderIOFactory = new RaiderIOFactory('Jacob');
-
-      jest
-        .spyOn(ProfileService.prototype, 'getAccountProfileSummary')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterProfileSummary());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterSpecializationsSummary')
-        .mockRejectedValueOnce(
-          profileApiFactory.getCharacterSpecializationSummary(),
-        );
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterMediaSummary')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterMediaSummary());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterRaids')
-        .mockRejectedValueOnce(profileApiFactory.getCharacterRaids());
-
-      jest
-        .spyOn(ProfileService.prototype, 'getCharacterEquipmentSummary')
-        .mockRejectedValueOnce(
-          profileApiFactory.getCharacterEquipmentSummary(),
-        );
-
-      jest
-        .spyOn(RaiderIOService.prototype, 'getCharacterRaiderIO')
-        .mockRejectedValueOnce(raiderIOFactory.getCharacterRaiderIO());
-
       const submission = await request(app.getHttpServer())
         .post('/submission')
         .set('Authorization', `Bearer ${guestJwt}`)
@@ -527,7 +454,7 @@ describe('Form Submissions', () => {
           files: [],
           characters: [
             {
-              name: 'Jacob',
+              name: 'Duckys',
               realm: 'area-52',
               region: 'us',
             },

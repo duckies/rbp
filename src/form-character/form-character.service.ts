@@ -22,9 +22,7 @@ export class FormCharacterService {
       ...findCharacterDto,
     });
 
-    if (!formCharacter) {
-      return this.create(findCharacterDto);
-    }
+    if (!formCharacter) return this.create(findCharacterDto);
 
     await this.populateFormCharacter(formCharacter);
 
@@ -54,19 +52,20 @@ export class FormCharacterService {
 
   public async populateFormCharacter(formCharacter: FormCharacter) {
     const findCharacterDto = formCharacter.getFindCharacterDTO();
+
     const [
       summary,
+      equipment,
       specs,
       media,
       raids,
-      equipment,
       raiderIO,
     ] = await Promise.allSettled([
       this.profileService.getCharacterProfileSummary(findCharacterDto),
+      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
       this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
       this.profileService.getCharacterMediaSummary(findCharacterDto),
       this.profileService.getCharacterRaids(findCharacterDto),
-      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
       this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
         RaiderIOCharacterFields.GEAR,
         RaiderIOCharacterFields.RAID_PROGRESSION,
@@ -92,7 +91,7 @@ export class FormCharacterService {
     }
 
     if (equipment.status === 'fulfilled') {
-      formCharacter.setCharacterEquipmentSummary(equipment.value);
+      formCharacter.setCharacterEquipmentSummary(equipment.value.data);
     }
 
     if (raiderIO.status === 'fulfilled') {

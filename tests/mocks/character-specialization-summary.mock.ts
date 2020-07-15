@@ -1,6 +1,6 @@
 import { CharacterSpecializationsSummary } from '../../src/blizzard/interfaces/profile/character-specializations/character-specializations-summary.interface';
 
-const CharacterSpecializationSummaryMock = (
+const CharacterSpecializationsSummaryMock = (
   id: number,
   name: string,
 ): CharacterSpecializationsSummary => ({
@@ -945,4 +945,4 @@ const CharacterSpecializationSummaryMock = (
   },
 });
 
-export default CharacterSpecializationSummaryMock;
+export default CharacterSpecializationsSummaryMock;

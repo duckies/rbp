@@ -128,7 +128,7 @@ export class ProfileService {
   async getCharacterEquipmentSummary(
     { name, realm }: FindCharacterDto,
     cache = true,
-  ): Promise<Profile.CharacterEquipmentSummary> {
+  ) {
     const resp = await this.rateLimiter.get<Profile.CharacterEquipmentSummary>(
       'https://us.api.blizzard.com' +
         ProfileEndpoints.CharacterEquipmentSummary.replace(
@@ -159,7 +159,7 @@ export class ProfileService {
       );
     }
 
-    return resp.data;
+    return resp;
   }
 
   async getCharacterHunterPetsSummary({ name, realm }: FindCharacterDto) {
