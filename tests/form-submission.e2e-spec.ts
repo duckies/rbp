@@ -13,6 +13,7 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
+import { Queue } from 'bull';
 import fs from 'fs';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import path from 'path';
@@ -46,15 +47,18 @@ describe('Form Submissions', () => {
   let orm: MikroORM;
   let authService: AuthService;
   let em: EntityManager<IDatabaseDriver<Connection>>;
+  let discordQueue: Queue;
 
   /**
    * Seeding Variables
    */
 
   let user: User;
+  let guestUser: User;
   let form: Form;
   let question: FormQuestion;
   let jwt: string;
+  let guestJwt: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -96,6 +100,9 @@ describe('Form Submissions', () => {
     app = moduleRef.createNestApplication();
     orm = moduleRef.get(MikroORM);
     authService = moduleRef.get(AuthService);
+    discordQueue = moduleRef.get('BullQueue_discord');
+
+    console.log(discordQueue);
 
     em = orm.em.fork();
 
@@ -125,9 +132,12 @@ describe('Form Submissions', () => {
       roles: [Roles.GuildMaster],
     });
 
-    await em.persistAndFlush(user);
-
-    jwt = authService.signToken(user);
+    guestUser = em.create(User, {
+      discord_id: '987987987',
+      discord_username: 'JacobDoe',
+      discord_discriminator: '7331',
+      roles: [Roles.Guest],
+    });
 
     form = em.create(Form, {
       name: 'Testing Form',
@@ -145,10 +155,13 @@ describe('Form Submissions', () => {
     form.questions.add(question);
 
     em.persist(form);
+    em.persist(user);
+    em.persist(guestUser);
 
     await em.flush();
 
-    form.questions.add();
+    jwt = authService.signToken(user);
+    guestJwt = authService.signToken(guestUser);
   });
 
   describe('POST /upload', () => {
@@ -278,6 +291,58 @@ describe('Form Submissions', () => {
       expect(Array.isArray(resp.body.files)).toBe(true);
       expect(resp.body.files[0]).toBe(1);
     });
+
+    test('should reject adding non-owned images to a submission', async () => {
+      const profileApiFactory = new ProfileAPIFactory(112112112, 'Jackson');
+      const raiderIOFactory = new RaiderIOFactory('Jackson');
+
+      jest
+        .spyOn(ProfileService.prototype, 'getAccountProfileSummary')
+        .mockRejectedValueOnce(profileApiFactory.getCharacterProfileSummary());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterSpecializationsSummary')
+        .mockRejectedValueOnce(
+          profileApiFactory.getCharacterSpecializationSummary(),
+        );
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterMediaSummary')
+        .mockRejectedValueOnce(profileApiFactory.getCharacterMediaSummary());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterRaids')
+        .mockRejectedValueOnce(profileApiFactory.getCharacterRaids());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterEquipmentSummary')
+        .mockRejectedValueOnce(
+          profileApiFactory.getCharacterEquipmentSummary(),
+        );
+
+      jest
+        .spyOn(RaiderIOService.prototype, 'getCharacterRaiderIO')
+        .mockRejectedValueOnce(raiderIOFactory.getCharacterRaiderIO());
+
+      await request(app.getHttpServer())
+        .post('/submission')
+        .set('Authorization', `Bearer ${guestJwt}`)
+        .send({
+          formId: 1,
+          answers: {
+            [`${question.id}`]: 'Example Answer',
+          },
+          files: [1],
+          characters: [
+            {
+              name: 'Jackson',
+              realm: 'area-52',
+              region: 'us',
+            },
+          ],
+        })
+        .expect(401);
+    });
   });
 
   describe('DELETE /submission/file/:id', () => {
@@ -329,6 +394,179 @@ describe('Form Submissions', () => {
         .expect(401);
 
       expect(resp.body.message).toBe('You do not own this file');
+    });
+  });
+
+  describe('GET /submission/user', () => {
+    test('should retrieve all submissions for a user', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/submission/user')
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+
+      expect(Array.isArray(resp.body)).toBeTruthy();
+      expect(resp.body[0][0].id).toBe(2);
+      expect(resp.body[1]).toBe(1);
+    });
+  });
+
+  describe('GET /submission/user/open', () => {
+    test('should retrieve all open submissions for a user', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/submission/user/open')
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+
+      expect(Array.isArray(resp.body)).toBeTruthy();
+      expect(resp.body[0][0].id).toBe(2);
+      expect(resp.body[0][0].status).toBe('open');
+      expect(resp.body[1]).toBe(1);
+    });
+  });
+
+  describe('GET /submission/status/:status', () => {
+    test('should retrieve the newest open submission by status', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/submission/status/open')
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+
+      expect(resp.body.id).toBe(2);
+      expect(resp.body.status).toBe('open');
+
+      await request(app.getHttpServer())
+        .get('/submission/status/rejected')
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(404);
+    });
+  });
+
+  describe('GET /submission/:id', () => {
+    test('should retrieve an individual submission', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/submission/2')
+        .expect(200);
+
+      expect(resp.body.id).toBe(2);
+      expect(resp.body.status).toBe('open');
+    });
+  });
+
+  describe('GET /submission', () => {
+    test('should return all submissions', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/submission')
+        .expect(200);
+
+      expect(Array.isArray(resp.body)).toBeTruthy();
+      expect(typeof resp.body[1]).toBe('number');
+    });
+  });
+
+  describe('PATCH /submission/:id', () => {
+    test('should update submissions', async () => {
+      const resp = await request(app.getHttpServer())
+        .patch('/submission/2')
+        .send({ status: 'rejected' })
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+
+      expect(resp.body.id).toBe(2);
+      expect(resp.body.status).toBe('rejected');
+    });
+
+    test('should disallow regular users to update submissions they do not own', async () => {
+      await request(app.getHttpServer())
+        .patch('/submission/2')
+        .send({ status: 'rejected' })
+        .set('Authorization', `Bearer ${guestJwt}`)
+        .expect(403);
+    });
+
+    test('should users to make illegal status changes', async () => {
+      const profileApiFactory = new ProfileAPIFactory(123123123, 'Jacob');
+      const raiderIOFactory = new RaiderIOFactory('Jacob');
+
+      jest
+        .spyOn(ProfileService.prototype, 'getAccountProfileSummary')
+        .mockRejectedValueOnce(profileApiFactory.getCharacterProfileSummary());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterSpecializationsSummary')
+        .mockRejectedValueOnce(
+          profileApiFactory.getCharacterSpecializationSummary(),
+        );
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterMediaSummary')
+        .mockRejectedValueOnce(profileApiFactory.getCharacterMediaSummary());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterRaids')
+        .mockRejectedValueOnce(profileApiFactory.getCharacterRaids());
+
+      jest
+        .spyOn(ProfileService.prototype, 'getCharacterEquipmentSummary')
+        .mockRejectedValueOnce(
+          profileApiFactory.getCharacterEquipmentSummary(),
+        );
+
+      jest
+        .spyOn(RaiderIOService.prototype, 'getCharacterRaiderIO')
+        .mockRejectedValueOnce(raiderIOFactory.getCharacterRaiderIO());
+
+      const submission = await request(app.getHttpServer())
+        .post('/submission')
+        .set('Authorization', `Bearer ${guestJwt}`)
+        .send({
+          formId: 1,
+          answers: {
+            [`${question.id}`]: 'Example Answer',
+          },
+          files: [],
+          characters: [
+            {
+              name: 'Jacob',
+              realm: 'area-52',
+              region: 'us',
+            },
+          ],
+        })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .patch(`/submission/${submission.body.id}`)
+        .send({ status: 'rejected' })
+        .set('Authorization', `Bearer ${guestJwt}`)
+        .expect(403);
+    });
+
+    test('should not invoke a discord notification if the status was not changed', async () => {
+      const spy = jest.spyOn(discordQueue, 'add');
+
+      await request(app.getHttpServer())
+        .patch('/submission/2')
+        .send({ status: 'rejected' })
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+
+      expect(spy).not.toBeCalled();
+    });
+  });
+
+  describe('DELETE /submission/:id', () => {
+    test('should update submissions', async () => {
+      await request(app.getHttpServer())
+        .delete('/submission/2')
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(200);
+    });
+
+    test('should throw 404 on subsequent deletion attempts', async () => {
+      await request(app.getHttpServer())
+        .delete('/submission/2')
+        .set('Authorization', `Bearer ${jwt}`)
+        .expect(404);
     });
   });
 });

@@ -1,3 +1,4 @@
+import { QueryOrder } from '@mikro-orm/core';
 import {
   Body,
   Controller,
@@ -26,7 +27,7 @@ import {
   FindFormSubmissionDto,
   UpdateFormSubmissionDto,
 } from './dto';
-import { FormSubmission } from './form-submission.entity';
+import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 import { SubmissionService } from './form-submission.service';
 import { CreateSubmissionPipe } from './pipes/create-submission.pipe';
 
@@ -69,40 +70,50 @@ export class SubmissionController {
   @Auth()
   @Delete('file/:id')
   deleteFile(@Usr() user: User, @Param('id') id: number) {
-    if (this.ac.can(user.roles).deleteAny('file-upload').granted) {
-      return this.fileService.delete(id);
-    } else {
-      return this.fileService.delete(id, user);
-    }
+    const canDeleteAny = this.ac.can(user.roles).deleteAny('file-upload')
+      .granted;
+
+    return this.fileService.delete(id, canDeleteAny ? undefined : user);
   }
 
   @Auth()
   @Get('/user')
   findByUser(@Usr() user: User) {
-    return this.submissionService.findByUser(user);
+    return this.submissionService.findAll({ author: { id: user.id } });
   }
 
   @Auth()
   @Get('/user/open')
-  findOpenByUser(
-    @Usr() user: User,
-  ): Promise<Pick<FormSubmission, 'id' | 'status'>> {
-    return this.submissionService.findOpenByUser(user);
+  findOpenByUser(@Usr() user: User) {
+    return this.submissionService.findAll({
+      author: { id: user.id },
+      status: FormSubmissionStatus.Open,
+    });
   }
 
   @Get('/status/:status')
   findFirstByStatus(@Param() { status }: FindFormSubmissionByStatusDto) {
-    return this.submissionService.findFirstByStatus(status);
+    return this.submissionService.findOneOrFail(
+      { status },
+      ['form', 'author', 'characters'],
+      { id: QueryOrder.DESC },
+    );
   }
 
   @Get(':id')
   findOne(@Param() { id }: FindFormSubmissionDto) {
-    return this.submissionService.findOne(id);
+    return this.submissionService.findOneOrFail(id, true);
   }
 
   @Get()
-  findAll(@Query() { take, skip, status }: FindAllFormSubmissionsDto) {
-    return this.submissionService.findAll(take, skip, status);
+  findAll(@Query() { limit, offset, status }: FindAllFormSubmissionsDto) {
+    return this.submissionService.findAll(
+      { status },
+      ['author', 'characters'],
+      { id: QueryOrder.DESC },
+      limit,
+      offset,
+    );
   }
 
   @Auth()

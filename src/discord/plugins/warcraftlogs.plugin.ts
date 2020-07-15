@@ -250,6 +250,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
         // Scan every 5 minutes until we find a log, then every 1 while active.
         await sleep(hasActive ? 60000 : 300000);
       } catch (error) {
+        console.error(error);
         this.logger.error(error);
       }
     }
@@ -372,9 +373,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
                     ? `killed in ${info.ids.length} attempts.`
                     : 'one-shot.'
                   : info.ids.length > 1
-                  ? `attempted ${info.ids.length} times, best ${
-                      info.percent / 100
-                    }%.`
+                  ? `${info.ids.length} times, best ${info.percent / 100}%.`
                   : `first wipe at ${info.percent / 100}%.`
               }`,
             );

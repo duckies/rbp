@@ -8,7 +8,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
-import { GuildMember, MessageEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { FormSubmissionStatus } from '../form-submission/enums/form-submission-status.enum';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 import { SubmissionService } from '../form-submission/form-submission.service';
@@ -54,7 +54,7 @@ export class DiscordQueue {
     );
   }
 
-  @Process({ name: 'APP_STATUS_NOTIFICATION' })
+  @Process({ name: 'app-status-notification' })
   private async sendStatusNotification(job: Job<FormSubmission>) {
     const member = await this.discord.getGuildMember(
       job.data.author.discord_id,
@@ -95,30 +95,6 @@ export class DiscordQueue {
         member.nickname || member.displayName
       } with ${job.data.status}.`,
     );
-  }
-
-  @Process({ name: 'USER_JOINED' })
-  private async sendJoinedAppNotification(job: Job<GuildMember>) {
-    const submission = await this.submissionService.findOpenByUserDiscordID(
-      job.data.id,
-    );
-
-    if (submission) {
-      const embed = new MessageEmbed();
-      embed.setColor(0xc328ff);
-      embed.setTitle('Welcome Applicant');
-      embed.setDescription(
-        'Thank you for apply to Really Bad Players. So long as you remain in our Discord I will notify you of any changes made to your application. If you have any questions about the guild please message `Duckie`.',
-      );
-      embed.addField(
-        'Links',
-        `[Application](${this.config.get('BASE_URL')}/applications/${
-          job.data.id
-        })`,
-      );
-
-      job.data.send(embed);
-    }
   }
 
   @OnQueueCompleted()

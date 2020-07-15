@@ -9,6 +9,7 @@ import {
 } from 'discord.js';
 import { sample } from 'lodash';
 import moment from 'moment';
+import { FormSubmissionStatus } from '../../form-submission/enums/form-submission-status.enum';
 import { SubmissionService } from '../../form-submission/form-submission.service';
 import { PluginConfig } from '../discord-config.class';
 import { Context } from '../discord.context';
@@ -91,9 +92,10 @@ export class WelcomerPlugin extends DiscordPlugin {
       );
     }
 
-    const submission = await this.submissionService.findOpenByUserDiscordID(
-      member.id,
-    );
+    const submission = await this.submissionService.findOne({
+      author: { discord_id: member.id },
+      status: FormSubmissionStatus.Open,
+    });
 
     if (submission) {
       const embed = new MessageEmbed({

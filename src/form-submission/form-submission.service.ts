@@ -1,4 +1,4 @@
-import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
+import { EntityManager, FilterQuery, QueryOrderMap } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
 import { InjectQueue } from '@nestjs/bull';
 import {
@@ -60,7 +60,7 @@ export class SubmissionService {
 
       for (const upload of fileUploads) {
         if (upload.author && upload.author.id !== author.id) {
-          throw new UnauthorizedException('Cannot reference unauthored file.');
+          throw new UnauthorizedException('Cannot link unauthored file');
         }
       }
 
@@ -97,90 +97,59 @@ export class SubmissionService {
   }
 
   /**
-   * Retrieves the first available form submission for a given status.
-   * @param status FormSubmissionStatus
+   * Proxy ORM method for finding a form submission.
+   *
+   * @param where properties to match to the entity
+   * @param populate denotes if all relationships, or specific relationships, should be loaded
    */
-  findFirstByStatus(status: FormSubmissionStatus) {
-    // This intentionally does not fail so it does not pass the 404 error.
+  findOne(
+    where: FilterQuery<FormSubmission>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ) {
+    return this.formSubmissionRepository.findOne(where, populate, orderBy);
+  }
+
+  /**
+   * Proxy ORM method for finding a form submission.
+   * This method will return a `404 Not Found Exception` if the entity is not found.
+   *
+   * @param where properties to match to the entity
+   * @param populate denotes if all relationships, or specific relationships, should be loaded
+   */
+  findOneOrFail(
+    where: FilterQuery<FormSubmission>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ) {
     return this.formSubmissionRepository.findOneOrFail(
-      { status },
-      ['form', 'author', 'characters'],
-      {
-        id: QueryOrder.DESC,
-      },
+      where,
+      populate,
+      orderBy,
     );
-  }
-
-  /**
-   * Retrieves all forms created by an author regardless of status.
-   * @param user Form submission author.
-   */
-  findByUser(user: User) {
-    return this.formSubmissionRepository
-      .createQueryBuilder('s')
-      .select(['s.id', 's.status'])
-      .join('s.author', 'author')
-      .where('author.id = :id', [user.id])
-      .getResult();
-  }
-
-  /**
-   * Finds the first open form submission by a user, if available.
-   * Used to determine if a user has already submitted an application.
-   * @param user Form submission author.
-   */
-  findOpenByUser(user: User): Promise<Pick<FormSubmission, 'id' | 'status'>> {
-    return this.formSubmissionRepository.findOne({
-      author: { id: user.id },
-      status: FormSubmissionStatus.Open,
-    });
-  }
-
-  /**
-   * Finds an open form submission by a discord identifier.
-   * @param id
-   */
-  findOpenByUserDiscordID(id: string) {
-    return this.formSubmissionRepository.findOne({
-      author: { discord_id: id },
-      status: FormSubmissionStatus.Open,
-    });
-  }
-
-  /**
-   * Finds an individual form submission.
-   * @param id Form submission id.
-   */
-  async findOne(id: number) {
-    return this.formSubmissionRepository.findOne({ id }, [
-      'author',
-      'characters',
-      'files',
-      'form',
-    ]);
   }
 
   /**
    * Retrieving a paginated array of form submissions.
    * Search narrowable to status category by an optionally provided status or id.
    *
-   * @param take Number of submissions to retrieve.
-   * @param skip Number of submissions to skip.
+   * @param limit number of submissions to retrieve
+   * @param offset number of submissions to skip
    */
-  async findAll(
+  findAll(
+    where?: FilterQuery<FormSubmission>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
     limit?: number,
     offset?: number,
-    status?: FormSubmissionStatus,
   ) {
-    const submissions = await this.formSubmissionRepository.findAndCount(
-      { status },
-      ['author', 'characters'],
-      { id: QueryOrder.DESC },
+    return this.formSubmissionRepository.findAndCount(
+      where,
+      populate,
+      orderBy,
       limit,
       offset,
     );
-
-    return submissions;
   }
 
   /**
@@ -218,12 +187,12 @@ export class SubmissionService {
       updateFormSubmissionDto.status !== 'open' &&
       formSubmission.status !== updateFormSubmissionDto.status;
 
-    wrap(formSubmission).assign(updateFormSubmissionDto);
+    formSubmission.assign(updateFormSubmissionDto);
 
     await this.formSubmissionRepository.flush();
 
     if (statusChange) {
-      await this.discordQueue.add('APP_STATUS_NOTIFICATION', formSubmission);
+      await this.discordQueue.add('app-status-notification', formSubmission);
     }
 
     return formSubmission;
@@ -231,14 +200,17 @@ export class SubmissionService {
 
   /**
    * Deletes a form submission.
-   * @param id
+   *
+   * @param id id of the submission
    */
   async delete(id: number) {
     const submission = await this.formSubmissionRepository.findOneOrFail(id, [
       'characters',
     ]);
 
-    this.formSubmissionRepository.remove(submission, true);
+    this.formSubmissionRepository.remove(submission);
+
+    await this.formSubmissionRepository.flush();
 
     return submission;
   }

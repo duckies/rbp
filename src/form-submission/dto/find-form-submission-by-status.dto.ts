@@ -3,5 +3,5 @@ import { FormSubmissionStatus } from '../enums/form-submission-status.enum';
 
 export class FindFormSubmissionByStatusDto {
   @IsEnum(FormSubmissionStatus)
-  status: FormSubmissionStatus;
+  readonly status!: FormSubmissionStatus;
 }
