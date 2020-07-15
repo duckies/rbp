@@ -40,8 +40,6 @@ import { UserModule } from '../src/user/user.module';
 import { ProfileAPIFactory } from './mocks/profile-api.factory';
 import { RaiderIOFactory } from './mocks/raiderio.factory';
 
-const fsPromises = fs.promises;
-
 describe('Form Submissions', () => {
   let app: INestApplication;
   let orm: MikroORM;
@@ -101,8 +99,6 @@ describe('Form Submissions', () => {
     orm = moduleRef.get(MikroORM);
     authService = moduleRef.get(AuthService);
     discordQueue = moduleRef.get('BullQueue_discord');
-
-    console.log(discordQueue);
 
     em = orm.em.fork();
 
@@ -345,6 +341,11 @@ describe('Form Submissions', () => {
     });
   });
 
+  afterAll(async () => {
+    await orm.close();
+    await app.close();
+  });
+
   describe('DELETE /submission/file/:id', () => {
     test('should delete image entity and files', async () => {
       const image = await em.findOneOrFail(FileUpload, 1);
@@ -356,7 +357,7 @@ describe('Form Submissions', () => {
         .set('Authorization', `Bearer ${jwt}`)
         .expect(200);
 
-      const checkPromise = fsPromises.access(relPath, fs.constants.F_OK);
+      const checkPromise = fs.promises.access(relPath, fs.constants.F_OK);
 
       expect(checkPromise).rejects.toThrow();
     });
