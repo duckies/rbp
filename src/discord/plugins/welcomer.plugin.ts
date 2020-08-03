@@ -156,7 +156,7 @@ export class WelcomerPlugin extends DiscordPlugin {
     applicant: boolean,
   ) {
     const { count, date, message: mid } = await this.config.getGuild(guild);
-    const resetCount = this.isYesterday(date);
+    const resetCount = this.isADayAgo(date);
     const newCount = resetCount || typeof count !== 'number' ? 1 : count + 1;
 
     // Remove the old welcome message, if possible.
@@ -209,9 +209,9 @@ export class WelcomerPlugin extends DiscordPlugin {
     await channel.send(message);
   }
 
-  private isYesterday(date: Date) {
+  private isADayAgo(date: Date) {
     const yesterday = moment().subtract(1, 'day');
 
-    return moment(date).isSame(yesterday, 'day');
+    return moment(date).isBefore(yesterday);
   }
 }
