@@ -1,5 +1,5 @@
+import { EntityRepository } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, wrap } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
@@ -14,7 +14,8 @@ export class FormService {
 
   /**
    * Creates a new form.
-   * @param createFormDto CreateFormDto
+   *
+   * @param createFormDto properties for the form
    */
   async create(createFormDto: CreateFormDto) {
     const form = this.formRepository.create(createFormDto);
@@ -28,26 +29,28 @@ export class FormService {
    * Finds all forms.
    */
   async findAll() {
-    return this.formRepository.find({});
+    return this.formRepository.findAll();
   }
 
   /**
    * Finds a form by its id.
-   * @param id Form id
+   *
+   * @param id id of the form
    */
   async findOne(id: number) {
     return this.formRepository.findOneOrFail(id);
   }
 
   /**
-   * Updates the attributes of a form.
-   * @param id Form id
-   * @param updateFormDto UpdateFormDto
+   * Updates a form.
+   *
+   * @param id id of the form
+   * @param updateFormDto properties to update
    */
   async update(id: number, updateFormDto: UpdateFormDto) {
     const form = await this.formRepository.findOneOrFail(id);
 
-    wrap(form).assign(updateFormDto);
+    form.assign(updateFormDto);
 
     await this.formRepository.flush();
 
@@ -55,13 +58,16 @@ export class FormService {
   }
 
   /**
-   * Deletes a form by its id.
+   * Removes a form. This also cascade-deletes questions and submissions.
+   *
    * @param id Form id
    */
   async delete(id: number) {
     const form = await this.formRepository.findOneOrFail(id);
 
-    await this.formRepository.remove(form);
+    this.formRepository.remove(form);
+
+    await this.formRepository.flush();
 
     return form;
   }

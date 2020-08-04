@@ -1,6 +1,12 @@
-import { Entity, Enum, PrimaryKey, Property, WrappedEntity } from 'mikro-orm';
-import { Expansion } from './enums/expansion.enum';
+import {
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  WrappedEntity,
+} from '@mikro-orm/core';
 import { DecimalType } from '../../config/types/decimal.type';
+import { Expansion } from './enums/expansion.enum';
 
 @Entity()
 export class Raid {
@@ -11,7 +17,7 @@ export class Raid {
   @PrimaryKey()
   id!: number;
 
-  @Property()
+  @Property({ nullable: true })
   name?: string;
 
   @Property({ unique: true })
@@ -54,19 +60,19 @@ export class Raid {
   mythic_bosses_killed!: number;
 
   @Property({ index: true })
-  isFeatured = false;
+  isFeatured: boolean = false;
 
   @Property()
-  order = 0;
+  order: number = 0;
 
   @Property()
-  locked = false;
+  locked: boolean = false;
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

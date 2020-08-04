@@ -1,39 +1,49 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { FindFormDto } from '../form/dto';
+import { FindFormDto } from '../form/dto/find-form.dto';
 import { CreateQuestionDto, FindQuestionDto, UpdateQuestionDto } from './dto';
-import { FormQuestion } from './question.entity';
 import { FormQuestionService } from './question.service';
 
 @Controller('question')
 export class FormQuestionController {
   constructor(private readonly formQuestionService: FormQuestionService) {}
 
+  @Auth('question', 'create:any')
   @Post()
-  @Auth({ resource: 'question', action: 'create', possession: 'any' })
-  create(@Body() createQuestionDto: CreateQuestionDto): Promise<FormQuestion> {
+  create(@Body() createQuestionDto: CreateQuestionDto) {
     return this.formQuestionService.create(createQuestionDto);
   }
 
-  @Get()
-  findByForm(@Param() { id }: FindFormDto): Promise<FormQuestion[]> {
+  @Get('/form/:id')
+  findByForm(@Param() { id }: FindFormDto) {
     return this.formQuestionService.findByForm(id);
   }
 
   @Get(':id')
-  findOne(@Param() { id }: FindQuestionDto): Promise<FormQuestion> {
+  findOne(@Param() { id }: FindQuestionDto) {
     return this.formQuestionService.findOne(id);
   }
 
-  @Put(':id')
-  @Auth({ resource: 'question', action: 'update', possession: 'any' })
-  update(@Body() updateQuestionDto: UpdateQuestionDto): Promise<FormQuestion> {
-    return this.formQuestionService.update(updateQuestionDto);
+  @Auth('question', 'update:any')
+  @Patch(':id')
+  update(
+    @Param() { id }: FindQuestionDto,
+    @Body() updateQuestionDto: UpdateQuestionDto,
+  ) {
+    return this.formQuestionService.update(id, updateQuestionDto);
   }
 
+  @Auth('question', 'delete:any')
   @Delete(':id')
-  @Auth({ resource: 'question', action: 'delete', possession: 'any' })
-  delete(@Param() { id }: FindQuestionDto): Promise<FormQuestion> {
+  delete(@Param() { id }: FindQuestionDto) {
     return this.formQuestionService.delete(id);
   }
 }

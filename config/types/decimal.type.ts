@@ -1,4 +1,4 @@
-import { Type } from 'mikro-orm';
+import { Type } from '@mikro-orm/core';
 
 /**
  * Decimal type for PostgreSQL in MikroORM.

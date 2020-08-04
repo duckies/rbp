@@ -14,9 +14,33 @@ export interface RaiderIOCharacter {
   profile_url: string;
   profile_banner: string;
   raid_progression?: any;
-  gear?: { item_level_equipped: number; item_level_total: number; artifact_traits: number };
+  gear?: RaiderIOGear;
   mythic_plus_scores_by_season?: RaiderIOSeason[];
   mythic_plus_best_runs?: RaiderIOBestRun[];
+}
+
+export interface RaiderIOGear {
+  item_level_equipped: number;
+  item_level_total: number;
+  artifact_traits: number;
+  corruption: RaiderIOCorruption;
+  items: any; // TODO: Implement this as a data fallback.
+}
+
+export interface RaiderIOCorruption {
+  added: number;
+  resisted: number;
+  total: number;
+  cloakRank: number;
+  spells: CorruptionSpell[];
+}
+
+export interface CorruptionSpell {
+  id: number;
+  name: string;
+  icon: string;
+  school: number;
+  rank?: null;
 }
 
 export interface RaiderIOSeason {

@@ -1,4 +1,4 @@
-import { RealmSlug } from '../../enums/realm.enum';
+import { RealmType } from '../../enums/realm.enum';
 
 export interface Links {
   self: Link;
@@ -40,13 +40,14 @@ export interface Guild {
   name: string;
   id: number;
   realm: Realm;
+  faction: Enum;
 }
 
 export interface Realm {
   key: Link;
   name: string;
   id: number;
-  slug: RealmSlug;
+  slug: RealmType;
 }
 
 export interface RGBA {

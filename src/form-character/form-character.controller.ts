@@ -1,5 +1,5 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { AccessControlGuard } from './../auth/guards/compose.guard';
+import { Controller, Get, Param } from '@nestjs/common';
+import { Auth } from '../auth/decorators/auth.decorator';
 import { FindCharacterDto } from './../blizzard/dto/find-character.dto';
 import { FormCharacterService } from './form-character.service';
 
@@ -7,7 +7,7 @@ import { FormCharacterService } from './form-character.service';
 export class FormCharacterController {
   constructor(private readonly formCharacterService: FormCharacterService) {}
 
-  @UseGuards(AccessControlGuard)
+  @Auth()
   @Get('/:region/:realm/:name')
   formCharacterData(@Param() findCharacterDto: FindCharacterDto) {
     return this.formCharacterService.create(findCharacterDto, true);

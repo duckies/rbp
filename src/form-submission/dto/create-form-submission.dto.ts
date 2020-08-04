@@ -16,18 +16,18 @@ export interface Answers {
 
 export class CreateFormSubmissionDto {
   @IsNumber()
-  formId: number;
+  readonly formId: number;
 
   @IsNotEmpty()
-  answers: Answers;
+  readonly answers: Answers;
 
+  @IsOptional()
   @IsArray()
   @ArrayMaxSize(5)
-  @IsOptional()
-  files?: number[];
+  readonly files?: number[];
 
   @IsDefined()
   @ValidateNested({ each: true })
   @Type(() => FindCharacterDto)
-  characters: FindCharacterDto[];
+  readonly characters: FindCharacterDto[];
 }

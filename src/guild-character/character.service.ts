@@ -1,80 +1,68 @@
+import { EntityRepository } from '@mikro-orm/knex';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EntityRepository, QueryOrder } from 'mikro-orm';
-import moment from 'moment';
+import { QueryOrder } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
-import { BattleNetService } from '../blizzard/services/battle-net/battle-net.service';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
-import { User } from '../user/user.entity';
 import { GuildCharacter } from './character.entity';
-
-export interface PurgeResult {
-  flagged: number;
-  deleted: number;
-}
 
 @Injectable()
 export class CharacterService {
-  private readonly minimumCharacterLevel: number = this.config.get<number>('MINIMUM_CHARACTER_LEVEL');
+  private readonly minCharacterLevel: number = this.config.get<number>(
+    'MINIMUM_CHARACTER_LEVEL',
+  );
 
   constructor(
     @InjectRepository(GuildCharacter)
     private readonly characterRepository: EntityRepository<GuildCharacter>,
-    private readonly battleNetService: BattleNetService,
     private readonly profileService: ProfileService,
     private readonly config: ConfigService,
   ) {}
 
   /**
-   * Inserts or updates a character by pulling data from Blizzard.
+   * Creates a new guild member and populates them with basic information.
    *
-   * @param characterLookupDto Character name, region, realm.
-   * @param rank Guild rank passed when doing a guild roster update.
-   * @param id Optional id used to lookup a character.
-   * @param user User to associate the character with.
+   * @param findCharacterDto
+   * @param rank
    */
-  async upsert(findCharacterDto: FindCharacterDto, rank: number, user?: User) {
-    let [character, profileCharacter, profileMedia] = await Promise.all([
-      this.findOne(findCharacterDto),
-      this.profileService.getCharacterProfileSummary(findCharacterDto),
-      this.profileService.getCharacterMediaSummary(findCharacterDto),
+  public async create({ name, realm, region }: FindCharacterDto, rank: number) {
+    const guildCharacter = new GuildCharacter(name, realm, region);
+
+    guildCharacter.guild_rank = rank;
+
+    await this.populateGuildCharacter(guildCharacter);
+
+    if (guildCharacter.level < this.minCharacterLevel) {
+      throw new BadRequestException(
+        `Below min level: ${this.minCharacterLevel}`,
+      );
+    }
+
+    await this.characterRepository.persist(guildCharacter, true);
+
+    return guildCharacter;
+  }
+
+  public async populateGuildCharacter(guildCharacter: GuildCharacter) {
+    const [summary, media] = await Promise.allSettled([
+      this.profileService.getCharacterProfileSummary(
+        guildCharacter.getFindCharacterDTO(),
+      ),
+      this.profileService.getCharacterMediaSummary(
+        guildCharacter.getFindCharacterDTO(),
+      ),
     ]);
 
-    // We do not support underaged characters.
-    if (profileCharacter.level < this.minimumCharacterLevel) {
-      throw new BadRequestException(`Cannot store character below level ${this.minimumCharacterLevel}.`);
+    if (summary.status === 'fulfilled') {
+      guildCharacter.setCharacterProfileSummary(summary.value.data);
     }
 
-    if (character) {
-      character.missingSince = null;
-      character.isDeleted = false;
-
-      // If the "last_login_timestamp" field has not changed, there is no work to do.
-      if (!character.isModifiedSince(profileCharacter.last_login_timestamp)) {
-        character.notUpdated = true;
-        return character;
-      }
-    } else {
-      character = new GuildCharacter();
-      this.characterRepository.persistLater(character);
+    if (media.status === 'fulfilled') {
+      guildCharacter.setCharacterMediaSummary(media.value.data);
     }
 
-    // The guild master has a rank of 0, which is falsy.
-    if (typeof rank !== 'undefined') {
-      character.guild_rank = rank;
-    }
-
-    if (user) {
-      character.account = user;
-    }
-
-    character.mergeProfileIndex(profileCharacter);
-    character.mergeProfileMedia(profileMedia);
-
-    await this.characterRepository.flush();
-
-    return character;
+    return guildCharacter;
   }
 
   /**
@@ -91,8 +79,11 @@ export class CharacterService {
     );
   }
 
-  findAllInGuild() {
-    return this.characterRepository.find({ guild_name: 'Really Bad Players' });
+  /**
+   *
+   */
+  findAll() {
+    return this.characterRepository.findAll();
   }
 
   /**
@@ -117,111 +108,11 @@ export class CharacterService {
       .getSingleResult();
   }
 
-  // TODO: Re-create once Battle.net integration is achieved.
-  // async setMain(user: User, findCharacterDto: FindCharacterDto) {
-  //   const character = await this.upsert(findCharacterDto, null, user);
-
-  //   user.mainCharacter = character;
-
-  //   await user.save();
-
-  //   // Causes a circular dependency.
-  //   delete user.mainCharacter;
-
-  //   return user;
-  // }
-
   async delete(findCharacterDto: FindCharacterDto) {
-    const character = await this.characterRepository.findOneOrFail(findCharacterDto);
+    const character = await this.characterRepository.findOneOrFail(
+      findCharacterDto,
+    );
 
     return this.characterRepository.remove(character);
-  }
-
-  /**
-   * TODO: Re-create once Battle.net integration is achieved.
-   * Retrieves the list of known characters owned by an account from the Blizzard OAuth flow.
-   * Operates in three states depending on the sync argument:
-   *    1. If sync is set to false, it will not fetch characters, only sending the current information.
-   *    2. If sync is set to true, it will fetch characters always.
-   *    3. If sync is undefined, it will fetch characters if the information is stale.
-   * @param user User
-   * @param sync Boolean
-   */
-  // async fetchKnownCharacters(user: User, sync?: boolean) {
-  //   // Update for a potentially valid token and we're either forcing an update or not throttled.
-  //   if (
-  //     !user.tokenExpired() &&
-  //     (sync || (typeof sync === 'undefined' && !user.charactersUpdatedWithin(10)))
-  //   ) {
-  //     try {
-  //       await this.battleNetService.checkToken(user);
-  //       await this.syncUserCharacters(user);
-  //     } catch (error) {
-  //       // We should handle authentication errors.
-  //       console.error(error);
-  //       // user.blizzardtoken = null;
-  //       // await user.save();
-  //     }
-  //   }
-
-  //   return {
-  //     blizzardTokenExpiration: user.blizzardTokenExpiration,
-  //     knownCharacters: user.knownCharacters,
-  //     knownCharactersLastUpdated: user.knownCharactersLastUpdated,
-  //   };
-  // }
-
-  // TODO: Re-create once Battle.net integration is achieved.
-  // async syncUserCharacters(user: User) {
-  //   const profile = await this.profileService.getAccountProfileSummary(user);
-
-  //   const characters = profile.wow_accounts.map((a) => a.characters).flat();
-
-  //   user.knownCharacters = characters;
-  //   user.knownCharactersLastUpdated = new Date();
-
-  //   await user.save();
-
-  //   return {
-  //     knownCharacters: characters,
-  //     knownCharactersLastUpdated: user.knownCharactersLastUpdated,
-  //   };
-  // }
-
-  async setCharactersMissing(characters: GuildCharacter[], date: Date) {
-    for (const character of characters) {
-      if (!character.missingSince) {
-        character.missingSince = date;
-      }
-    }
-
-    this.characterRepository.flush();
-  }
-
-  /**
-   * Flags characters in a state of error for 3 days as deleted.
-   * Removes the character from the database after 7 days.
-   * This runs sequentially due to overlap in logic.
-   */
-  async purgeRoster() {
-    const flagDate = moment().utc().subtract(3, 'days').toDate();
-    const deleteDate = moment().utc().subtract(7, 'days').toDate();
-
-    const deleteResults = await this.characterRepository
-      .createQueryBuilder()
-      .delete()
-      .where({ missingSince: { $lt: deleteDate } })
-      .getResult();
-
-    const updateResults = await this.characterRepository
-      .createQueryBuilder()
-      .update({ isDeleted: true })
-      .where({ missingSince: { $lt: flagDate } })
-      .getResult();
-
-    return {
-      flagged: updateResults,
-      deleted: deleteResults,
-    };
   }
 }

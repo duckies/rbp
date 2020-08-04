@@ -25,8 +25,17 @@ module.exports = {
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'prefer-const': ['error', { destructuring: 'all' }],
+    '@typescript-eslint/no-inferrable-types': 'warn',
     // 'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*spec.ts'] }],
     // 'no-useless-constructor': 'off',
     // '@typescript-eslint/no-useless-constructor': 'error',
   },
+  overrides: [
+    {
+      files: ['*.entity.ts'],
+      rules: {
+        '@typescript-eslint/no-inferrable-types': 'off',
+      },
+    },
+  ],
 };

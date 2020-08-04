@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Guild } from 'discord.js';
-import { EntityRepository } from 'mikro-orm';
+import { EntityRepository } from '@mikro-orm/core';
 import { DiscordConfig } from './discord-plugin.entity';
 
 @Injectable()
@@ -47,11 +47,11 @@ export class PluginConfig<K, T = null> {
       await this.fetch();
     }
 
-    console.log(this.config);
-
-    this.config.guilds[guild.id] = Object.assign({}, this.config.guilds[guild.id], data);
-
-    console.log(this.config);
+    this.config.guilds[guild.id] = Object.assign(
+      {},
+      this.config.guilds[guild.id],
+      data,
+    );
 
     await this.save();
 
@@ -80,11 +80,16 @@ export class PluginConfig<K, T = null> {
    * @param data
    */
   private async save() {
-    let options = await this.pluginRepository.findOne({ name: this.identifier });
+    let options = await this.pluginRepository.findOne({
+      name: this.identifier,
+    });
 
     if (!options) {
       console.log(this.identifier);
-      options = this.pluginRepository.create({ name: this.identifier, options: this.config });
+      options = this.pluginRepository.create({
+        name: this.identifier,
+        options: this.config,
+      });
 
       this.pluginRepository.persistLater(options);
     } else {
@@ -99,14 +104,19 @@ export class PluginConfig<K, T = null> {
   private async fetch() {
     const config: { guilds?: { [id: string]: K }; global?: T } = { guilds: {} };
 
-    const plugin = await this.pluginRepository.findOne({ name: this.identifier });
+    const plugin = await this.pluginRepository.findOne({
+      name: this.identifier,
+    });
 
     if (!plugin) {
       config.global = this.templates.global;
       this.config = config;
       return config;
     }
-    const { guilds, global }: { guilds?: { [id: string]: K }; global?: T } = plugin.options;
+    const {
+      guilds,
+      global,
+    }: { guilds?: { [id: string]: K }; global?: T } = plugin.options;
 
     for (const id in guilds) {
       config.guilds[id] = Object.assign({}, this.templates.guild, guilds[id]);

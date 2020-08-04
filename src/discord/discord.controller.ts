@@ -6,7 +6,7 @@ import { DiscordService } from './discord.service';
 export class DiscordController {
   constructor(private readonly discord: DiscordService) {}
 
-  @Auth({ resource: 'discord', possession: 'any', action: 'read' })
+  @Auth('discord', 'read:any')
   @Get('member/:id')
   async getMember(@Param('id') id: string) {
     return this.discord.getGuildMember(id);

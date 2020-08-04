@@ -1,6 +1,8 @@
-import { IsNumberString } from "class-validator";
+import { Type } from 'class-transformer';
+import { IsNumber } from 'class-validator';
 
 export class FindFormSubmissionDto {
-  @IsNumberString()
-  id: number;
+  @IsNumber()
+  @Type(() => Number)
+  readonly id!: number;
 }

@@ -6,7 +6,10 @@ import { Form } from './form.entity';
 import { FormService } from './form.service';
 
 @Module({
-  imports: [MikroOrmModule.forFeature({ entities: [Form] }), FormQuestionModule],
+  imports: [
+    MikroOrmModule.forFeature({ entities: [Form] }),
+    FormQuestionModule,
+  ],
   providers: [FormService],
   controllers: [FormController],
   exports: [FormService],

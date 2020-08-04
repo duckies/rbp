@@ -1,4 +1,11 @@
-import { Enum, Guild, KeyNameId, Link, Links, Realm } from '../shared-profile.interface';
+import {
+  Enum,
+  Guild,
+  KeyNameId,
+  Link,
+  Links,
+  Realm,
+} from '../shared-profile.interface';
 
 export interface CharacterProfileSummary {
   _links: Links;
@@ -32,6 +39,7 @@ export interface CharacterProfileSummary {
   reputations: Link;
   quests: Link;
   achievements_statistics: Link;
+  professions: Link;
 }
 
 export interface Title {

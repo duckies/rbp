@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder } from 'mikro-orm';
+import { EntityRepository, QueryOrder } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateRaidDto } from './dto/create-raid.dto';
 import { UpdateRaidDto } from './dto/update-raid.dto';

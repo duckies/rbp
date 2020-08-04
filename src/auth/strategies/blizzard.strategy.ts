@@ -9,7 +9,10 @@ import { AuthService } from '../auth.service';
 export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   private readonly logger: Logger = new Logger(BlizzardStrategy.name);
 
-  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
+  constructor(
+    private readonly authService: AuthService,
+    config: ConfigService,
+  ) {
     super({
       clientID: config.get('BLIZZARD_CLIENTID'),
       clientSecret: config.get('BLIZZARD_SECRET'),
@@ -20,11 +23,20 @@ export class BlizzardStrategy extends PassportStrategy(Strategy, 'blizzard') {
   }
 
   // Blizzard does not provide refresh tokens.
-  async validate(req, accessToken, refreshToken, profile): Promise<void | User> {
+  async validate(
+    req,
+    accessToken,
+    refreshToken,
+    profile,
+  ): Promise<void | User> {
     if (!req.user) {
       this.logger.log(`Logging in or creating ${profile.battletag}`);
 
-      return await this.authService.validateDiscordLogin(accessToken, refreshToken, profile);
+      return this.authService.validateDiscordLogin(
+        accessToken,
+        refreshToken,
+        profile,
+      );
     }
 
     this.logger.log(`User ${req.user.id} is already logged in.`);

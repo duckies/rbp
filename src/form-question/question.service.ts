@@ -1,13 +1,18 @@
+import {
+  EntityManager,
+  EntityRepository,
+  QueryOrder,
+  wrap,
+} from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
-import { EntityRepository, QueryOrder, wrap, EntityManager } from 'mikro-orm';
 import { InjectRepository } from 'nestjs-mikro-orm';
+import { Form } from '../form/form.entity';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
 import { choicesFields } from './enums/choice-fields.enum';
 import { FieldType } from './enums/field-type.enum';
 import { multipleFields } from './enums/multiple-fields.enum';
 import { InvalidQuestionException } from './exceptions/bad-question.exception';
 import { FormQuestion } from './question.entity';
-import { Form } from '../form/form.entity';
 
 @Injectable()
 export class FormQuestionService {
@@ -40,20 +45,10 @@ export class FormQuestionService {
   findByForm(id: number) {
     return this.formQuestionRepository.find(
       {
-        form_id: id,
+        form: id,
       },
       { orderBy: { order: QueryOrder.ASC } },
     );
-  }
-
-  /**
-   * Finds all of the questions in a form of the specified type.
-   * Used primarily for retrieving file upload fields for multer.
-   * @param id Form id
-   * @param type Question FieldType
-   */
-  findByFormAndType(id: number, type: FieldType) {
-    return this.formQuestionRepository.find({ form_id: id, type });
   }
 
   /**
@@ -68,8 +63,8 @@ export class FormQuestionService {
    * Updates a question from a valid DTO.
    * @param updateQuestionDto UpdateQuestionDto
    */
-  async update(updateQuestionDto: UpdateQuestionDto) {
-    const question = await this.formQuestionRepository.findOneOrFail(updateQuestionDto.id);
+  async update(id: string, updateQuestionDto: UpdateQuestionDto) {
+    const question = await this.formQuestionRepository.findOneOrFail(id);
 
     wrap(question).assign(updateQuestionDto);
 
@@ -87,7 +82,9 @@ export class FormQuestionService {
   async delete(id: string) {
     const question = await this.formQuestionRepository.findOneOrFail(id);
 
-    await this.formQuestionRepository.remove(question);
+    this.formQuestionRepository.remove(question);
+
+    await this.formQuestionRepository.flush();
 
     return question;
   }
@@ -111,12 +108,18 @@ export class FormQuestionService {
     }
 
     if (question.multiple && !canHaveMultiple) {
-      throw new InvalidQuestionException(question, 'Cannot have multiple values.');
+      throw new InvalidQuestionException(
+        question,
+        'Cannot have multiple values.',
+      );
     }
 
     // Fields cannot allow multiple choices with only one choice.
     if (question.multiple && question.choices && question.choices.length <= 1) {
-      throw new InvalidQuestionException(question, 'Cannot have multiple values with only one choice.');
+      throw new InvalidQuestionException(
+        question,
+        'Cannot have multiple values with only one choice.',
+      );
     }
 
     // Only the upload field can have file types.

@@ -1,4 +1,9 @@
-import { HttpService, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpService,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { MessageEmbed, TextChannel } from 'discord.js';
 import { chunk, isEqual, partition } from 'lodash';
 import moment from 'moment';
@@ -13,7 +18,7 @@ import {
   Report,
   ReportInfo,
   ReportList,
-  Zone
+  Zone,
 } from '../interfaces/warcraftlogs.interface';
 import { DiscordPlugin } from './plugin.class';
 import { SettingsPlugin } from './settings.plugin';
@@ -57,7 +62,11 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   @CommandGroup({ name: 'wcl', description: 'WarcraftLogs related commands.' })
   wcl() {}
 
-  @Command({ name: 'api', group: 'wcl', description: 'Sets the guild WarcraftLogs API key.' })
+  @Command({
+    name: 'api',
+    group: 'wcl',
+    description: 'Sets the guild WarcraftLogs API key.',
+  })
   async api(ctx: Context, key: string) {
     try {
       const reports = await this.getReports(key);
@@ -69,7 +78,9 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
       await this.config.setGlobal({ key });
     } catch (error) {
       if (error instanceof UnauthorizedException) {
-        await ctx.send('Invalid or missing API key for WarcraftLogs, aborting!');
+        await ctx.send(
+          'Invalid or missing API key for WarcraftLogs, aborting!',
+        );
       } else {
         await ctx.send(`Some error occured retrieving the logs.`);
         this.logger.error(error);
@@ -77,14 +88,22 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
     }
   }
 
-  @Command({ name: 'channel', group: 'wcl', description: 'Sets the channel to send log announcements to.' })
+  @Command({
+    name: 'channel',
+    group: 'wcl',
+    description: 'Sets the channel to send log announcements to.',
+  })
   async setChannel(ctx: Context, cid: string) {
     const channel = ctx.message.guild.channels.cache.get(cid);
 
     if (!channel) {
-      return await ctx.send('Cannot find the given channel id.');
-    } else if (!channel.permissionsFor(ctx.message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS'])) {
-      return await ctx.send('Cannot send messages or embeds to this channel.');
+      return ctx.send('Cannot find the given channel id.');
+    } else if (
+      !channel
+        .permissionsFor(ctx.message.guild.me)
+        .has(['SEND_MESSAGES', 'EMBED_LINKS'])
+    ) {
+      return ctx.send('Cannot send messages or embeds to this channel.');
     }
 
     await this.config.setGuild(ctx.message.guild, { channel: cid });
@@ -92,12 +111,15 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
     await ctx.tick();
   }
 
-  @Command({ name: 'log', description: 'Retrieves the embed for a log by its id.' })
+  @Command({
+    name: 'log',
+    description: 'Retrieves the embed for a log by its id.',
+  })
   async log(ctx: Context, id: string) {
     const { key } = await this.config.getGlobal();
 
     if (!key) {
-      return await ctx.send(`Set the API key with the setup command and try again.`);
+      return ctx.send(`Set the API key with the setup command and try again.`);
     }
 
     try {
@@ -106,37 +128,46 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
       await ctx.send(embed);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
-        return await ctx.send('Invalid or missing API key for WarcraftLogs, aborting!');
+        return ctx.send(
+          'Invalid or missing API key for WarcraftLogs, aborting!',
+        );
       }
 
       this.logger.log(error);
-      return await ctx.send(`An unknown error occured, shwoops!`);
+      return ctx.send(`An unknown error occured, shwoops!`);
     }
   }
 
-  @Command({ name: 'logs', description: 'Retrieves the latest logs for the guild.' })
+  @Command({
+    name: 'logs',
+    description: 'Retrieves the latest logs for the guild.',
+  })
   async logs(ctx: Context) {
     const { key } = await this.config.getGlobal();
 
     if (!key) {
-      return await ctx.send(`Set the API key with the setup command and try again.`);
+      return ctx.send(`Set the API key with the setup command and try again.`);
     }
 
     try {
       const reports = await this.getReports(key);
 
       const embeds = await Promise.all(
-        reports.slice(0, 5).map(async (report) => this.getReportEmbed(report.id)),
+        reports
+          .slice(0, 5)
+          .map(async (report) => this.getReportEmbed(report.id)),
       );
 
       await ctx.paginate(embeds);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
-        return await ctx.send('Invalid or missing API key for WarcraftLogs, aborting!');
+        return ctx.send(
+          'Invalid or missing API key for WarcraftLogs, aborting!',
+        );
       }
 
       this.logger.log(error);
-      return await ctx.send(`An unknown error occured, shwoops!`);
+      return ctx.send(`An unknown error occured, shwoops!`);
     }
   }
 
@@ -168,13 +199,18 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
           if (!channel) continue;
 
           const reports = (await this.getReports(key)).slice(0, 5);
-          const [active, inactive] = partition(reports, (r) => moment(Date.now()).diff(r.end, 'hours') < 1);
+          const [active, inactive] = partition(
+            reports,
+            (r) => moment(Date.now()).diff(r.end, 'hours') < 1,
+          );
           hasActive = active.length > 0;
 
           // Send final embed to watched reports that are now outdated, then remove them.
           for (const report of inactive) {
             if (watching.hasOwnProperty(report.id)) {
-              const message = await (<TextChannel>channel).messages.fetch(watching[report.id]);
+              const message = await (<TextChannel>channel).messages.fetch(
+                watching[report.id],
+              );
 
               // If the message is missing, e.g. deleted, don't bother doing any more.
               if (!message) continue;
@@ -189,7 +225,9 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
             const embed = await this.getReportEmbed(report.id, true);
             // Edit the existing message if possible.
             if (watching.hasOwnProperty(report.id)) {
-              const message = await (<TextChannel>channel).messages.fetch(watching[report.id]);
+              const message = await (<TextChannel>channel).messages.fetch(
+                watching[report.id],
+              );
 
               if (message) {
                 await message.edit(embed);
@@ -212,6 +250,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
         // Scan every 5 minutes until we find a log, then every 1 while active.
         await sleep(hasActive ? 60000 : 300000);
       } catch (error) {
+        console.error(error);
         this.logger.error(error);
       }
     }
@@ -271,12 +310,19 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
       if ((<BossFight>fight).kill) {
         instances[instance][difficulty][fight.name].kill = true;
         instances[instance][difficulty][fight.name].killId = fight.id;
-      } else if (instances[instance][difficulty][fight.name].percent > (<BossFight>fight).bossPercentage) {
-        instances[instance][difficulty][fight.name].percent = (<BossFight>fight).bossPercentage;
+      } else if (
+        instances[instance][difficulty][fight.name].percent >
+        (<BossFight>fight).bossPercentage
+      ) {
+        instances[instance][difficulty][fight.name].percent = (<BossFight>(
+          fight
+        )).bossPercentage;
       }
 
       if ((<Keystone>fight).keystoneLevel) {
-        instances[instance][difficulty][fight.name].keystoneLevel = (<Keystone>fight).keystoneLevel;
+        instances[instance][difficulty][fight.name].keystoneLevel = (<Keystone>(
+          fight
+        )).keystoneLevel;
       }
     }
 
@@ -297,7 +343,12 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
       timestamp: new Date(report.end),
       thumbnail: { url: this.getRaidImage(report.zone) },
       footer: {
-        text: typeof watching === 'undefined' ? undefined : watching ? 'Monitoring Log' : 'Monitoring Ended',
+        text:
+          typeof watching === 'undefined'
+            ? undefined
+            : watching
+            ? 'Monitoring Log'
+            : 'Monitoring Ended',
       },
     });
 
@@ -322,7 +373,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
                     ? `killed in ${info.ids.length} attempts.`
                     : 'one-shot.'
                   : info.ids.length > 1
-                  ? `attempted ${info.ids.length} times, best ${info.percent / 100}%.`
+                  ? `${info.ids.length} times, best ${info.percent / 100}%.`
                   : `first wipe at ${info.percent / 100}%.`
               }`,
             );
@@ -331,10 +382,19 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
 
         if (bosses.length >= 10) {
           const [first, last] = chunk(bosses, Math.ceil(bosses.length / 2));
-          embed.addField(`${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (1/2)`, first.join('\n'));
-          embed.addField(`${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (2/2)`, last.join('\n'));
+          embed.addField(
+            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (1/2)`,
+            first.join('\n'),
+          );
+          embed.addField(
+            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (2/2)`,
+            last.join('\n'),
+          );
         } else {
-          embed.addField(`${difficulty === 'Mythic+' ? '' : difficulty} ${instance}`, bosses.join('\n'));
+          embed.addField(
+            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance}`,
+            bosses.join('\n'),
+          );
         }
       }
     }
@@ -367,7 +427,9 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   }
 
   private async getZoneInfo() {
-    return (await this.getWCL('https://www.warcraftlogs.com/v1/zones')) as Zone[];
+    return (await this.getWCL(
+      'https://www.warcraftlogs.com/v1/zones',
+    )) as Zone[];
   }
 
   /**

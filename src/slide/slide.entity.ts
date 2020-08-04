@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from 'mikro-orm';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Slide {
@@ -11,9 +11,9 @@ export class Slide {
   @Property()
   title!: string;
 
-  @Property()
+  @Property({ nullable: true })
   subtitle?: string;
 
-  @Property()
+  @Property({ nullable: true })
   link?: string;
 }

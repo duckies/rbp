@@ -1,147 +1,189 @@
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
+import {
+  OnQueueCompleted,
+  OnQueueError,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
+import { HttpException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from 'mikro-orm';
-import moment from 'moment';
-import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
-import { CharacterConflictException } from '../blizzard/exceptions/character-conflict.exception';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { GuildCharacter } from './character.entity';
-import { CharacterService, PurgeResult } from './character.service';
-
-export interface GuildUpdateResult {
-  success: number;
-  failed: number;
-  ignored: number;
-}
+import { CharacterService } from './character.service';
+import { CharacterRemoveResult } from './interfaces/character-remove.interface';
+import { CharacterUpdateResult } from './interfaces/character-update.interface';
 
 @Processor('character')
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
   private readonly em: EntityManager;
 
-  private guildLookup: FindGuildDto = {
+  private findGuildDTO: FindGuildDto = {
     name: 'really-bad-players',
     realm: RealmSlug.Area52,
     region: Region.US,
   };
 
-  private minimumCharacterLevel: number;
+  private minLVL: number;
 
   constructor(
     private readonly characterService: CharacterService,
     private readonly profileService: ProfileService,
     private readonly config: ConfigService,
-    private readonly orm: MikroORM,
+    orm: MikroORM,
   ) {
-    this.minimumCharacterLevel = Math.max(this.config.get<number>('MINIMUM_CHARACTER_LEVEL'), 10);
+    this.minLVL = Math.max(
+      this.config.get<number>('MINIMUM_CHARACTER_LEVEL'),
+      10,
+    );
     this.em = orm.em.fork();
   }
 
-  /**
-   * Recurring guild roster update process.
-   *
-   * Downloads the guild roster and attempts to perform character upserts.
-   * In the event of a broken character, it is deleted.
-   */
-  @Process({ name: 'updateGuildRoster', concurrency: 1 })
-  private async updateGuildRoster(job: Job<number>): Promise<GuildUpdateResult> {
-    let progress = 0,
-      success = 0,
-      failed = 0,
-      ignored = 0;
+  @Process({ name: 'update-guild-members', concurrency: 1 })
+  private async updateGuildMembers(job: Job): Promise<CharacterUpdateResult> {
+    const [guildCharacters, roster] = await Promise.all([
+      this.em.find(GuildCharacter, null),
+      this.profileService.getGuildRoster(this.findGuildDTO, this.minLVL),
+    ]);
 
-    // Note that this fails without explanation.
-    const guild = await this.profileService.getGuildRoster(this.guildLookup, this.minimumCharacterLevel);
+    const results: CharacterUpdateResult = {
+      total: roster.data.members.length,
+      processed: 0,
+      success: 0,
+      deleted: 0,
+      ignored: 0,
+      failed: 0,
+    };
 
     await Promise.all(
-      guild.members.map(async (member) => {
-        const findCharacterDto = new FindCharacterDto(member.character.name);
+      roster.data.members.map(async (member) => {
+        let guildCharacter = guildCharacters.find(
+          (c) => c.id === member.character.id,
+        );
 
         try {
-          const character = await this.characterService.upsert(findCharacterDto, member.rank);
+          if (!guildCharacter) {
+            guildCharacter = new GuildCharacter(
+              member.character.name,
+              member.character.realm.slug,
+              Region.US,
+            );
 
-          if (character.notUpdated) {
-            ignored++;
+            this.em.persist(guildCharacter);
+            results.added++;
           } else {
-            success++;
+            const status = await this.profileService.getCharacterProfileStatus(
+              guildCharacter.getFindCharacterDTO(),
+              guildCharacter.last_modified,
+            );
+
+            if (
+              status.data.is_valid === false ||
+              status.data.id !== guildCharacter.id
+            ) {
+              results.deleted++;
+              return this.em.remove(GuildCharacter, guildCharacter);
+            }
+
+            guildCharacter.last_modified = status.headers['last-modified'];
           }
 
-          return character;
+          guildCharacter.guild_rank = member.rank;
+
+          await this.characterService.populateGuildCharacter(guildCharacter);
+
+          results.success++;
         } catch (error) {
-          // Delete the conflicted character then attempt reinsertion.
-          if (error instanceof CharacterConflictException) {
-            await this.characterService.delete(findCharacterDto);
-            await this.characterService.upsert(findCharacterDto, member.rank);
-          } else if (error.message && error.message.error) {
-            this.logger.error(error.message.error);
-          } else {
-            console.log(error);
-            this.logger.error(`${error}`);
+          if (error instanceof HttpException) {
+            if (error.getStatus() === 304) {
+              results.ignored++;
+              return;
+            }
+
+            if (error.getStatus() === 404) {
+              this.em.remove(GuildCharacter, guildCharacter);
+              return;
+            }
           }
-          failed++;
-        } finally {
-          job.progress(++progress / guild.members.length);
+
+          console.error(error);
+          this.logger.error(`Updating Error ${error}`, error.trace);
         }
+
+        job.progress(++results.processed / results.total);
       }),
     );
 
-    return Promise.resolve({ success, failed, ignored });
+    await this.em.flush();
+
+    return results;
   }
 
-  @Process({ name: 'removeNonGuildMembers', concurrency: 1 })
-  private async removeNonGuildMembers() {
-    const [blizzard, local] = await Promise.all([
-      this.profileService.getGuildRoster(this.guildLookup, this.minimumCharacterLevel),
-      this.characterService.findAllInGuild(),
-    ]);
+  @Process({ name: 'add-remove-members', concurrency: 1 })
+  private async addOrRemoveMembers(): Promise<CharacterRemoveResult> {
+    const roster = await this.profileService.getGuildRoster(this.findGuildDTO);
 
-    // Creates a list of local characters who are not in the guild.
-    const missing: GuildCharacter[] = local.filter(
-      (l) => !blizzard.members.some((b) => l.name === b.character.name),
-    );
+    const ids = roster.data.members.map((m) => m.character.id);
 
-    if (missing.length) {
-      this.logger.log(`Found ${missing.length} missing guild characters.`);
-      await this.characterService.setCharactersMissing(missing, moment.utc().toDate());
-    } else {
-      this.logger.log(`No missing guild characters.`);
-    }
-  }
+    const notInGuild = await this.em.find(GuildCharacter, {
+      id: { $nin: ids },
+    });
 
-  @Process({ name: 'purgeGuildRoster', concurrency: 1 })
-  private async purgeGuildRoster() {
-    return await this.characterService.purgeRoster();
+    const names = notInGuild.map((m) => m.name);
+
+    this.em.remove(GuildCharacter, notInGuild);
+
+    await this.em.flush();
+
+    return { names };
   }
 
   @OnQueueError()
   private onError(_job: Job<number>, error: Error): void {
+    console.error(error);
     this.logger.error('Global Error: ' + error);
   }
 
   @OnQueueCompleted()
-  private onCompleted(job: Job<number>, result: GuildUpdateResult | PurgeResult): void {
-    if (job.name === 'updateGuildRoster') {
+  private onCompleted(
+    job: Job<number>,
+    results: CharacterUpdateResult | CharacterRemoveResult,
+  ): void {
+    if (job.name === 'update-guild-members') {
+      const statuses = [];
+
+      Object.keys(results).forEach((r) => {
+        if (r === 'processed' || r === 'total' || results[r] === 0) return;
+
+        statuses.push(
+          `${results[r]} ${r.charAt(0).toUpperCase() + r.slice(1)}`,
+        );
+      });
+
       this.logger.log(
-        `Roster update completed with ${(result as GuildUpdateResult).success} updated ${
-          (result as GuildUpdateResult).failed
-        } failed and ${(result as GuildUpdateResult).ignored} ignored.`,
+        `[Updated ${
+          (results as CharacterUpdateResult).total
+        } Guild Characters]: ${statuses.join(', ')}`,
       );
-    } else if (job.name === 'purgeGuildRoster') {
+    }
+
+    if (job.name === 'add-remove-members') {
+      const len = (results as CharacterRemoveResult).names.length;
       this.logger.log(
-        `Purge marked ${(result as PurgeResult).flagged} characters as deleted, removed ${
-          (result as PurgeResult).deleted
-        } characters.`,
+        `Removed ${len} Character${
+          len === 0 ? 's' : len === 1 ? ':' : 's:'
+        } ${(results as CharacterRemoveResult).names.join(', ')}`,
       );
     }
   }
 
   @OnQueueFailed()
   private onFailed(_job: Job<number>, error: Error): void {
-    this.logger.error(`${error}`);
+    this.logger.error(error);
   }
 }

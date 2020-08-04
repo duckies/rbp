@@ -1,4 +1,4 @@
-import { Type, ValidationError } from 'mikro-orm';
+import { Type, ValidationError } from '@mikro-orm/core';
 
 export class EnumArray extends Type {
   convertToDatabaseValue(value: any): string {

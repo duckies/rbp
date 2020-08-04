@@ -1,8 +1,18 @@
+import { EntityManager, FilterQuery, QueryOrderMap } from '@mikro-orm/core';
+import { EntityRepository } from '@mikro-orm/knex';
 import { InjectQueue } from '@nestjs/bull';
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Queue } from 'bull';
-import { EntityManager, EntityRepository, QueryOrder, wrap } from 'mikro-orm';
+import fs from 'fs';
 import { InjectRepository } from 'nestjs-mikro-orm';
+import path from 'path';
 import { FileService } from '../file/file.service';
 import { FormCharacterService } from '../form-character/form-character.service';
 import { Form } from '../form/form.entity';
@@ -12,7 +22,9 @@ import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 import { FormSubmission } from './form-submission.entity';
 
 @Injectable()
-export class SubmissionService {
+export class SubmissionService implements OnModuleInit {
+  private readonly logger = new Logger(SubmissionService.name);
+
   constructor(
     @InjectRepository(FormSubmission)
     private readonly formSubmissionRepository: EntityRepository<FormSubmission>,
@@ -23,19 +35,36 @@ export class SubmissionService {
     @InjectQueue('discord') private readonly discordQueue: Queue,
   ) {}
 
+  onModuleInit() {
+    const uploadPath = path.join(process.cwd(), 'uploads', 'applications');
+
+    fs.access(uploadPath, (error) => {
+      if (error) {
+        this.logger.log(`Creating upload directory: ${uploadPath}`);
+
+        fs.mkdir(uploadPath, { recursive: true }, (error) => {
+          if (error) throw error;
+        });
+      }
+    });
+  }
+
   /**
    * Creates a new form submission for a user with associated
    * answers and characters.
    * @param author Form submission author.
    * @param createSubmissionDto CreateSubmissionDto
    */
-  async create(author: User, { formId, answers, files, characters }: CreateFormSubmissionDto) {
+  async create(
+    author: User,
+    { formId, answers, files, characters }: CreateFormSubmissionDto,
+  ) {
     const formSubmission = new FormSubmission();
 
     const openForm = await this.formSubmissionRepository.find(
       {
         status: FormSubmissionStatus.Open,
-        author_id: author.id,
+        author: { id: author.id },
       },
       ['author'],
     );
@@ -51,7 +80,7 @@ export class SubmissionService {
 
       for (const upload of fileUploads) {
         if (upload.author && upload.author.id !== author.id) {
-          throw new UnauthorizedException('Cannot reference unauthored file.');
+          throw new UnauthorizedException('Cannot link unauthored file');
         }
       }
 
@@ -60,20 +89,15 @@ export class SubmissionService {
 
     const formCharacters = await Promise.all(
       characters.map((character) =>
-        this.formCharacterService.create({
-          name: character.name,
-          realm: character.realm,
-          region: character.region,
-        }),
+        this.formCharacterService.upsert(character),
       ),
     );
 
     formSubmission.form = this.em.getReference(Form, formId);
     formSubmission.author = author;
     formSubmission.characters.set(formCharacters);
+    formSubmission.mainCharacter = formCharacters[0];
     formSubmission.answers = answers;
-
-    formCharacters[0].isMain = true;
 
     await this.formSubmissionRepository.persistAndFlush(formSubmission);
 
@@ -83,81 +107,69 @@ export class SubmissionService {
     formSubmission.justSubmitted = true;
 
     // Send notifications.
-    await this.formQueue.add('newApplication', formSubmission);
-    await this.discordQueue.add('APP_CREATE_NOTIFICATION', formSubmission);
+    await this.formQueue.add('new-application', formSubmission);
+    await this.discordQueue.add('app-create-notification', formSubmission, {
+      attempts: 1,
+      removeOnFail: true,
+    });
 
     return formSubmission;
   }
 
   /**
-   * Retrieves the first available form submission for a given status.
-   * @param status FormSubmissionStatus
+   * Proxy ORM method for finding a form submission.
+   *
+   * @param where properties to match to the entity
+   * @param populate denotes if all relationships, or specific relationships, should be loaded
    */
-  findFirstByStatus(status: FormSubmissionStatus) {
-    // This intentionally does not fail so it does not pass the 404 error.
-    return this.formSubmissionRepository.findOneOrFail({ status }, ['form', 'author', 'characters'], {
-      id: QueryOrder.DESC,
-    });
+  findOne(
+    where: FilterQuery<FormSubmission>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ) {
+    return this.formSubmissionRepository.findOne(where, populate, orderBy);
   }
 
   /**
-   * Retrieves all forms created by an author regardless of status.
-   * @param user Form submission author.
+   * Proxy ORM method for finding a form submission.
+   * This method will return a `404 Not Found Exception` if the entity is not found.
+   *
+   * @param where properties to match to the entity
+   * @param populate denotes if all relationships, or specific relationships, should be loaded
    */
-  findByUser(user: User) {
-    return this.formSubmissionRepository
-      .createQueryBuilder('s')
-      .select(['s.id', 's.status'])
-      .join('s.author', 'author')
-      .where('author.id = :id', [user.id])
-      .getResult();
-  }
-
-  /**
-   * Finds the first open form submission by a user, if available.
-   * Used to determine if a user has already submitted an application.
-   * @param user Form submission author.
-   */
-  findOpenByUser(user: User): Promise<Pick<FormSubmission, 'id' | 'status'>> {
-    return this.formSubmissionRepository.findOne({ author_id: user.id, status: FormSubmissionStatus.Open });
-  }
-
-  /**
-   * Finds an open form submission by a discord identifier.
-   * @param id
-   */
-  findOpenByUserDiscordID(id: string) {
-    return this.formSubmissionRepository.findOne({
-      author: { discord_id: id },
-      status: FormSubmissionStatus.Open,
-    });
-  }
-
-  /**
-   * Finds an individual form submission.
-   * @param id Form submission id.
-   */
-  async findOne(id: number) {
-    return this.formSubmissionRepository.findOne({ id }, ['author', 'characters', 'files', 'form']);
+  findOneOrFail(
+    where: FilterQuery<FormSubmission>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+  ) {
+    return this.formSubmissionRepository.findOneOrFail(
+      where,
+      populate,
+      orderBy,
+    );
   }
 
   /**
    * Retrieving a paginated array of form submissions.
    * Search narrowable to status category by an optionally provided status or id.
    *
-   * @param take Number of submissions to retrieve.
-   * @param skip Number of submissions to skip.
+   * @param limit number of submissions to retrieve
+   * @param offset number of submissions to skip
    */
-  async findAll(limit: number, offset: number, status?: FormSubmissionStatus) {
-    const submissions = await this.formSubmissionRepository.findAndCount(
-      { status },
-      ['author', 'characters'],
-      { id: QueryOrder.DESC },
+  findAll(
+    where?: FilterQuery<FormSubmission>,
+    populate?: boolean | string[],
+    orderBy?: QueryOrderMap,
+    limit?: number,
+    offset?: number,
+  ) {
+    return this.formSubmissionRepository.findAndCount(
+      where,
+      populate,
+      orderBy,
       limit,
       offset,
     );
-
-    return submissions;
   }
 
   /**
@@ -166,8 +178,16 @@ export class SubmissionService {
    * @param updateFormSubmissionDto UpdateFormSubmissionDto
    * @param updateAny Describes if the user has has officer-level permissions over applications.
    */
-  async update(id: number, user: User, updateFormSubmissionDto: UpdateFormSubmissionDto, updateAny: boolean) {
-    const formSubmission = await this.formSubmissionRepository.findOneOrFail(id, ['author']);
+  async update(
+    id: number,
+    user: User,
+    updateFormSubmissionDto: UpdateFormSubmissionDto,
+    updateAny: boolean,
+  ) {
+    const formSubmission = await this.formSubmissionRepository.findOneOrFail(
+      id,
+      ['author'],
+    );
 
     if (!updateAny && formSubmission.author.id !== user.id) {
       throw new ForbiddenException();
@@ -187,12 +207,12 @@ export class SubmissionService {
       updateFormSubmissionDto.status !== 'open' &&
       formSubmission.status !== updateFormSubmissionDto.status;
 
-    wrap(formSubmission).assign(updateFormSubmissionDto);
+    formSubmission.assign(updateFormSubmissionDto);
 
     await this.formSubmissionRepository.flush();
 
     if (statusChange) {
-      await this.discordQueue.add('APP_STATUS_NOTIFICATION', formSubmission);
+      await this.discordQueue.add('app-status-notification', formSubmission);
     }
 
     return formSubmission;
@@ -200,12 +220,17 @@ export class SubmissionService {
 
   /**
    * Deletes a form submission.
-   * @param id
+   *
+   * @param id id of the submission
    */
   async delete(id: number) {
-    const submission = await this.formSubmissionRepository.findOneOrFail(id, ['characters']);
+    const submission = await this.formSubmissionRepository.findOneOrFail(id, [
+      'characters',
+    ]);
 
-    this.formSubmissionRepository.remove(submission, true);
+    this.formSubmissionRepository.remove(submission);
+
+    await this.formSubmissionRepository.flush();
 
     return submission;
   }

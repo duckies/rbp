@@ -12,18 +12,13 @@ export class CharacterScheduler extends NestSchedule {
     super();
   }
 
-  @Cron('0 * * * *')
-  updateGuildRoster(): void {
-    this.queue.add('updateGuildRoster', { attempts: 1 });
+  @Cron('0 */2 * * *')
+  updateMembers() {
+    this.queue.add('update-guild-members', { attempts: 1 });
   }
 
-  // @Cron('0 */3 * * *')
-  // purgeRoster(): void {
-  //   this.queue.add('purgeGuildRoster');
-  // }
-
-  // @Cron('0 */3 * * *')
-  // removeNonGuildMembers(): void {
-  //   this.queue.add('removeNonGuildMembers');
-  // }
+  @Cron('30 */2 * * *')
+  addRemove() {
+    this.queue.add('add-remove-members', { attempts: 1 });
+  }
 }

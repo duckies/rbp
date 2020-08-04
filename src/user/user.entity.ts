@@ -1,5 +1,12 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property, WrappedEntity } from 'mikro-orm';
-import { EnumArray } from '../../config/types/enum-array.type';
+import {
+  ArrayType,
+  BaseEntity,
+  Collection,
+  Entity,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
 import { FileUpload } from '../file/file.entity';
@@ -7,7 +14,7 @@ import { FormComment } from '../form-comment/form-comment.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 
 @Entity()
-export class User {
+export class User extends BaseEntity<User, 'id'> {
   @PrimaryKey()
   id!: number;
 
@@ -20,39 +27,44 @@ export class User {
   @Property()
   discord_discriminator!: string;
 
-  @Property({ hidden: true })
+  @Property({ hidden: true, nullable: true })
   discord_access_token?: string;
 
-  @Property({ hidden: true })
+  @Property({ hidden: true, nullable: true })
   discord_refresh_token?: string;
 
-  @Property()
+  @Property({ nullable: true })
   discord_avatar?: string;
 
-  @Property({ hidden: true })
+  @Property({ hidden: true, nullable: true })
   blizzard_token?: string;
 
-  @Property({ type: EnumArray })
+  @Property({ type: ArrayType })
   roles: Roles[] = [];
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 
-  @OneToMany(() => Article, (article) => article.author)
-  articles: Article[];
+  /**
+   * Relationships
+   */
 
-  @OneToMany(() => FormSubmission, (submission) => submission.author)
+  @OneToMany(() => Article, (a) => a.author, { hidden: true })
+  articles = new Collection<Article>(this);
+
+  @OneToMany(() => FormSubmission, (submission) => submission.author, {
+    hidden: true,
+  })
   submissions = new Collection<FormSubmission>(this);
 
-  @OneToMany(() => FormComment, (comment) => comment.author)
+  @OneToMany(() => FormComment, (comment) => comment.author, { hidden: true })
   comments = new Collection<FormComment>(this);
 
-  @OneToMany(() => FileUpload, (fileUpload) => fileUpload.author)
-  files: FileUpload[];
+  @OneToMany(() => FileUpload, (fileUpload) => fileUpload.author, {
+    hidden: true,
+  })
+  files = new Collection<FileUpload>(this);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface User extends WrappedEntity<User, 'id'> {}

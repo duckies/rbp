@@ -4,16 +4,16 @@ import { FormSubmissionStatus } from '../enums/form-submission-status.enum';
 
 export class FindAllFormSubmissionsDto {
   @IsOptional()
-  @Type(() => Number)
   @IsNumber()
-  take = 12;
+  @Type(() => Number)
+  readonly limit = 10;
 
   @IsOptional()
-  @Type(() => Number)
   @IsNumber()
-  skip = 0;
+  @Type(() => Number)
+  readonly offset = 0;
 
   @IsOptional()
   @IsEnum(FormSubmissionStatus)
-  status: FormSubmissionStatus;
+  readonly status?: FormSubmissionStatus = FormSubmissionStatus.Open;
 }

@@ -3,7 +3,7 @@ import { Character, KeyNameId, Link, Links } from '../shared-profile.interface';
 export interface CharacterTitlesSummary {
   _links: Links;
   character: Character;
-  active_title: ActiveTitle;
+  active_title?: ActiveTitle;
   titles: KeyNameId[];
 }
 

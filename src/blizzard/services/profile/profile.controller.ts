@@ -1,13 +1,11 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { AccessControlGuard } from '../../../auth/guards';
+import { Controller, Get, Param } from '@nestjs/common';
+import { Auth } from '../../../auth/decorators/auth.decorator';
 import { FindCharacterDto } from '../../dto/find-character.dto';
 import { FindGuildDto } from '../../dto/find-guild.dto';
-import * as Profile from '../../interfaces/profile';
 import { BattleNetService } from '../battle-net/battle-net.service';
 import { ProfileService } from './profile.service';
 
 @Controller('blizzard')
-@UseGuards(AccessControlGuard)
 export class ProfileController {
   constructor(
     private readonly battleNetService: BattleNetService,
@@ -24,13 +22,17 @@ export class ProfileController {
   //   return this.profileService.getAccountProfileSummary(user);
   // }
 
+  @Auth()
   @Get('character/:region/:realm/:name')
-  getCharacter(@Param() findCharacterDto: FindCharacterDto): Promise<Profile.CharacterProfileSummary> {
-    return this.profileService.getCharacterProfileSummary(findCharacterDto);
+  async getCharacter(@Param() findCharacterDto: FindCharacterDto) {
+    return (
+      await this.profileService.getCharacterProfileSummary(findCharacterDto)
+    ).data;
   }
 
+  @Auth()
   @Get('guild/:region/:realm/:name')
-  getGuild(@Param() findGuildDto: FindGuildDto): Promise<Profile.GuildRoster> {
-    return this.profileService.getGuildRoster(findGuildDto);
+  async getGuild(@Param() findGuildDto: FindGuildDto) {
+    return (await this.profileService.getGuildRoster(findGuildDto)).data;
   }
 }

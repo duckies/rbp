@@ -1,18 +1,17 @@
-import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
+import {
+  OnQueueCompleted,
+  OnQueueError,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { EntityManager, MikroORM } from 'mikro-orm';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
+import { CharacterUpdateResult } from '../guild-character/interfaces/character-update.interface';
 import { FormCharacter } from './form-character.entity';
 import { FormCharacterService } from './form-character.service';
-
-interface Results {
-  total: number;
-  processed: number;
-  success: number;
-  failed: number;
-  deleted: number;
-}
 
 @Injectable()
 @Processor('form-character')
@@ -28,58 +27,68 @@ export class FormCharacterQueue {
     this.em = orm.em.fork();
   }
 
-  @Process({ name: 'characterUpdate', concurrency: 1 })
-  private async updateSubmissionCharacters(job: Job<number>) {
-    const results: Results = {
+  // Characters must be deleted if the status endpoint:
+  // 1. Returns 404.
+  // 2. The `is_valid` attribute is false.
+  // 3. The character id does not match.
+
+  @Process({ name: 'character-update', concurrency: 1 })
+  private async updateFormCharacters(job: Job): Promise<CharacterUpdateResult> {
+    const formCharacters = await this.em.find(FormCharacter, null);
+
+    const results: CharacterUpdateResult = {
+      total: formCharacters.length,
       processed: 0,
       success: 0,
       deleted: 0,
+      ignored: 0,
       failed: 0,
-      total: 0,
     };
 
-    const formCharacters = await this.em.find(FormCharacter, null);
+    await Promise.all(
+      formCharacters.map(async (formCharacter) => {
+        try {
+          const status = await this.profileService.getCharacterProfileStatus(
+            formCharacter.getFindCharacterDTO(),
+            formCharacter.last_modified,
+          );
 
-    results.total = formCharacters.length;
+          if (
+            status.data.id !== formCharacter.id ||
+            status.data.is_valid === false
+          ) {
+            results.deleted++;
+            return this.em.remove(FormCharacter, formCharacter);
+          }
 
-    // Characters must be deleted if the status endpoint:
-    // 1. Returns 404.
-    // 2. The `is_valid` attribute is false.
-    // 3. The character id does not match.
-    for (const formCharacter of formCharacters) {
-      let mustDelete: boolean;
+          formCharacter.last_modified = status.headers['last-modified'];
 
-      try {
-        const status = await this.profileService.getCharacterProfileStatus(
-          formCharacter.getFindCharacterDTO(),
-        );
+          await this.formCharacterService.populateFormCharacter(formCharacter);
 
-        if (status.id !== formCharacter.character_id || status.is_valid === false) {
-          mustDelete = true;
+          results.success++;
+        } catch (error) {
+          if (error instanceof HttpException) {
+            if (error.getStatus() === 304) {
+              results.ignored++;
+              return;
+            }
+
+            if (error.getStatus() === 404) {
+              this.em.remove(FormCharacter, formCharacter);
+              results.deleted++;
+              return;
+            }
+
+            results.failed++;
+            this.logger.error(`Updating Error ${error}`, error.stack);
+          }
         }
-      } catch (error) {
-        if (error instanceof NotFoundException) mustDelete = true;
 
-        this.logger.error('Status retrieval error', error.stack);
-        results.failed++;
+        job.progress(++results.processed / results.total);
+      }),
+    );
 
-        continue;
-      }
-
-      if (mustDelete) {
-        this.em.remove(FormCharacter, formCharacter);
-        results.deleted++;
-        results.processed++;
-        continue;
-      }
-
-      await this.formCharacterService.populateFormCharacter(formCharacter);
-
-      await this.em.flush();
-
-      results.success++;
-      job.progress(++results.processed / formCharacters.length);
-    }
+    await this.em.flush();
 
     return results;
   }
@@ -92,14 +101,24 @@ export class FormCharacterQueue {
 
   @OnQueueError()
   private onError(job: Job<number>, error: Error) {
-    console.error(error.stack);
+    console.error(error);
     this.logger.error(error, error.stack);
   }
 
   @OnQueueCompleted()
-  private onCompleted(job: Job<number>, { total, success, failed, deleted }: Results) {
+  private onCompleted(job: Job, results: CharacterUpdateResult) {
+    const statuses = [];
+
+    Object.keys(results).forEach((r) => {
+      if (r === 'processed' || r === 'total' || results[r] === 0) return;
+
+      statuses.push(`${results[r]} ${r.charAt(0).toUpperCase() + r.slice(1)}`);
+    });
+
     if (job.name === 'characterUpdate') {
-      this.logger.log(`${success} updated, ${failed} failed, and ${deleted} deleted of ${total} total.`);
+      this.logger.log(
+        `[Updated ${results.total} Form Characters]: ${statuses.join(', ')}`,
+      );
     }
   }
 }

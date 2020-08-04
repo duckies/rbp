@@ -8,7 +8,10 @@ import { JWTPayload } from '../dto/jwt.dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'JWT') {
-  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly config: ConfigService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -16,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'JWT') {
     });
   }
 
-  async validate(payload: JWTPayload): Promise<User> {
-    return await this.authService.verify(payload);
+  validate(payload: JWTPayload): Promise<User> {
+    return this.authService.verify(payload);
   }
 }

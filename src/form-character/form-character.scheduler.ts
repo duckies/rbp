@@ -12,8 +12,8 @@ export class FormCharacterScheduler extends NestSchedule {
     super();
   }
 
-  @Cron('0 * * * *')
-  updateSubmissionCharacters() {
-    this.queue.add('characterUpdate', { attempts: 1 });
+  @Cron('0 1-23/2 * * *')
+  updateFormCharacters() {
+    this.queue.add('character-update', { attempts: 1 });
   }
 }

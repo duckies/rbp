@@ -25,7 +25,7 @@ export interface InstanceMode {
 export interface InstanceProgress {
   completed_count: number;
   total_count: number;
-  ecounters?: Encounter[];
+  encounters?: Encounter[];
 }
 
 export interface Encounter {

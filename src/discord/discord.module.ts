@@ -1,6 +1,12 @@
 import { DiscoveryModule, DiscoveryService } from '@golevelup/nestjs-discovery';
 import { BullModule } from '@nestjs/bull';
-import { DynamicModule, HttpModule, Logger, Module, OnModuleInit } from '@nestjs/common';
+import {
+  DynamicModule,
+  HttpModule,
+  Logger,
+  Module,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client, ClientOptions, Message } from 'discord.js';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
@@ -21,7 +27,6 @@ import { DiscordQueue } from './discord.queue';
 import { DiscordService } from './discord.service';
 import { AudioPlugin } from './plugins/audio.plugin';
 import { HelpPlugin } from './plugins/help.plugin';
-import { MemeBusterPlugin } from './plugins/meme-buster.plugin';
 import { PingPlugin } from './plugins/ping.plugin';
 import { DiscordPlugin } from './plugins/plugin.class';
 import { ReactRolesPlugin } from './plugins/react-roles.plugin';
@@ -49,7 +54,6 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     DiscordService,
     ReactRolesPlugin,
     ReactionsPlugin,
-    MemeBusterPlugin,
   ],
   controllers: [DiscordController],
   exports: [DiscordService],
@@ -87,18 +91,25 @@ export class DiscordModule implements OnModuleInit {
   }
 
   async initializePlugins() {
-    const plugins = await this.discover.providersWithMetaAtKey<PluginOptions>(DISCORD_PLUGIN);
+    const plugins = await this.discover.providersWithMetaAtKey<PluginOptions>(
+      DISCORD_PLUGIN,
+    );
 
     for (const plugin of plugins) {
       const instance = plugin.discoveredClass.instance as DiscordPlugin;
       const groups = Reflect.getMetadata(DISCORD_PLUGIN_GROUP, instance);
       const commands = Reflect.getMetadata(DISCORD_PLUGIN_COMMAND, instance);
-      const events: EventMeta[] = Reflect.getMetadata(DISCORD_PLUGIN_EVENT, instance);
+      const events: EventMeta[] = Reflect.getMetadata(
+        DISCORD_PLUGIN_EVENT,
+        instance,
+      );
       const loops = Reflect.getMetadata(DISCORD_PLUGIN_LOOP, instance);
 
       if (events) {
         for (const { name, method } of events) {
-          this.client.on(name as any, (...args: any[]) => instance[method](this.client, ...args));
+          this.client.on(name as any, (...args: any[]) =>
+            instance[method](this.client, ...args),
+          );
         }
       }
 
@@ -115,7 +126,10 @@ export class DiscordModule implements OnModuleInit {
     if (message.partial) return;
 
     // Ignore bots or messages without the prefix.
-    if (message.author.bot || !message.content.startsWith(this.discord.prefix)) {
+    if (
+      message.author.bot ||
+      !message.content.startsWith(this.discord.prefix)
+    ) {
       return;
     }
 
@@ -127,11 +141,16 @@ export class DiscordModule implements OnModuleInit {
     // Remove the initial arguments pertaining to a command or group.
     args.splice(0, match.depth);
 
-    const context = new Context(this.client, this.discord.prefix, message, this.discord.plugins);
-
-    const method = match.plugin.instance[match.group ? match.group.method : match.command.method].bind(
-      match.plugin.instance,
+    const context = new Context(
+      this.client,
+      this.discord.prefix,
+      message,
+      this.discord.plugins,
     );
+
+    const method = match.plugin.instance[
+      match.group ? match.group.method : match.command.method
+    ].bind(match.plugin.instance);
 
     // TODO: Add a means of skipping this for abstract groups.
     if (match.group) {
@@ -185,6 +204,9 @@ export class DiscordModule implements OnModuleInit {
   }
 
   async init() {
+    // Don't actually initialize the Discord bot during tests.
+    if (this.config.get('NODE_ENV') === 'test') return;
+
     this.client.on('message', this.messageHandler.bind(this));
     this.client.login(this.config.get('DISCORD_BOT_TOKEN'));
     this.client.on('ready', async () => {

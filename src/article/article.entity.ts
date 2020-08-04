@@ -1,8 +1,14 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property, WrappedEntity } from 'mikro-orm';
+import {
+  BaseEntity,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { User } from '../user/user.entity';
 
 @Entity()
-export class Article {
+export class Article extends BaseEntity<Article, 'id'> {
   @PrimaryKey()
   id!: number;
 
@@ -18,18 +24,19 @@ export class Article {
   @Property()
   content!: string;
 
-  @Property()
+  @Property({ nullable: true })
   header?: string;
 
-  @ManyToOne({ eager: true, cascade: [Cascade.ALL] })
-  author: User;
-
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
-}
+  updatedAt: Date = new Date();
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Article extends WrappedEntity<Article, 'id'> {}
+  /**
+   * Relationships
+   */
+
+  @ManyToOne({ entity: () => User })
+  author!: User;
+}

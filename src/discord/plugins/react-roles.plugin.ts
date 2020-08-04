@@ -21,8 +21,14 @@ export class ReactRolesPlugin extends DiscordPlugin {
       {
         unique: true,
         emojis: new Map([
-          ['632617592611274752', { id: '632616301826932747', name: 'Death Knight' }],
-          ['632618304447447048', { id: '632618133651324938', name: 'Demon Hunter' }],
+          [
+            '632617592611274752',
+            { id: '632616301826932747', name: 'Death Knight' },
+          ],
+          [
+            '632618304447447048',
+            { id: '632618133651324938', name: 'Demon Hunter' },
+          ],
           ['632618734208417814', { id: '632618490569949228', name: 'Druid' }],
           ['632618767809118248', { id: '632618600640938025', name: 'Hunter' }],
           ['632618794451468298', { id: '632619008348389384', name: 'Mage' }],
@@ -39,20 +45,29 @@ export class ReactRolesPlugin extends DiscordPlugin {
   ]);
 
   @Event(DiscordEvent.MessageReactionAdd)
-  async onMessageReactionAdd(_client: Client, reaction: MessageReaction, { id: uid }: User) {
+  async onMessageReactionAdd(
+    _client: Client,
+    reaction: MessageReaction,
+    { id: uid }: User,
+  ) {
     // We only care about added reactions to the class message.
     if (!this.messages.has(reaction.message.id)) return;
 
-    const role = this.messages.get(reaction.message.id).emojis.get(reaction.emoji.id);
+    const role = this.messages
+      .get(reaction.message.id)
+      .emojis.get(reaction.emoji.id);
 
     // Remove emojis that we are not interested in on managed messages.
     if (!role) {
-      return await reaction.remove();
+      return reaction.remove();
     }
 
     // Partial reactions must be fetched.
     if (reaction.partial) {
-      await Promise.all([reaction.fetch(), reaction.message.guild.members.fetch()]);
+      await Promise.all([
+        reaction.fetch(),
+        reaction.message.guild.members.fetch(),
+      ]);
     }
 
     const user = reaction.message.guild.members.cache.get(uid);
@@ -72,18 +87,27 @@ export class ReactRolesPlugin extends DiscordPlugin {
   }
 
   @Event(DiscordEvent.MessageReactionRemove)
-  async onMessageReactionRemove(_client: Client, reaction: MessageReaction, { id: uid }: User) {
+  async onMessageReactionRemove(
+    _client: Client,
+    reaction: MessageReaction,
+    { id: uid }: User,
+  ) {
     // We only care about added reactions to the class message.
     if (!this.messages.has(reaction.message.id)) return;
 
-    const role = this.messages.get(reaction.message.id).emojis.get(reaction.emoji.id);
+    const role = this.messages
+      .get(reaction.message.id)
+      .emojis.get(reaction.emoji.id);
 
     // Ignore emojis removed that don't map to anything, though this should not occur.
     if (!role) return;
 
     // Partial reactions must be fetched.
     if (reaction.partial) {
-      await Promise.all([reaction.fetch(), reaction.message.guild.members.fetch()]);
+      await Promise.all([
+        reaction.fetch(),
+        reaction.message.guild.members.fetch(),
+      ]);
     }
 
     const user = reaction.message.guild.members.cache.get(uid);

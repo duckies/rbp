@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-discord';
-import { User } from '../../user/user.entity';
 import { AuthService, DiscordProfile } from '../auth.service';
 import { BlizzardStrategy } from './blizzard.strategy';
 
@@ -10,7 +9,10 @@ import { BlizzardStrategy } from './blizzard.strategy';
 export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
   private readonly logger: Logger = new Logger(BlizzardStrategy.name);
 
-  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {
+  constructor(
+    private readonly authService: AuthService,
+    config: ConfigService,
+  ) {
     super({
       clientID: config.get('DISCORD_CLIENT_ID'),
       clientSecret: config.get('DISCORD_SECRET'),
@@ -19,7 +21,15 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: DiscordProfile): Promise<User> {
-    return await this.authService.validateDiscordLogin(accessToken, refreshToken, profile);
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: DiscordProfile,
+  ) {
+    return this.authService.validateDiscordLogin(
+      accessToken,
+      refreshToken,
+      profile,
+    );
   }
 }

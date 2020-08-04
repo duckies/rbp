@@ -1,4 +1,4 @@
-import { Entity, Enum, PrimaryKey, Property, Unique } from 'mikro-orm';
+import { Entity, Enum, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { AssetType } from '../blizzard/enums/asset-type.enum';
 
 @Entity()

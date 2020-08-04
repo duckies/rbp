@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { EntityManager, EntityRepository } from 'mikro-orm';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
 import { AssetType } from '../../enums/asset-type.enum';
@@ -91,17 +91,20 @@ export class GameDataService {
   ) {}
 
   async getGameItemMedia(id: number): Promise<GameData.ItemMedia> {
-    const asset = await this.assetRepository.findOne({ id, type: AssetType.Icon });
+    const asset = await this.assetRepository.findOne({
+      id,
+      type: AssetType.Icon,
+    });
 
     if (!asset) {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);
 
       await this.em
         .getConnection()
-        .execute(`insert into "wow_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`, [
-          id,
-          data.assets[0].value,
-        ]);
+        .execute(
+          `insert into "blizzard_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`,
+          [id, data.assets[0].value],
+        );
 
       return data;
     }

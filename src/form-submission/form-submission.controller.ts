@@ -1,22 +1,22 @@
+import { QueryOrder } from '@mikro-orm/core';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
   Query,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
   UsePipes,
-  Delete,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AccessControl } from 'accesscontrol';
 import multer from 'multer';
-import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
-import { AccessControlGuard, JWTGuard } from '../auth/guards';
-import { OptionalAuthGuard } from '../auth/guards/optional.guard';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { InjectAccessControl } from '../auth/decorators/inject-access-control.decorator';
 import { FileService } from '../file/file.service';
 import { Usr } from '../user/user.decorator';
 import { User } from '../user/user.entity';
@@ -27,28 +27,30 @@ import {
   FindFormSubmissionDto,
   UpdateFormSubmissionDto,
 } from './dto';
-import { FormSubmission } from './form-submission.entity';
+import { FormSubmissionStatus } from './enums/form-submission-status.enum';
 import { SubmissionService } from './form-submission.service';
 import { CreateSubmissionPipe } from './pipes/create-submission.pipe';
-import { Auth } from '../auth/decorators/auth.decorator';
 
 @Controller('submission')
 export class SubmissionController {
   constructor(
     private readonly fileService: FileService,
     private readonly submissionService: SubmissionService,
-    @InjectRolesBuilder() private readonly rolebuilder: RolesBuilder,
+    @InjectAccessControl() private readonly ac: AccessControl,
   ) {}
 
+  @Auth()
   @Post()
-  @UseGuards(JWTGuard)
   @UsePipes(CreateSubmissionPipe)
-  create(@Usr() user: User, @Body() createSubmissionDto: CreateFormSubmissionDto) {
+  create(
+    @Usr() user: User,
+    @Body() createSubmissionDto: CreateFormSubmissionDto,
+  ) {
     return this.submissionService.create(user, createSubmissionDto);
   }
 
+  @Auth()
   @Post('upload')
-  @UseGuards(JWTGuard)
   @UseInterceptors(
     AnyFilesInterceptor({
       storage: multer.diskStorage({
@@ -65,57 +67,74 @@ export class SubmissionController {
     return this.fileService.create(files, user);
   }
 
+  @Auth()
   @Delete('file/:id')
-  @UseGuards(JWTGuard)
   deleteFile(@Usr() user: User, @Param('id') id: number) {
-    if (this.rolebuilder.can(user.roles).deleteAny('file-upload').granted) {
-      return this.fileService.delete(id);
-    } else {
-      return this.fileService.delete(id, user);
-    }
+    const canDeleteAny = this.ac.can(user.roles).deleteAny('file-upload')
+      .granted;
+
+    return this.fileService.delete(id, canDeleteAny ? undefined : user);
   }
 
+  @Auth()
   @Get('/user')
-  @UseGuards(JWTGuard)
   findByUser(@Usr() user: User) {
-    return this.submissionService.findByUser(user);
+    return this.submissionService.findAll({ author: { id: user.id } });
   }
 
+  @Auth()
   @Get('/user/open')
-  @UseGuards(JWTGuard)
-  findOpenByUser(@Usr() user: User): Promise<Pick<FormSubmission, 'id' | 'status'>> {
-    return this.submissionService.findOpenByUser(user);
+  findOpenByUser(@Usr() user: User) {
+    return this.submissionService.findAll({
+      author: { id: user.id },
+      status: FormSubmissionStatus.Open,
+    });
   }
 
   @Get('/status/:status')
   findFirstByStatus(@Param() { status }: FindFormSubmissionByStatusDto) {
-    return this.submissionService.findFirstByStatus(status);
+    return this.submissionService.findOneOrFail(
+      { status },
+      ['form', 'author', 'characters'],
+      { id: QueryOrder.DESC },
+    );
   }
 
   @Get(':id')
   findOne(@Param() { id }: FindFormSubmissionDto) {
-    return this.submissionService.findOne(id);
+    return this.submissionService.findOneOrFail(id, true);
   }
 
-  @UseGuards(OptionalAuthGuard)
   @Get()
-  findAll(@Query() { take, skip, status }: FindAllFormSubmissionsDto) {
-    return this.submissionService.findAll(take, skip, status);
+  findAll(@Query() { limit, offset, status }: FindAllFormSubmissionsDto) {
+    return this.submissionService.findAll(
+      { status },
+      ['author', 'characters'],
+      { id: QueryOrder.DESC },
+      limit,
+      offset,
+    );
   }
 
-  @UseGuards(AccessControlGuard)
+  @Auth()
   @Patch(':id')
   update(
     @Param() { id }: FindFormSubmissionDto,
     @Usr() user: User,
     @Body() updateFormSubmissionDto: UpdateFormSubmissionDto,
   ) {
-    const canUpdateAny = this.rolebuilder.can(user.roles).updateAny('form-submission').granted;
+    const canUpdateAny = this.ac.can(user.roles).updateAny('form-submission')
+      .granted;
 
-    return this.submissionService.update(id, user, updateFormSubmissionDto, canUpdateAny);
+    return this.submissionService.update(
+      id,
+      user,
+      updateFormSubmissionDto,
+      canUpdateAny,
+    );
   }
 
-  @Auth({ action: 'delete', possession: 'any', resource: 'form-submission' })
+  @Auth('form-submission', 'delete:any')
   @Delete(':id')
   delete(@Param() { id }: FindFormSubmissionDto) {
     return this.submissionService.delete(id);
