@@ -8,7 +8,7 @@
             <v-card-subtitle v-text="subtitle" />
 
             <v-card-actions>
-              <v-btn tile :href="buttonLink" color="primary" class="button">
+              <v-btn text :href="buttonLink" color="primary" class="button" rel="noreferrer">
                 {{ buttonText }}
                 <v-icon right>mdi-arrow-right</v-icon>
               </v-btn>

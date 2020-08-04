@@ -204,8 +204,8 @@ export const actions: ActionTree<SubmissionState, RootState> = {
   async getSubmissions(
     { commit },
     params?: {
-      take?: number
-      skip?: number
+      limit?: number
+      offset?: number
       status?: string
     }
   ) {

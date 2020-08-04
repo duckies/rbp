@@ -286,8 +286,8 @@ export default class Applications extends Vue {
     this.$store.commit('submission/setPaginationCurrent', this.pagination.page_current + step)
 
     await this.$store.dispatch('submission/getSubmissions', {
-      take: this.pagination.page_size,
-      skip: (this.pagination.page_current - 1) * this.pagination.page_size,
+      limit: this.pagination.page_size,
+      offset: (this.pagination.page_current - 1) * this.pagination.page_size,
       status: this.statusCategory,
     })
   }

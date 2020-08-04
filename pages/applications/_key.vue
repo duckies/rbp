@@ -143,8 +143,8 @@ import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission
 
     if (param.status) {
       await store.dispatch('submission/getSubmissions', {
-        take: store.state.submission.pagination.page_size,
-        skip: 0,
+        limit: store.state.submission.pagination.page_size,
+        offset: 0,
         status: param.status,
       })
 
@@ -156,8 +156,8 @@ import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission
 
       if (store.state.submission.submission && !store.state.submission.submissions.length) {
         await store.dispatch('submission/getSubmissions', {
-          take: store.state.submission.pagination.page_size,
-          skip: 0,
+          limit: store.state.submission.pagination.page_size,
+          offset: 0,
           status: store.state.submission.submission.status,
         })
       }
@@ -265,7 +265,7 @@ export default class ApplicationKey extends Vue {
       this.dialog = false
 
       await Promise.all([
-        this.$store.dispatch('submission/getSubmissions', { take: 6, skip: 0, status }),
+        this.$store.dispatch('submission/getSubmissions', { limit: 6, offset: 0, status }),
         this.$store.dispatch('submission/getSubmission', { status }),
       ])
     }

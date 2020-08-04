@@ -37,6 +37,6 @@ export const actions: ActionTree<BlogState, RootState> = {
     const resp = await this.$axios.$get('/article')
 
     commit('setStatus', 'success')
-    commit('setArticles', resp.result)
+    commit('setArticles', resp[0])
   },
 }

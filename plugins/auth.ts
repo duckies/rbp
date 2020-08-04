@@ -16,7 +16,7 @@ export class Auth {
   }
 
   public login() {
-    const authorization_endpoint = 'https://discordapp.com/api/oauth2/authorize'
+    const authorization_endpoint = 'https://discord.com/api/oauth2/authorize'
     const opts = {
       response_type: 'code',
       client_id: '678486837626404885',

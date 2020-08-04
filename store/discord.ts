@@ -74,7 +74,7 @@ export const mutations: MutationTree<DiscordState> = {
 
 export const actions: ActionTree<DiscordState, RootState> = {
   async getDiscord({ commit }) {
-    const resp = await this.$axios.$get('https://discordapp.com/api/servers/142372929961721856/embed.json')
+    const resp = await this.$axios.$get('https://discord.com/api/servers/142372929961721856/embed.json')
 
     commit('setDiscord', resp)
   },
