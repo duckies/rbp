@@ -15,5 +15,5 @@ export class FindAllFormSubmissionsDto {
 
   @IsOptional()
   @IsEnum(FormSubmissionStatus)
-  readonly status?: FormSubmissionStatus;
+  readonly status?: FormSubmissionStatus = FormSubmissionStatus.Open;
 }
