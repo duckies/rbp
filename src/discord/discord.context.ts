@@ -1,4 +1,11 @@
-import { Client, Message, MessageAdditions, MessageEmbed, MessageOptions, SplitOptions } from 'discord.js';
+import {
+  Client,
+  Message,
+  MessageAdditions,
+  MessageEmbed,
+  MessageOptions,
+  SplitOptions,
+} from 'discord.js';
 import { PluginMap } from './discord.service';
 
 export class Context {
@@ -11,6 +18,9 @@ export class Context {
     public readonly plugins: Map<string, PluginMap>,
   ) {}
 
+  /**
+   * Instructs the bot to add a checkmark emoji to the initiating command.
+   */
   async tick() {
     await this.message.react('✅');
   }
@@ -34,7 +44,8 @@ export class Context {
     for (const emoji of this.emojis) await currentPage.react(emoji);
 
     const collector = currentPage.createReactionCollector(
-      (reaction, user) => this.emojis.includes(reaction.emoji.name) && !user.bot,
+      (reaction, user) =>
+        this.emojis.includes(reaction.emoji.name) && !user.bot,
       { time: timeout },
     );
 

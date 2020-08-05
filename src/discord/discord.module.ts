@@ -27,6 +27,7 @@ import { DiscordQueue } from './discord.queue';
 import { DiscordService } from './discord.service';
 import { AudioPlugin } from './plugins/audio.plugin';
 import { HelpPlugin } from './plugins/help.plugin';
+import { LoggerPlugin } from './plugins/logger.plugin';
 import { PingPlugin } from './plugins/ping.plugin';
 import { DiscordPlugin } from './plugins/plugin.class';
 import { ReactRolesPlugin } from './plugins/react-roles.plugin';
@@ -54,6 +55,7 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     DiscordService,
     ReactRolesPlugin,
     ReactionsPlugin,
+    LoggerPlugin,
   ],
   controllers: [DiscordController],
   exports: [DiscordService],

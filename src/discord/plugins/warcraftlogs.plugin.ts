@@ -51,7 +51,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   constructor(
     private readonly discordService: DiscordService,
     private readonly http: HttpService,
-    private readonly settingsCog: SettingsPlugin,
+    private readonly settings: SettingsPlugin,
   ) {
     super();
     this.config = discordService.getConfig(WarcraftLogsPlugin.name);
@@ -339,7 +339,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
       title: 'Really Bad WarcraftLogs',
       description: `*${report.title} recorded by ${report.owner}*`,
       url: `https://www.warcraftlogs.com/reports/${id}`,
-      color: await this.settingsCog.getEmbedColor(),
+      color: await this.settings.getEmbedColor(),
       timestamp: new Date(report.end),
       thumbnail: { url: this.getRaidImage(report.zone) },
       footer: {
