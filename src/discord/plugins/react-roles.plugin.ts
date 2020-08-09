@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Client, MessageReaction, User } from 'discord.js';
+import { Client, MessageReaction, User, TextChannel } from 'discord.js';
 import { Context } from '../discord.context';
 import { Command, Event, Plugin } from '../discord.decorators';
 import { DiscordEvent } from '../interfaces/events.enum';
@@ -18,7 +18,7 @@ export interface ReactRoles {
 export class ReactRolesPlugin extends DiscordPlugin {
   private readonly messages = new Map<string, ReactRoles>([
     [
-      '742154888384872458',
+      '742157450454630491',
       {
         unique: true,
         emojis: new Map([
@@ -49,8 +49,16 @@ export class ReactRolesPlugin extends DiscordPlugin {
     name: 'bindmessage',
     description: 'If a message has role reactions, add the reactions.',
   })
-  private async bindMessage(ctx: Context, id: string) {
-    const message = await ctx.message.channel.messages.fetch(id);
+  private async bindMessage(ctx: Context, cid: string, id: string) {
+    const channel = ctx.guild.channels.cache.get(cid) as TextChannel;
+
+    if (!channel) {
+      return ctx.send('Channel was not found.');
+    }
+
+    await channel.messages.fetch();
+
+    const message = channel.messages.cache.get(id);
 
     if (!message) {
       return ctx.send('Message not found.');
