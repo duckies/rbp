@@ -45,37 +45,37 @@ export class ReactRolesPlugin extends DiscordPlugin {
     ],
   ]);
 
-  @Command({
-    name: 'bindmessage',
-    description: 'If a message has role reactions, add the reactions.',
-  })
-  private async bindMessage(ctx: Context, cid: string, id: string) {
-    const channel = ctx.guild.channels.cache.get(cid) as TextChannel;
+  // @Command({
+  //   name: 'bindmessage',
+  //   description: 'If a message has role reactions, add the reactions.',
+  // })
+  // private async bindMessage(ctx: Context, cid: string, id: string) {
+  //   const channel = ctx.guild.channels.cache.get(cid) as TextChannel;
 
-    if (!channel) {
-      return ctx.send('Channel was not found.');
-    }
+  //   if (!channel) {
+  //     return ctx.send('Channel was not found.');
+  //   }
 
-    await channel.messages.fetch();
+  //   await channel.messages.fetch();
 
-    const message = channel.messages.cache.get(id);
+  //   const message = channel.messages.cache.get(id);
 
-    if (!message) {
-      return ctx.send('Message not found.');
-    }
+  //   if (!message) {
+  //     return ctx.send('Message not found.');
+  //   }
 
-    const reactions = this.messages.get(message.id);
+  //   const reactions = this.messages.get(message.id);
 
-    if (!reactions) {
-      return ctx.send('Message not a reaction message.');
-    }
+  //   if (!reactions) {
+  //     return ctx.send('Message not a reaction message.');
+  //   }
 
-    for (const [id] of reactions.emojis) {
-      await message.react(id);
-    }
+  //   for (const [id] of reactions.emojis) {
+  //     await message.react(id);
+  //   }
 
-    await ctx.tick();
-  }
+  //   await ctx.tick();
+  // }
 
   @Event(DiscordEvent.MessageReactionAdd)
   async onMessageReactionAdd(
