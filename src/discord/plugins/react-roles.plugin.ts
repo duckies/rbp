@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Client, MessageReaction, User } from 'discord.js';
-import { Event, Plugin } from '../discord.decorators';
+import { Context } from '../discord.context';
+import { Command, Event, Plugin } from '../discord.decorators';
 import { DiscordEvent } from '../interfaces/events.enum';
 import { DiscordPlugin } from './plugin.class';
 
@@ -17,7 +18,7 @@ export interface ReactRoles {
 export class ReactRolesPlugin extends DiscordPlugin {
   private readonly messages = new Map<string, ReactRoles>([
     [
-      '632616007827062794',
+      '742154888384872458',
       {
         unique: true,
         emojis: new Map([
@@ -44,12 +45,38 @@ export class ReactRolesPlugin extends DiscordPlugin {
     ],
   ]);
 
+  @Command({
+    name: 'bindmessage',
+    description: 'If a message has role reactions, add the reactions.',
+  })
+  private async bindMessage(ctx: Context, id: string) {
+    const message = await ctx.message.channel.messages.fetch(id);
+
+    if (!message) {
+      return ctx.send('Message not found.');
+    }
+
+    const reactions = this.messages.get(message.id);
+
+    if (!reactions) {
+      return ctx.send('Message not a reaction message.');
+    }
+
+    for (const [id] of reactions.emojis) {
+      await message.react(id);
+    }
+
+    await ctx.tick();
+  }
+
   @Event(DiscordEvent.MessageReactionAdd)
   async onMessageReactionAdd(
     _client: Client,
     reaction: MessageReaction,
-    { id: uid }: User,
+    { id: uid, bot }: User,
   ) {
+    if (bot) return;
+
     // We only care about added reactions to the class message.
     if (!this.messages.has(reaction.message.id)) return;
 
