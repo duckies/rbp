@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Client, MessageReaction, User, TextChannel } from 'discord.js';
-import { Context } from '../discord.context';
-import { Command, Event, Plugin } from '../discord.decorators';
+import { Client, MessageReaction, User } from 'discord.js';
+import { Event, Plugin } from '../discord.decorators';
 import { DiscordEvent } from '../interfaces/events.enum';
 import { DiscordPlugin } from './plugin.class';
 
@@ -43,39 +42,17 @@ export class ReactRolesPlugin extends DiscordPlugin {
         ]),
       },
     ],
+    [
+      '742523509598716045',
+      {
+        unique: false,
+        emojis: new Map([
+          ['698010023070269600', { id: '632619582103879692', name: 'Warlock' }],
+          ['646472718887419934', { id: '632619096890146877', name: 'Paladin' }],
+        ]),
+      },
+    ],
   ]);
-
-  // @Command({
-  //   name: 'bindmessage',
-  //   description: 'If a message has role reactions, add the reactions.',
-  // })
-  // private async bindMessage(ctx: Context, cid: string, id: string) {
-  //   const channel = ctx.guild.channels.cache.get(cid) as TextChannel;
-
-  //   if (!channel) {
-  //     return ctx.send('Channel was not found.');
-  //   }
-
-  //   await channel.messages.fetch();
-
-  //   const message = channel.messages.cache.get(id);
-
-  //   if (!message) {
-  //     return ctx.send('Message not found.');
-  //   }
-
-  //   const reactions = this.messages.get(message.id);
-
-  //   if (!reactions) {
-  //     return ctx.send('Message not a reaction message.');
-  //   }
-
-  //   for (const [id] of reactions.emojis) {
-  //     await message.react(id);
-  //   }
-
-  //   await ctx.tick();
-  // }
 
   @Event(DiscordEvent.MessageReactionAdd)
   async onMessageReactionAdd(
@@ -108,6 +85,11 @@ export class ReactRolesPlugin extends DiscordPlugin {
     const user = reaction.message.guild.members.cache.get(uid);
     const toAdd = user.guild.roles.cache.get(role.id);
 
+    await user.roles.add(toAdd, 'Class Color Role');
+
+    // If reactions can be non-unique, don't remove them.
+    if (!this.messages.get(reaction.message.id).unique) return;
+
     for (const [rid, react] of reaction.message.reactions.cache) {
       // This is incredibly expensive, look into alternatives.
       if (!react.users.cache.size) await react.users.fetch();
@@ -117,8 +99,6 @@ export class ReactRolesPlugin extends DiscordPlugin {
         await react.users.remove(uid);
       }
     }
-
-    await user.roles.add(toAdd, 'Class Color Role');
   }
 
   @Event(DiscordEvent.MessageReactionRemove)
