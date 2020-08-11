@@ -22,7 +22,7 @@ export class PluginConfig<K, T = null> {
     this.templates.guild = config;
   }
 
-  public async getGuild(guild: Guild): Promise<K> {
+  public async getGuildConfig(guild: Guild): Promise<K> {
     if (!this.initialized) {
       await this.fetch();
     }
@@ -34,7 +34,7 @@ export class PluginConfig<K, T = null> {
     return this.config.guilds[guild.id];
   }
 
-  public async getGlobal(): Promise<T> {
+  public async getGlobalConfig(): Promise<T> {
     if (!this.initialized) {
       await this.fetch();
     }

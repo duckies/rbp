@@ -20,7 +20,7 @@ export class LoggerPlugin extends DiscordPlugin {
   private readonly config: PluginConfig<LoggerGuildConfig>;
 
   constructor(
-    private readonly discordService: DiscordService,
+    discordService: DiscordService,
     private readonly settings: SettingsPlugin,
   ) {
     super();
@@ -89,7 +89,7 @@ export class LoggerPlugin extends DiscordPlugin {
   async onMessageDelete(client: Client, message: Message) {
     if (message.partial) return;
 
-    const { channel: cid, ioChannel: iocid } = await this.config.getGuild(
+    const { channel: cid, ioChannel: iocid } = await this.config.getGuildConfig(
       message.guild,
     );
 

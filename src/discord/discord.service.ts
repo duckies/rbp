@@ -1,7 +1,7 @@
+import { EntityRepository } from '@mikro-orm/core';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'discord.js';
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { PluginConfig } from './discord-config.class';
 import { DiscordConfig } from './discord-plugin.entity';
@@ -12,7 +12,9 @@ import {
   LoopMeta,
   PluginOptions,
 } from './discord.decorators';
+import { CommandMatch, GroupMatch } from './interfaces/command-match.interface';
 import { DiscordPlugin } from './plugins/plugin.class';
+import { DISCORD_PREFIX } from '../app.constants';
 
 export interface PluginMap {
   name: string;
@@ -33,8 +35,8 @@ export type PluginLoopMap = Map<string, LoopMeta>;
 
 @Injectable()
 export class DiscordService {
-  public prefix: string;
-  private _plugins = new Map<string, PluginMap>();
+  public readonly prefix: string;
+  public readonly plugins = new Map<string, PluginMap>();
 
   constructor(
     @InjectRepository(DiscordConfig)
@@ -42,18 +44,8 @@ export class DiscordService {
     private readonly config: ConfigService,
     @InjectClient() public readonly client: Client,
   ) {
-    this.prefix = '/';
+    this.prefix = config.get(DISCORD_PREFIX);
   }
-
-  get plugins() {
-    return this._plugins;
-  }
-
-  // public allowedCommands(user: User | GuildMember) {
-  //   return this.commandMetas.filter(
-  //     (m) => typeof m.command.hasPermission !== 'function' || m.command.hasPermission(user),
-  //   );
-  // }
 
   /**
    * Builds a new PluginConfig class for managing settings for a plugin.
@@ -65,11 +57,6 @@ export class DiscordService {
 
   /**
    * Adds a plugin to the master list of plugins.
-   * @param plugin
-   * @param options
-   * @param groups
-   * @param commands
-   * @param loops
    */
   public addPlugin(
     plugin: DiscordPlugin,
@@ -103,7 +90,7 @@ export class DiscordService {
       }
     });
 
-    this._plugins.set(options.name, {
+    this.plugins.set(options.name, {
       name: options.name,
       options,
       instance: plugin,
@@ -113,26 +100,38 @@ export class DiscordService {
     });
   }
 
-  public getCommand(args: string[]) {
-    for (const [name, plugin] of this._plugins) {
+  /**
+   * Lookup method for traversing the Discord plugin map for a command
+   * or group that matches the argument structure.
+   */
+  public getCommandOrGroup(args: string[]): CommandMatch | GroupMatch {
+    for (const [name, plugin] of this.plugins) {
       const command = plugin.commands.get(args[0]);
 
-      if (command) return { name, plugin, command, depth: 1 };
+      if (command) {
+        const method = plugin.instance[command.method].bind(plugin.instance);
+        return { name, plugin, method, command, depth: 1 };
+      }
 
       const group = plugin.groups.get(args[0]);
 
       if (group) {
+        const groupMethod = plugin.instance[group.method].bind(plugin.instance);
+
         // Send the help command for a command group.
-        if (args.length === 1) return { name, plugin, group, depth: 1 };
+        if (args.length === 1)
+          return { name, plugin, method: groupMethod, group, depth: 1 };
 
         // Otherwise, try to find the command in the group.
         const command = group.commands.get(args[1]);
+        const commandMethod = plugin.instance[command.method].bind(
+          plugin.instance,
+        );
 
-        if (command) return { name, plugin, command, depth: 2 };
+        if (command)
+          return { name, plugin, command, method: commandMethod, depth: 2 };
       }
     }
-
-    return undefined;
   }
 
   public getGuildMember(user_id: string) {

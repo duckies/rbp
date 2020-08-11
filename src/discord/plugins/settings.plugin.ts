@@ -9,7 +9,7 @@ import { DiscordService } from '../discord.service';
 export class SettingsPlugin {
   private readonly config: PluginConfig<null, { embedColor: number }>;
 
-  constructor(private readonly discordService: DiscordService) {
+  constructor(discordService: DiscordService) {
     this.config = discordService.getConfig(SettingsPlugin.name);
     this.config.registerGlobal({ embedColor: 0xc328ff });
   }
@@ -17,22 +17,34 @@ export class SettingsPlugin {
   @CommandGroup({ name: 'set', description: 'Configure bot settings.' })
   set() {}
 
-  @Command({ name: 'embedcolor', group: 'set', description: 'Sets the default embed color.' })
+  @Command({
+    name: 'embedcolor',
+    group: 'set',
+    description: 'Sets the default embed color.',
+  })
   async setEmbedColor(ctx: Context, color: string) {
     await this.config.setGlobal({ embedColor: color });
     await ctx.tick();
   }
 
   async getEmbedColor() {
-    return (await this.config.getGlobal()).embedColor;
+    return (await this.config.getGlobalConfig()).embedColor;
   }
 
-  @Command({ name: 'watching', group: 'set', description: 'Sets the watching status.' })
+  @Command({
+    name: 'watching',
+    group: 'set',
+    description: 'Sets the watching status.',
+  })
   async setWatching(ctx: Context, status: string) {
     await ctx.client.user.setActivity({ name: status, type: 'WATCHING' });
   }
 
-  @Command({ name: 'playing', group: 'set', description: 'Sets the playing status.' })
+  @Command({
+    name: 'playing',
+    group: 'set',
+    description: 'Sets the playing status.',
+  })
   async setPlaying(ctx: Context, status: string) {
     await ctx.client.user.setActivity({ name: status, type: 'PLAYING' });
   }

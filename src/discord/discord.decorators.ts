@@ -1,4 +1,4 @@
-import { CustomDecorator, Inject, SetMetadata } from '@nestjs/common';
+import { Inject, SetMetadata } from '@nestjs/common';
 import {
   DISCORD_CLIENT,
   DISCORD_PLUGIN,
@@ -8,6 +8,7 @@ import {
   DISCORD_PLUGIN_LOOP,
 } from '../app.constants';
 import { isString } from '../app.utils';
+import { MentionMeta } from './decorators/mention.decorator';
 import { DiscordEvent } from './interfaces/events.enum';
 
 export interface PluginOptions {
@@ -38,6 +39,14 @@ export interface CommandOptions {
    * Specifies optional names to invoke the commmand with for convenience.
    */
   alias?: string[];
+
+  /**
+   * Specifies the help text shown when the command help menu is shown or
+   * the user incorrectly utilizes the help menu.
+   *
+   * The command and prefix are added automatically.
+   */
+  syntax?: string;
 }
 
 export interface GroupOptions {
@@ -75,24 +84,24 @@ export interface LoopOptions {
   name: string;
 }
 
-export interface PluginMethod {
+export interface PluginMethodOptions {
   /**
    * The name of the method being decorated.
    */
   method: string;
 }
 
-export type CommandMeta = CommandOptions & PluginMethod;
-export type GroupMeta = GroupOptions & PluginMethod;
-export type EventMeta = EventOptions & PluginMethod;
-export type LoopMeta = LoopOptions & PluginMethod;
+export type CommandMeta = CommandOptions & PluginMethodOptions & MentionMeta;
+export type GroupMeta = GroupOptions & PluginMethodOptions;
+export type EventMeta = EventOptions & PluginMethodOptions;
+export type LoopMeta = LoopOptions & PluginMethodOptions;
 
 /**
  * Decorator that marks a class as a Discord plugin.
  *
  * @param {string} name string of the name of the plugin housing commands.
  */
-export function Plugin(name: string): CustomDecorator<string>;
+export function Plugin(name: string): ClassDecorator;
 
 /**
  * Decorator that marks a class as a Discord plugin.
@@ -101,10 +110,13 @@ export function Plugin(name: string): CustomDecorator<string>;
  *
  * - `name` - string that defines the name of the plugin housing commands.
  */
-export function Plugin(options: PluginOptions): CustomDecorator<string>;
+export function Plugin(options: PluginOptions): ClassDecorator;
 
-export function Plugin(nameOrOptions: string | PluginOptions): CustomDecorator<string> {
-  return SetMetadata(DISCORD_PLUGIN, isString(nameOrOptions) ? { name: nameOrOptions } : nameOrOptions);
+export function Plugin(nameOrOptions: string | PluginOptions): ClassDecorator {
+  return SetMetadata(
+    DISCORD_PLUGIN,
+    isString(nameOrOptions) ? { name: nameOrOptions } : nameOrOptions,
+  );
 }
 
 /**
@@ -128,8 +140,13 @@ export function CommandGroup(name: string): MethodDecorator;
  */
 export function CommandGroup(options: GroupOptions): MethodDecorator;
 
-export function CommandGroup(nameOrOptions: string | GroupOptions): MethodDecorator {
-  return createPluginMethodDecorator<string | GroupOptions>(DISCORD_PLUGIN_GROUP, nameOrOptions);
+export function CommandGroup(
+  nameOrOptions: string | GroupOptions,
+): MethodDecorator {
+  return createPluginMethodDecorator<string | GroupOptions>(
+    DISCORD_PLUGIN_GROUP,
+    nameOrOptions,
+  );
 }
 
 /**
@@ -150,8 +167,13 @@ export function Command(name: string): MethodDecorator;
  */
 export function Command(options: CommandOptions): MethodDecorator;
 
-export function Command(nameOrOptions: string | CommandOptions): MethodDecorator {
-  return createPluginMethodDecorator<string | CommandOptions>(DISCORD_PLUGIN_COMMAND, nameOrOptions);
+export function Command(
+  nameOrOptions: string | CommandOptions,
+): MethodDecorator {
+  return createPluginMethodDecorator<string | CommandOptions>(
+    DISCORD_PLUGIN_COMMAND,
+    nameOrOptions,
+  );
 }
 
 /**
@@ -172,8 +194,13 @@ export function Event(event: DiscordEvent): MethodDecorator;
  */
 export function Event(options: EventOptions): MethodDecorator;
 
-export function Event(eventOrOptions: DiscordEvent | EventOptions): MethodDecorator {
-  return createPluginMethodDecorator<DiscordEvent | EventOptions>(DISCORD_PLUGIN_EVENT, eventOrOptions);
+export function Event(
+  eventOrOptions: DiscordEvent | EventOptions,
+): MethodDecorator {
+  return createPluginMethodDecorator<DiscordEvent | EventOptions>(
+    DISCORD_PLUGIN_EVENT,
+    eventOrOptions,
+  );
 }
 
 /**
@@ -197,7 +224,10 @@ export function Loop(name: string): MethodDecorator;
 export function Loop(options: LoopOptions): MethodDecorator;
 
 export function Loop(nameOrOptions: string | LoopOptions): MethodDecorator {
-  return createPluginMethodDecorator<string | LoopOptions>(DISCORD_PLUGIN_LOOP, nameOrOptions);
+  return createPluginMethodDecorator<string | LoopOptions>(
+    DISCORD_PLUGIN_LOOP,
+    nameOrOptions,
+  );
 }
 
 /**

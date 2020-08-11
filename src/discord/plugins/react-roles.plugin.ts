@@ -42,16 +42,6 @@ export class ReactRolesPlugin extends DiscordPlugin {
         ]),
       },
     ],
-    [
-      '742523509598716045',
-      {
-        unique: false,
-        emojis: new Map([
-          ['698010023070269600', { id: '632619582103879692', name: 'Warlock' }],
-          ['646472718887419934', { id: '632619096890146877', name: 'Paladin' }],
-        ]),
-      },
-    ],
   ]);
 
   @Event(DiscordEvent.MessageReactionAdd)

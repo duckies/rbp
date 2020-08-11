@@ -79,7 +79,7 @@ export class WelcomerPlugin extends DiscordPlugin {
 
   @Event(DiscordEvent.GuildMemberAdd)
   async onGuildMemberAdd(client: Client, member: GuildMember) {
-    const { channel: cid } = await this.config.getGuild(member.guild);
+    const { channel: cid } = await this.config.getGuildConfig(member.guild);
 
     // Plugin is unitialized for the guild.
     if (!cid) return;
@@ -133,7 +133,7 @@ export class WelcomerPlugin extends DiscordPlugin {
 
   @Event(DiscordEvent.GuildMemberRemove)
   async onGuildMemberRemove(client: Client, member: GuildMember) {
-    const { channel: cid } = await this.config.getGuild(member.guild);
+    const { channel: cid } = await this.config.getGuildConfig(member.guild);
 
     // Plugin is unitialized for the guild.
     if (!cid) return;
@@ -155,7 +155,9 @@ export class WelcomerPlugin extends DiscordPlugin {
     member: GuildMember,
     applicant: boolean,
   ) {
-    const { count, date, message: mid } = await this.config.getGuild(guild);
+    const { count, date, message: mid } = await this.config.getGuildConfig(
+      guild,
+    );
     const resetCount = this.isADayAgo(date);
     const newCount = resetCount || typeof count !== 'number' ? 1 : count + 1;
 
@@ -193,7 +195,7 @@ export class WelcomerPlugin extends DiscordPlugin {
   private async debug(ctx: Context) {
     await ctx.send(
       `**Guild**\n\`\`\`JSON\n${JSON.stringify(
-        await this.config.getGuild(ctx.message.guild),
+        await this.config.getGuildConfig(ctx.message.guild),
         null,
         2,
       )}\`\`\``,

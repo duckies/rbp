@@ -1,5 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { MessageEmbed, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
+import { Injectable, Logger } from '@nestjs/common';
+import {
+  MessageEmbed,
+  StreamDispatcher,
+  TextChannel,
+  VoiceChannel,
+  VoiceConnection,
+} from 'discord.js';
 import YouTube from 'ytdl-core';
 import { Context } from '../discord.context';
 import { Command, Plugin } from '../discord.decorators';
@@ -28,11 +34,12 @@ export interface Song {
 @Injectable()
 @Plugin('Audio')
 export class AudioPlugin extends DiscordPlugin {
+  private readonly logger = new Logger(AudioPlugin.name);
   private queue: AudioQueue;
 
   @Command({ name: 'play', description: 'Plays a song from a YouTube url' })
   async playCommand(ctx: Context, url: string) {
-    if (!ctx.message.guild) {
+    if (!ctx.guild) {
       return ctx.message.reply('I cannot play music in DMs.');
     }
 
@@ -40,7 +47,9 @@ export class AudioPlugin extends DiscordPlugin {
       return ctx.message.reply('You must be in a voice channel first.');
     }
 
-    const permissions = ctx.message.member.voice.channel.permissionsFor(ctx.message.guild.me);
+    const permissions = ctx.message.member.voice.channel.permissionsFor(
+      ctx.message.guild.me,
+    );
 
     if (!permissions.has('CONNECT')) {
       return ctx.message.reply('I am not allowed to join that channel.');
@@ -73,11 +82,11 @@ export class AudioPlugin extends DiscordPlugin {
     const info = await YouTube.getInfo(url);
 
     const song = {
-      id: info.video_id,
-      title: info.title,
-      url: info.video_url,
-      duration: +info.length_seconds,
-      author: info.author.name,
+      id: info.videoDetails.videoId,
+      title: info.videoDetails.title,
+      url: info.videoDetails.video_url,
+      duration: +info.videoDetails.lengthSeconds,
+      author: info.videoDetails.author.name,
       thumbnail: info.player_response.videoDetails.thumbnail.thumbnails[0].url,
     };
 
@@ -90,7 +99,9 @@ export class AudioPlugin extends DiscordPlugin {
     embed.setThumbnail(song.thumbnail);
 
     if (queueSize >= 1) {
-      embed.setFooter(`${this.timeRemaining()} until track playback: #${queueSize} in queue.`);
+      embed.setFooter(
+        `${this.timeRemaining()} until track playback: #${queueSize} in queue.`,
+      );
     }
 
     await this.queue.textChannel.send(embed);
@@ -120,7 +131,10 @@ export class AudioPlugin extends DiscordPlugin {
     await ctx.tick();
   }
 
-  @Command({ name: 'volume', description: 'Sets the volume of the bot from 0 to 200' })
+  @Command({
+    name: 'volume',
+    description: 'Sets the volume of the bot from 0 to 200',
+  })
   async setVolume(ctx: Context, volume: string) {
     const volumeNum = +volume;
 
@@ -159,14 +173,16 @@ export class AudioPlugin extends DiscordPlugin {
           this.play();
         })
         .on('error', (error) => {
-          console.error(error);
+          this.logger.error(error.message, error.stack);
           this.queue.songs.shift();
           this.play();
         });
     } catch (error) {
-      console.error(error);
+      this.logger.error(error.message, error.stack);
       if (error.message.includes('copyright')) {
-        await this.queue.textChannel.send('Video could not be played due to some copyright error.');
+        await this.queue.textChannel.send(
+          'Video could not be played due to some copyright error.',
+        );
       }
     }
   }
@@ -177,7 +193,9 @@ export class AudioPlugin extends DiscordPlugin {
     return this.formatTimeRemaining(
       this.queue.songs
         .map((song, i) =>
-          i === 0 ? song.duration * 1000 - this.queue.dispatcher.streamTime : song.duration * 1000,
+          i === 0
+            ? song.duration * 1000 - this.queue.dispatcher.streamTime
+            : song.duration * 1000,
         )
         .reduce((p, c) => p + c, 0),
     );
