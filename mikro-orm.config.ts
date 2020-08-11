@@ -41,7 +41,7 @@ const config: Options = {
   user: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   dbName: process.env.DATABASE_NAME || 'backend',
-  debug: false,
+  debug: process.env.NODE_ENV === 'development',
   strict: true,
   findOneOrFailHandler: () => {
     return new NotFoundException();
