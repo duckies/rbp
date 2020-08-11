@@ -37,17 +37,17 @@ export class RateLimiter {
         config.headers['Authorization'] = `Bearer ${user.blizzard_token}`;
       }
 
-      return this.blizzard.add(() =>
+      const resp = await this.blizzard.add(() =>
         this.http
           .get<T>(uri + '?namespace=profile-us&locale=en_US', config)
           .toPromise(),
       );
+
+      return resp;
     } catch (error) {
       if (error.response) {
         throw new HttpException(error.response.data, error.response.status);
       }
-
-      console.error(error);
 
       throw new BadGatewayException(error);
     }

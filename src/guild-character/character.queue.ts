@@ -111,8 +111,7 @@ export class CharacterQueue {
             }
           }
 
-          console.error(error);
-          this.logger.error(`Updating Error ${error}`, error.trace);
+          this.logger.error(error.message, error.trace);
         }
 
         job.progress(++results.processed / results.total);
