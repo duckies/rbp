@@ -11,7 +11,6 @@ import { ConfigService } from '@nestjs/config';
 import { Client, ClientOptions } from 'discord.js';
 import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { FormSubmissionModule } from '../form-submission/form-submission.module';
-import { TwitchModule } from '../twitch/twitch.module';
 import {
   DISCORD_CLIENT,
   DISCORD_COMMAND_ARGS,
@@ -52,7 +51,6 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     DiscoveryModule,
     FormSubmissionModule,
     BullModule.registerQueue({ name: 'discord' }),
-    TwitchModule,
   ],
   providers: [
     DiscordQueue,
