@@ -1,4 +1,9 @@
-import { HttpService, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpService,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export interface Token {
@@ -14,10 +19,14 @@ export class TokenService {
 
   private token: Token = null;
 
-  constructor(private readonly config: ConfigService, private readonly http: HttpService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly http: HttpService,
+  ) {}
 
   async getToken() {
-    if (this.token !== null && this.token.expires >= new Date().getTime()) return;
+    if (this.token !== null && this.token.expires >= new Date().getTime())
+      return;
 
     this.logger.log('Retrieving new auth token...');
 
@@ -37,9 +46,15 @@ export class TokenService {
           .toPromise()
       ).data;
 
-      if (resp && resp.access_token && resp.expires_in && resp.token_type === 'bearer') {
+      if (
+        resp &&
+        resp.access_token &&
+        resp.expires_in &&
+        resp.token_type === 'bearer'
+      ) {
         this.token = resp;
-        this.token.expires = new Date().getTime() + (this.token.expires_in - 3600) * 1000;
+        this.token.expires =
+          new Date().getTime() + (this.token.expires_in - 3600) * 1000;
         return this.setAxiosBearerToken();
       }
 
