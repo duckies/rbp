@@ -34,6 +34,7 @@ module.exports = {
     {
       files: ['*.entity.ts'],
       rules: {
+        // MikroORM requires explicit type definitions.
         '@typescript-eslint/no-inferrable-types': 'off',
       },
     },
