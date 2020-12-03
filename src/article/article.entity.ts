@@ -33,10 +33,6 @@ export class Article extends BaseEntity<Article, 'id'> {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  /**
-   * Relationships
-   */
-
   @ManyToOne({ entity: () => User })
   author!: User;
 }

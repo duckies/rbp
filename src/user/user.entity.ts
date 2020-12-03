@@ -48,10 +48,6 @@ export class User extends BaseEntity<User, 'id'> {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  /**
-   * Relationships
-   */
-
   @OneToMany(() => Article, (a) => a.author, { hidden: true })
   articles = new Collection<Article>(this);
 

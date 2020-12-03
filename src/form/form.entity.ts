@@ -24,10 +24,6 @@ export class Form extends BaseEntity<Form, 'id'> {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  /**
-   * Relationships
-   */
-
   @OneToMany(() => FormQuestion, (question) => question.form, {
     eager: true,
     orderBy: { order: QueryOrder.ASC },

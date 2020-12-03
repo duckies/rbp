@@ -34,10 +34,6 @@ export class FormSubmission extends BaseEntity<FormSubmission, 'id'> {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  /**
-   * Relationships
-   */
-
   @ManyToOne(() => Form)
   form!: Form;
 

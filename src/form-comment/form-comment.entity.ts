@@ -15,10 +15,6 @@ export class FormComment {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  /**
-   * Relationships
-   */
-
   @ManyToOne(() => User)
   author!: User;
 }

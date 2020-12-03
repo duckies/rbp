@@ -22,10 +22,6 @@ export class FileUpload {
   @Property()
   immune: boolean = false;
 
-  /**
-   * Relationships
-   */
-
   @ManyToOne(() => User)
   author: User;
 
