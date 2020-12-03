@@ -20,6 +20,7 @@ export default class AboutPage extends Vue {
   caption = 'Learn about our guild and things'
   links = [
     { title: 'Ranks', to: '/about/ranks' },
+    { title: 'Rules', to: '/about/rules' },
     { title: 'Loot Distribution', to: '/about/loot' },
     { title: 'Required Addons', to: '/about/addons' },
   ]
