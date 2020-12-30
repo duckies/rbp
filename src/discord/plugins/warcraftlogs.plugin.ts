@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { MessageEmbed, TextChannel } from 'discord.js';
-import { chunk, isEqual, partition } from 'lodash';
+import { isEqual, partition } from 'lodash';
 import moment from 'moment';
 import { sleep } from '../../app.utils';
 import { PluginConfig } from '../discord-config.class';
@@ -113,11 +113,24 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   }
 
   @Command({
+    name: 'debug',
+    group: 'wcl',
+    description: 'Display the current configuration.',
+  })
+  async getDebug(ctx: Context) {
+    const config = await this.config.getGuild(ctx.guild);
+    const globalConfig = await this.config.getGlobal();
+
+    await ctx.send(ctx.formatCode(config, 'JSON'));
+    await ctx.send(ctx.formatCode(globalConfig, 'JSON'));
+  }
+
+  @Command({
     name: 'log',
     description: 'Retrieves the embed for a log by its id.',
   })
   async log(ctx: Context, id: string) {
-    const { key } = await this.config.getGlobalConfig();
+    const { key } = await this.config.getGlobal();
 
     if (!key) {
       return ctx.send(`Set the API key with the setup command and try again.`);
@@ -144,7 +157,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
     description: 'Retrieves the latest logs for the guild.',
   })
   async logs(ctx: Context) {
-    const { key } = await this.config.getGlobalConfig();
+    const { key } = await this.config.getGlobal();
 
     if (!key) {
       return ctx.send(`Set the API key with the setup command and try again.`);
@@ -173,13 +186,13 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   }
 
   public async checkLogs() {
-    const { key } = await this.config.getGlobalConfig();
+    const { key } = await this.config.getGlobal();
 
     if (!key) return;
 
     // Loop through each guild and check for logs.
     for (const [, guild] of this.discordService.client.guilds.cache) {
-      const { channel: id, watching } = await this.config.getGuildConfig(guild);
+      const { channel: id, watching } = await this.config.getGuild(guild);
       const nowWatching: Record<string, string> = {};
 
       // Guilds without an announcement channel aren't setup yet.
@@ -268,7 +281,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
   }
 
   private async getReportInfo(id: string): Promise<ReportInfo> {
-    const { key } = await this.config.getGlobalConfig();
+    const { key } = await this.config.getGlobal();
 
     const url = `https://www.warcraftlogs.com/v1/report/fights/${id}?api_key=${key}`;
     const report = (await this.http.get(url).toPromise()).data as Report;
@@ -377,22 +390,37 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
           }
         }
 
-        if (bosses.length >= 10) {
-          const [first, last] = chunk(bosses, Math.ceil(bosses.length / 2));
+        const fields = this.splitFieldText(bosses);
+
+        for (let i = 0; i < fields.length; i++) {
           embed.addField(
-            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (1/2)`,
-            first.join('\n'),
-          );
-          embed.addField(
-            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (2/2)`,
-            last.join('\n'),
-          );
-        } else {
-          embed.addField(
-            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance}`,
-            bosses.join('\n'),
+            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (${
+              i + 1
+            }/${fields.length})`,
+            fields[i].join('\n'),
           );
         }
+
+        // if (bosses.length >= 10) {
+        //   const [first, last] = chunk(bosses, Math.ceil(bosses.length / 2));
+
+        //   console.log(first.join('\n').length);
+
+        //   embed.addField(
+        //     `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (1/2)`,
+        //     first.join('\n'),
+        //   );
+        //   embed.addField(
+        //     `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (2/2)`,
+        //     last.join('\n'),
+        //   );
+        // } else {
+        //   console.log(bosses.join('\n').length);
+        //   embed.addField(
+        //     `${difficulty === 'Mythic+' ? '' : difficulty} ${instance}`,
+        //     bosses.join('\n'),
+        //   );
+        // }
       }
     }
 
@@ -404,6 +432,25 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
     }
 
     return embed;
+  }
+
+  private splitFieldText(texts: string[]) {
+    const fields: string[][] = [[]];
+    let i = 0;
+
+    for (let j = 0; j < texts.length; j++) {
+      const curLength = fields[i].join('\n').length;
+      const delimiterLength = texts.length - 1 === j ? 0 : 2;
+      const textLength = texts[j].length;
+
+      if (curLength + textLength + delimiterLength > 1024) {
+        fields[++i] = [texts[j]];
+      } else {
+        fields[i].push(texts[j]);
+      }
+    }
+
+    return fields;
   }
 
   private async getBossInstanceName(bossId: number) {
@@ -436,7 +483,7 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
    * @param url
    */
   private async getWCL(url: string) {
-    const { key } = await this.config.getGlobalConfig();
+    const { key } = await this.config.getGlobal();
 
     return (await this.http.get(`${url}?api_key=${key}`).toPromise()).data;
   }
