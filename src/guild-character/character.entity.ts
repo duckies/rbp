@@ -25,7 +25,7 @@ export class GuildCharacter extends Character {
   @Property({ type: 'smallint', default: 0 })
   torghast_floors: number = 0;
 
-  @Property()
+  @Property({ nullable: true })
   torghast_wings: TorghastWings = {
     skoldus_hall: 0,
     fracture_chambers: 0,
