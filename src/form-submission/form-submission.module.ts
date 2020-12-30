@@ -1,6 +1,6 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule } from '@nestjs/bull';
 import { HttpModule, Module } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { BlizzardModule } from '../blizzard/blizzard.module';
 import { FileModule } from '../file/file.module';
 import { FormCharacterModule } from '../form-character/form-character.module';

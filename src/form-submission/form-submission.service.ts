@@ -1,5 +1,6 @@
 import { EntityManager, FilterQuery, QueryOrderMap } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
@@ -11,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { Queue } from 'bull';
 import fs from 'fs';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import path from 'path';
 import { FileService } from '../file/file.service';
 import { FormCharacterService } from '../form-character/form-character.service';

@@ -1,5 +1,5 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { FormQuestionModule } from '../form-question/question.module';
 import { FormController } from './form.controller';
 import { Form } from './form.entity';

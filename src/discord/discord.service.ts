@@ -1,8 +1,9 @@
 import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'discord.js';
-import { InjectRepository } from 'nestjs-mikro-orm';
+import { DISCORD_PREFIX } from '../app.constants';
 import { PluginConfig } from './discord-config.class';
 import { DiscordConfig } from './discord-plugin.entity';
 import {
@@ -14,7 +15,6 @@ import {
 } from './discord.decorators';
 import { CommandMatch, GroupMatch } from './interfaces/command-match.interface';
 import { DiscordPlugin } from './plugins/plugin.class';
-import { DISCORD_PREFIX } from '../app.constants';
 
 export interface PluginMap {
   name: string;

@@ -1,4 +1,5 @@
 import { DiscoveryModule, DiscoveryService } from '@golevelup/nestjs-discovery';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule } from '@nestjs/bull';
 import {
   DynamicModule,
@@ -9,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client, ClientOptions } from 'discord.js';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { FormSubmissionModule } from '../form-submission/form-submission.module';
 import {
   DISCORD_CLIENT,

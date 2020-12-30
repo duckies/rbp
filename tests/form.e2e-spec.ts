@@ -5,6 +5,7 @@ import {
   IDatabaseDriver,
   MikroORM,
 } from '@mikro-orm/core';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import {
   CacheInterceptor,
   INestApplication,
@@ -13,7 +14,6 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import request from 'supertest';
 import MikroORMConfig from '../mikro-orm.config';
 import { Roles } from '../src/app.roles';

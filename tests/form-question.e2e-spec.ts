@@ -5,6 +5,7 @@ import {
   IDatabaseDriver,
   MikroORM,
 } from '@mikro-orm/core';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import {
   CacheInterceptor,
   INestApplication,
@@ -13,7 +14,6 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import request from 'supertest';
 import { v4 } from 'uuid';
 import MikroORMConfig from '../mikro-orm.config';
@@ -24,7 +24,6 @@ import { CreateQuestionDto, UpdateQuestionDto } from '../src/form-question/dto';
 import { FieldType } from '../src/form-question/enums/field-type.enum';
 import { FileTypes } from '../src/form-question/enums/file-types.enum';
 import { FormQuestion } from '../src/form-question/question.entity';
-import { CreateFormDto } from '../src/form/dto/create-form.dto';
 import { Form } from '../src/form/form.entity';
 import { FormModule } from '../src/form/form.module';
 import { User } from '../src/user/user.entity';

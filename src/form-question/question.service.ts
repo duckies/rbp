@@ -4,8 +4,8 @@ import {
   QueryOrder,
   wrap,
 } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import { Form } from '../form/form.entity';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
 import { choicesFields } from './enums/choice-fields.enum';

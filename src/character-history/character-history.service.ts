@@ -1,7 +1,6 @@
 import { EntityRepository } from '@mikro-orm/knex';
-import { UseRequestContext } from '@mikro-orm/nestjs';
+import { InjectRepository, UseRequestContext } from '@mikro-orm/nestjs';
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import { RESET_DAY, RESET_HOUR_UTC } from '../app.constants';
 import { getLastWeekday } from '../app.utils';
 import { CharacterHistory } from './character-history.entity';

@@ -1,4 +1,11 @@
-import { Entity, Enum, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import {
+  BaseEntity,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/core';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { RealmSlug, RealmType } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
@@ -10,10 +17,11 @@ import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.in
 
 @Unique({ properties: ['name', 'realm', 'region'] })
 @Entity({ abstract: true })
-export abstract class Character {
+export abstract class Character extends BaseEntity<Character, 'id'> {
   private findCharacterDTO: FindCharacterDto;
 
   constructor(name: string, realm: RealmType, region: Region) {
+    super();
     this.name = name;
     this.realm = realm;
     this.region = region;

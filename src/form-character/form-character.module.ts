@@ -1,6 +1,6 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { BlizzardModule } from '../blizzard/blizzard.module';
 import { RaiderIOModule } from '../raiderIO/raiderIO.module';
 import { FormCharacterController } from './form-character.controller';

@@ -1,6 +1,6 @@
 import { EntityRepository, wrap } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';

@@ -1,6 +1,6 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule } from '@nestjs/bull';
-import { Module, CacheModule } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
+import { CacheModule, Module } from '@nestjs/common';
 import { BlizzardModule } from '../blizzard/blizzard.module';
 import { CharacterController } from './character.controller';
 import { GuildCharacter } from './character.entity';

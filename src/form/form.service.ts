@@ -1,6 +1,6 @@
 import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { Form } from './form.entity';

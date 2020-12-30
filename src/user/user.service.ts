@@ -1,12 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityRepository, QueryOrder, wrap } from '@mikro-orm/core';
-import { InjectRepository } from 'nestjs-mikro-orm';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Roles } from '../app.roles';
 import { DiscordProfile, Provider } from '../auth/auth.service';
 import { JWTPayload } from '../auth/dto/jwt.dto';
 import { UpdateUserDiscordDTO } from './dto/update-user-discord.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
-import { Roles } from '../app.roles';
 
 @Injectable()
 export class UserService {

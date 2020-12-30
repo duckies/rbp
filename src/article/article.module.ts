@@ -1,5 +1,5 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { CacheModule, Module } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { ArticleController } from './article.controller';
 import { Article } from './article.entity';
 import { ArticleService } from './article.service';

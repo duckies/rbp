@@ -1,6 +1,6 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { RaidController } from './raid.controller';
 import { Raid } from './raid.entity';

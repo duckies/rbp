@@ -13,9 +13,9 @@ import { CharacterSnapshot } from './interfaces/history.interface';
 @Entity()
 export class CharacterHistory {
   @PrimaryKey()
-  reset: Date;
+  reset!: Date;
 
-  @ManyToOne({ entity: () => GuildCharacter, primary: true })
+  @ManyToOne(() => GuildCharacter, { primary: true })
   character!: GuildCharacter;
 
   [PrimaryKeyType]: [Date, number];

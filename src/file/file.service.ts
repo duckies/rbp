@@ -1,7 +1,7 @@
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import fs from 'fs';
-import { EntityRepository } from '@mikro-orm/core';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import { User } from '../user/user.entity';
 import { FileUpload } from './file.entity';
 import { File } from './interfaces/file.interface';

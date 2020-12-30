@@ -1,8 +1,13 @@
-import { QueryOrder } from '@mikro-orm/core';
+import {
+  FilterQuery,
+  Populate,
+  QueryOrder,
+  QueryOrderMap,
+} from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { GuildCharacter } from './character.entity';
@@ -82,10 +87,22 @@ export class CharacterService {
   }
 
   /**
-   *
+   * Retrieves all guild character given the specified query and pagination.
+   * This method supports proxied MikroORM lookup features.
    */
-  findAll() {
-    return this.characterRepository.findAll();
+  findAll(
+    where: FilterQuery<GuildCharacter>,
+    limit?: number,
+    offset?: number,
+    orderBy?: QueryOrderMap,
+    populate?: Populate<GuildCharacter>,
+  ) {
+    return this.characterRepository.findAndCount(where, {
+      limit,
+      offset,
+      orderBy,
+      populate,
+    });
   }
 
   /**
@@ -96,18 +113,12 @@ export class CharacterService {
     return this.characterRepository.findOne({ id });
   }
 
-  /**
-   * Finds a character given the id, name, realm, and/or region.
-   * This is a case-sensitive lookup!
-   * @param characterLookupDto
-   */
-  findOne({ name, region, realm }: FindCharacterDto) {
-    return this.characterRepository
-      .createQueryBuilder()
-      .where('LOWER(name) = LOWER(?)', [name])
-      .andWhere('realm = ?', [realm])
-      .andWhere('region = ?', [region])
-      .getSingleResult();
+  findOneOrFail(
+    where: FilterQuery<GuildCharacter>,
+    populate?: Populate<GuildCharacter>,
+    orderBy?: QueryOrderMap,
+  ) {
+    return this.characterRepository.findOneOrFail(where, populate, orderBy);
   }
 
   async delete(findCharacterDto: FindCharacterDto) {

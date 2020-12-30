@@ -5,6 +5,7 @@ import {
   IDatabaseDriver,
   MikroORM,
 } from '@mikro-orm/core';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import {
   CacheInterceptor,
   HttpService,
@@ -16,7 +17,6 @@ import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
 import Bull, { Queue } from 'bull';
 import fs from 'fs';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import path from 'path';
 import request from 'supertest';
 import MikroORMConfig from '../mikro-orm.config';

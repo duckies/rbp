@@ -1,13 +1,14 @@
 import * as Joi from '@hapi/joi';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { SentryModule } from '@ntegral/nestjs-sentry';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import MikroOrmConfig from '../mikro-orm.config';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
+import { CharacterHistoryModule } from './character-history/character-history.module';
 import { DiscordModule } from './discord/discord.module';
 import { FormCharacterModule } from './form-character/form-character.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
@@ -81,6 +82,7 @@ import { UserModule } from './user/user.module';
     FormSubmissionModule,
     BlizzardModule,
     CharacterModule,
+    CharacterHistoryModule,
     RaiderIOModule,
   ],
 })

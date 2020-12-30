@@ -1,5 +1,5 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { MikroOrmModule } from 'nestjs-mikro-orm';
 import { FileUpload } from './file.entity';
 import { FileService } from './file.service';
 

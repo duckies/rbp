@@ -4,8 +4,8 @@ import {
   QueryOrder,
   QueryOrderMap,
 } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from 'nestjs-mikro-orm';
 import slugify from 'slugify';
 import { User } from '../user/user.entity';
 import { Article } from './article.entity';

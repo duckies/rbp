@@ -1,6 +1,6 @@
-import { HttpService, Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { InjectRepository } from 'nestjs-mikro-orm';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { HttpService, Injectable } from '@nestjs/common';
 import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
 import { AssetType } from '../../enums/asset-type.enum';
 import { GameDataEndpoint } from '../../enums/game-data-api.enum';
