@@ -5,9 +5,7 @@
       <p></p>
 
       <h2>Community Guidelines</h2>
-      <p>
-        We are a familial community where if issues do arise we work through them on a case-by-case basis.
-      </p>
+      <p>We are a familial community where if issues do arise we work through them on a case-by-case basis.</p>
 
       <ol>
         <li>

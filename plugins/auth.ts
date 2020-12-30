@@ -1,7 +1,7 @@
-import { Plugin, Context } from '@nuxt/types'
+import { Context, Plugin } from '@nuxt/types'
 import { nanoid } from 'nanoid'
 
-export const encodeQuery = (queryObject: object): string => {
+export const encodeQuery = (queryObject: Record<string, any>): string => {
   return Object.entries(queryObject)
     .filter((tuple) => typeof Object.values(tuple)[0] !== 'undefined')
     .map(([key, value]) => encodeURIComponent(key) + (value != null ? '=' + encodeURIComponent(value) : ''))
@@ -15,8 +15,8 @@ export class Auth {
     this.ctx = ctx
   }
 
-  public login() {
-    const authorization_endpoint = 'https://discord.com/api/oauth2/authorize'
+  public login(): void {
+    const authorizationEndpoint = 'https://discord.com/api/oauth2/authorize'
     const opts = {
       response_type: 'code',
       client_id: '678486837626404885',
@@ -29,12 +29,12 @@ export class Auth {
     this.ctx.app.$cookies.set('rbp.state', opts.state)
     this.ctx.app.$cookies.set('rbp.redirect', this.ctx.app.context.route.path)
 
-    const url = authorization_endpoint + '?' + encodeQuery(opts)
+    const url = authorizationEndpoint + '?' + encodeQuery(opts)
 
     window.location.href = url
   }
 
-  public async handleCallback() {
+  public async handleCallback(): Promise<void> {
     if (this.ctx.route.path !== '/callback' || !this.ctx.route.query.code) return
 
     const state = this.ctx.app.$cookies.get('rbp.state')

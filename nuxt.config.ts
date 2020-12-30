@@ -1,11 +1,10 @@
 import { NuxtConfig } from '@nuxt/types'
+import { config as DotenvConfig } from 'dotenv'
 import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
 
-require('dotenv').config()
+DotenvConfig()
 
 const config: NuxtConfig = {
-  mode: 'universal',
-
   env: {
     FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL || 'http://localhost:3030',
     FRONTEND_FILE_UPLOAD_URL: process.env.FRONTEND_FILE_UPLOAD_URL || 'http://localhost:3000/submission/upload',

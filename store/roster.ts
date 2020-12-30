@@ -2,8 +2,8 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { ProfileEquipment } from '../interfaces/profile/profile-equipment.interface'
 import { ProfileSpecializations, Specialization } from '../interfaces/profile/profile-specializations.interface'
 import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
-import { User } from './user'
 import { RootState } from './'
+import { User } from './user'
 
 export interface FindCharacterDto {
   name: string
@@ -112,10 +112,10 @@ export const actions: ActionTree<RosterState, RootState> = {
   async getRoster({ commit }) {
     try {
       commit('setStatus', { status: 'loading' })
-      const resp = await this.$axios.$get('/characters/roster')
+      const [characters] = await this.$axios.$get('/characters/roster')
 
       commit('setStatus', { status: 'success' })
-      commit('setRoster', resp)
+      commit('setRoster', characters)
     } catch (error) {
       commit('setStatus', { status: 'error', error })
     }

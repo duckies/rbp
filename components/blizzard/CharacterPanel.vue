@@ -42,7 +42,7 @@
               <div class="character--links">
                 <a :href="`https://www.worldofwarcraft.com/en-us/character/${region}/${realm}/${name}`" target="_blank">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34.25 34.25" class="character--links__icon">
-                    <circle cx="17.13" cy="17.13" r="14.13" style="fill: none;" />
+                    <circle cx="17.13" cy="17.13" r="14.13" style="fill: none" />
                     <path
                       d="M44.13,40.34a17,17,0,0,0,0-20V16.2H39.92a17.07,17.07,0,0,0-19.65.24H16.12v4.22a17.11,17.11,0,0,0,0,19.33v4.47h4.47a17.11,17.11,0,0,0,19.33,0h4.21V40.34Zm-28-10A14.13,14.13,0,1,1,30.25,44.46,14.13,14.13,0,0,1,16.12,30.33Z"
                       transform="translate(-13.13 -13.2)"
@@ -64,7 +64,7 @@
                   </svg>
                 </a>
                 <a :href="`https://www.warcraftlogs.com/character/${region}/${realm}/${name}`" target="_blank">
-                  <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px;" />
+                  <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px" />
                 </a>
               </div>
             </v-row>
@@ -72,15 +72,16 @@
 
           <v-col class="character--bg__clear pa-4">
             <h3 class="character--header" :class="`class-color-${blizzard.class_id}`">Raid Progression</h3>
-            <div v-if="raiderIO && raids">
-              <div v-for="raid in $store.state.raid.raids" :key="raid.id">
+            <div v-if="progression.length">
+              <div v-for="raid in progression" :key="raid.name">
                 <div class="character--subheader">{{ raid.name }}</div>
+
                 <v-progress-linear
                   :class="`character--progress class-progress-${blizzard.class_id}`"
-                  :value="raids[raid.slug].progress"
+                  :value="raid.progress"
                   height="20px"
                 >
-                  {{ raids[raid.slug].summary }}
+                  {{ raid.summary }}
                 </v-progress-linear>
               </div>
             </div>
@@ -89,7 +90,7 @@
           <v-col class="character--bg__clear pa-4">
             <h3 class="character--header" :class="`class-color-${blizzard.class_id}`">RaiderIO Scores</h3>
 
-            <div v-if="raiderIO && raiderIO.mythic_plus_scores_by_season.length">
+            <div v-if="false && raiderIO && raiderIO.mythic_plus_scores_by_season.length">
               <v-row>
                 <v-col class="character--raiderIO">
                   <div :class="`character--raiderIO--score class-color-${blizzard.class_id}`">
@@ -163,12 +164,14 @@ import { Prop } from 'vue-property-decorator'
 import { EquippedItemsEntity } from '../../interfaces/profile/profile-equipment.interface'
 import { CharacterRaiderIO } from '../../interfaces/raiderIO/character.interface'
 import { FormCharacter } from '../../store/roster'
+import { Raid } from '../../store/raid'
 
 interface ComputedRaidList {
   [slug: string]: ComputedRaid
 }
 
 interface ComputedRaid {
+  name: string
   progress: number
   summary: string
 }
@@ -211,23 +214,33 @@ export default class CharacterPanel extends Vue {
       : format(updatedAt, `MM.dd a HH:mm`)
   }
 
-  get raids(): ComputedRaidList {
-    if (!this.raiderIO || !this.raiderIO.raid_progression || !Object.keys(this.raiderIO.raid_progression).length)
-      return {}
+  get raids(): Raid[] {
+    return this.$store.state.raid.raids
+  }
 
-    const raids = {}
+  get dungeons() {
+    if (!this.raiderIO?.)
+  }
 
-    for (const slug in this.raiderIO.raid_progression) {
-      Object.assign(raids, {
-        [slug]: {
-          // eslint-disable-next-line no-eval
-          progress: eval(this.raiderIO.raid_progression[slug].summary.slice(0, -2)) * 100,
-          summary: this.raiderIO.raid_progression[slug].summary,
-        },
+  get progression(): ComputedRaid[] {
+    if (!this.raids.length || !this.raiderIO?.raid_progression) return []
+
+    const retval: ComputedRaid[] = []
+
+    for (const raid of this.raids) {
+      const data = this.raiderIO.raid_progression[raid.slug]
+
+      if (!data) continue
+
+      retval.push({
+        name: raid.name,
+        // eslint-disable-next-line no-eval
+        progress: eval(data.summary.slice(0, -2)) * 100,
+        summary: data.summary,
       })
     }
 
-    return raids
+    return retval
   }
 
   get avatar(): string {

@@ -21,7 +21,7 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
-    'no-explicit-any': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/camelcase': 'off',
   },
   overrides: [
