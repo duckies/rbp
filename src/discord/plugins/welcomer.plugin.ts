@@ -34,12 +34,15 @@ export class WelcomerPlugin extends DiscordPlugin {
     '{username} had their car broken into.',
     "{username} didn't like that one black joke.",
     '{username} found a married woman in an open relationship.',
+    'Peace out girl scout! {username}',
+    'Well... good luck {username}',
+    'Take it sleazy {username}',
   ];
 
   constructor(
     private readonly submissionService: SubmissionService,
     private readonly backendConfig: ConfigService,
-    private readonly discordService: DiscordService,
+    discordService: DiscordService,
   ) {
     super();
     this.config = discordService.getConfig(WelcomerPlugin.name);
@@ -79,7 +82,7 @@ export class WelcomerPlugin extends DiscordPlugin {
 
   @Event(DiscordEvent.GuildMemberAdd)
   async onGuildMemberAdd(client: Client, member: GuildMember) {
-    const { channel: cid } = await this.config.getGuildConfig(member.guild);
+    const { channel: cid } = await this.config.getGuild(member.guild);
 
     // Plugin is unitialized for the guild.
     if (!cid) return;
@@ -133,18 +136,13 @@ export class WelcomerPlugin extends DiscordPlugin {
 
   @Event(DiscordEvent.GuildMemberRemove)
   async onGuildMemberRemove(client: Client, member: GuildMember) {
-    const { channel: cid } = await this.config.getGuildConfig(member.guild);
+    const { channel: cid } = await this.config.getGuild(member.guild);
 
-    // Plugin is unitialized for the guild.
     if (!cid) return;
 
     const channel = client.channels.cache.get(cid) as TextChannel;
 
-    if (!channel || channel.type !== 'text') {
-      return this.logger.error(
-        'Channel was not found or is not a text channel.',
-      );
-    }
+    if (!channel || channel.type !== 'text') return;
 
     await this.sendGoobyeMessage(channel, member);
   }
@@ -155,9 +153,7 @@ export class WelcomerPlugin extends DiscordPlugin {
     member: GuildMember,
     applicant: boolean,
   ) {
-    const { count, date, message: mid } = await this.config.getGuildConfig(
-      guild,
-    );
+    const { count, date, message: mid } = await this.config.getGuild(guild);
     const resetCount = this.isADayAgo(date);
     const newCount = resetCount || typeof count !== 'number' ? 1 : count + 1;
 
@@ -195,7 +191,7 @@ export class WelcomerPlugin extends DiscordPlugin {
   private async debug(ctx: Context) {
     await ctx.send(
       `**Guild**\n\`\`\`JSON\n${JSON.stringify(
-        await this.config.getGuildConfig(ctx.message.guild),
+        await this.config.getGuild(ctx.message.guild),
         null,
         2,
       )}\`\`\``,

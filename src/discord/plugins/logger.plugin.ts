@@ -89,7 +89,7 @@ export class LoggerPlugin extends DiscordPlugin {
   async onMessageDelete(client: Client, message: Message) {
     if (message.partial) return;
 
-    const { channel: cid, ioChannel: iocid } = await this.config.getGuildConfig(
+    const { channel: cid, ioChannel: iocid } = await this.config.getGuild(
       message.guild,
     );
 

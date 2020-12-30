@@ -28,7 +28,7 @@ export class SettingsPlugin {
   }
 
   async getEmbedColor() {
-    return (await this.config.getGlobalConfig()).embedColor;
+    return (await this.config.getGlobal()).embedColor;
   }
 
   @Command({
