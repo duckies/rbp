@@ -1,0 +1,84 @@
+@import './blizzard/classes.scss';
+@import './blizzard/items.scss';
+
+a {
+  text-decoration: none;
+}
+
+.justify-end-image-content {
+  .v-responsive__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+}
+
+// Default page fade transition
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 250ms cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.page-enter,
+.page-leave-to {
+  opacity: 0;
+}
+
+// Sliding page transition
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 250ms cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.slide-left-enter,
+.slide-right-leave-active {
+  opacity: 0;
+  transform: translate(30px, 0);
+}
+
+.slide-right-enter,
+.slide-left-leave-active {
+  opacity: 0;
+  transform: translate(-30px, 0);
+}
+
+// Card Borders
+
+.border-card {
+  &:hover {
+    border: 1px solid rgba(133, 79, 235, 0.5) !important;
+  }
+
+  overflow: hidden;
+  border: 1px solid rgba(75, 75, 75, 0.3) !important;
+  transition: border 500ms cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.card-expand {
+  &:hover {
+    > .v-image__image--cover {
+      transform: translateX(-20px);
+    }
+  }
+
+  > .v-image__image--cover {
+    width: calc(100% + 20px);
+    transition: transform 500ms cubic-bezier(0.075, 0.82, 0.165, 1);
+  }
+}
+
+.v-application .theme--dark.v-card > .v-card__text,
+.theme--dark.v-card {
+  .v-card__title {
+    font-size: 1.5rem;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85);
+  }
+
+  .v-card__subtitle {
+    font-size: 1.1rem;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85);
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
