@@ -124,20 +124,25 @@ export class DiscordService {
 
         // Otherwise, try to find the command in the group.
         const command = group.commands.get(args[1]);
-        const commandMethod = plugin.instance[command.method].bind(
-          plugin.instance,
-        );
 
-        if (command)
+        if (command) {
+          const commandMethod = plugin.instance[command.method].bind(
+            plugin.instance,
+          );
           return { name, plugin, command, method: commandMethod, depth: 2 };
+        }
+
+        return { name, plugin, method: groupMethod, group, depth: 1 };
       }
     }
   }
 
   public getGuildMember(user_id: string) {
-    return this.client.guilds.cache
-      .get(this.config.get('DISCORD_GUILD_ID'))
-      .members.fetch(user_id);
+    const guild = this.client.guilds.cache.get('DISCORD_GUILD_ID');
+
+    if (!guild) return;
+
+    return guild.members.fetch(user_id);
   }
 
   public getGuildChannel(id: string) {
