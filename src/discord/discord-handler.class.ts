@@ -36,25 +36,29 @@ export class DiscordHandler {
    * @param message message received from the onMessage event
    */
   public async handle(message: Message) {
-    if (this.isInvalidMessage(message)) return;
-
-    const args = this.getMessageTokens(message);
-    const match = this.discord.getCommandOrGroup(args);
-
-    if (!match) return;
-
-    // Remove command and/or group names.
-    args.splice(0, match.depth);
-
-    const ctx = new Context(
-      this.discord.client,
-      this.prefix,
-      message,
-      this.discord.plugins,
-      this.settings,
-    );
+    let args: string[];
+    let match: CommandMatch | GroupMatch;
+    let ctx: Context;
 
     try {
+      if (this.isInvalidMessage(message)) return;
+
+      args = this.getMessageTokens(message);
+      match = this.discord.getCommandOrGroup(args);
+
+      if (!match) return;
+
+      // Remove command and/or group names.
+      args.splice(0, match.depth);
+
+      const ctx = new Context(
+        this.discord.client,
+        this.prefix,
+        message,
+        this.discord.plugins,
+        this.settings,
+      );
+
       // Currently unsupported to directly call a group.
       if ('group' in match) {
         return this.help.sendGroupHelp(ctx, match.group);
