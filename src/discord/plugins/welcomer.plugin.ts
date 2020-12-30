@@ -29,8 +29,8 @@ export class WelcomerPlugin extends DiscordPlugin {
     date: Date;
   }>;
   private readonly goodbyeMessages = [
-    '{username} is off to greener pastures.',
-    '{username} became a born-again!',
+    '{username} is off to certainly greener pastures.',
+    '{username} became a born-again.',
     '{username} had their car broken into.',
     "{username} didn't like that one black joke.",
     '{username} found a married woman in an open relationship.',
