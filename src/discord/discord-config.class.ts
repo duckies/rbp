@@ -1,11 +1,18 @@
+import { EntityRepository } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Guild } from 'discord.js';
-import { EntityRepository } from '@mikro-orm/core';
 import { DiscordConfig } from './discord-plugin.entity';
+
+export interface ConfigStore<K, T = null> {
+  guilds?: {
+    [id: string]: K;
+  };
+  global?: T;
+}
 
 @Injectable()
 export class PluginConfig<K, T = null> {
-  private config: { guilds?: { [id: string]: K }; global?: T } = {};
+  private config: ConfigStore<K, T> = {};
   private templates: { guild?: K; global?: T } = {};
   public initialized = false;
 
@@ -22,7 +29,7 @@ export class PluginConfig<K, T = null> {
     this.templates.guild = config;
   }
 
-  public async getGuildConfig(guild: Guild): Promise<K> {
+  public async getGuild(guild: Guild): Promise<K> {
     if (!this.initialized) {
       await this.fetch();
     }
@@ -34,7 +41,7 @@ export class PluginConfig<K, T = null> {
     return this.config.guilds[guild.id];
   }
 
-  public async getGlobalConfig(): Promise<T> {
+  public async getGlobal(): Promise<T> {
     if (!this.initialized) {
       await this.fetch();
     }
@@ -63,12 +70,7 @@ export class PluginConfig<K, T = null> {
       await this.fetch();
     }
 
-    // NOTE: Not confident of this not deleting info, don't clean up code yet.
-    // console.log(this.config);
-
     this.config.global = Object.assign({}, this.config.global, data);
-
-    // console.log(this.config);
 
     await this.save();
 
@@ -111,8 +113,10 @@ export class PluginConfig<K, T = null> {
     if (!plugin) {
       config.global = this.templates.global;
       this.config = config;
+      this.initialized = true;
       return config;
     }
+
     const {
       guilds,
       global,
