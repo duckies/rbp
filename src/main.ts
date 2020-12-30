@@ -21,16 +21,11 @@ async function bootstrap(): Promise<void> {
   );
 
   /**
-   * Allows for communication from another domain or port.
+   * Allows for external communication as this is an API-based backend.
    */
-  // app.enableCors({
-  //   origin: 'http://localhost:3030',
-  //   allowedHeaders: ['Authorization', 'content-type'],
-  //   credentials: true,
-  // });
   app.enableCors();
 
-  await app.listen(config.get<number>('PORT'));
+  await app.listen(config.get('PORT'));
 }
 
 bootstrap();
