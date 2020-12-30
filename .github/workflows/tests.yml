@@ -1,6 +1,12 @@
 name: e2e-tests
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - backend/**
+  pull_request:
+    paths:
+      - backend/**
 
 jobs:
   build:
@@ -20,7 +26,12 @@ jobs:
         run: docker-compose up -d
 
       - run: npm install
+        working-directory: backend
+
       - run: npm run test:e2e
+        working-directory: backend
 
       - name: Codecov
         uses: codecov/codecov-action@v1
+        with:
+          directory: backend/coverage
