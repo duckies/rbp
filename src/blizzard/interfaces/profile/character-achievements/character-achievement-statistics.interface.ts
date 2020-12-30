@@ -4,7 +4,7 @@ import { Links } from '../shared-profile.interface';
 export interface CharacterAchievementStatistics {
   _links: Links;
   character: ProfileKnownCharacter;
-  statistics: AchievementCategory[];
+  categories: AchievementCategory[];
 }
 
 export interface AchievementCategory {
