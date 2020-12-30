@@ -400,27 +400,6 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
             fields[i].join('\n'),
           );
         }
-
-        // if (bosses.length >= 10) {
-        //   const [first, last] = chunk(bosses, Math.ceil(bosses.length / 2));
-
-        //   console.log(first.join('\n').length);
-
-        //   embed.addField(
-        //     `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (1/2)`,
-        //     first.join('\n'),
-        //   );
-        //   embed.addField(
-        //     `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (2/2)`,
-        //     last.join('\n'),
-        //   );
-        // } else {
-        //   console.log(bosses.join('\n').length);
-        //   embed.addField(
-        //     `${difficulty === 'Mythic+' ? '' : difficulty} ${instance}`,
-        //     bosses.join('\n'),
-        //   );
-        // }
       }
     }
 
