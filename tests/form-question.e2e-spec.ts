@@ -118,7 +118,7 @@ describe('Form Questions', () => {
 
     form = em.create(Form, {
       name: 'Example Form',
-    } as CreateFormDto);
+    });
 
     em.persist(form);
 

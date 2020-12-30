@@ -87,7 +87,7 @@ export class CharacterQueue {
               status.data.id !== guildCharacter.id
             ) {
               results.deleted++;
-              return this.em.remove(GuildCharacter, guildCharacter);
+              return this.em.remove(guildCharacter);
             }
 
             guildCharacter.last_modified = status.headers['last-modified'];
@@ -106,12 +106,12 @@ export class CharacterQueue {
             }
 
             if (error.getStatus() === 404) {
-              this.em.remove(GuildCharacter, guildCharacter);
+              this.em.remove(guildCharacter);
               return;
             }
           }
 
-          this.logger.error(error.message, error.trace);
+          this.logger.error(error.message, error.stack);
         }
 
         job.progress(++results.processed / results.total);
@@ -135,7 +135,7 @@ export class CharacterQueue {
 
     const names = notInGuild.map((m) => m.name);
 
-    this.em.remove(GuildCharacter, notInGuild);
+    this.em.remove(notInGuild);
 
     await this.em.flush();
 

@@ -1,7 +1,7 @@
+import { QueryOrder } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { QueryOrder } from '@mikro-orm/core';
 import { InjectRepository } from 'nestjs-mikro-orm';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
@@ -39,7 +39,9 @@ export class CharacterService {
       );
     }
 
-    await this.characterRepository.persist(guildCharacter, true);
+    this.characterRepository.persist(guildCharacter);
+
+    await this.characterRepository.flush();
 
     return guildCharacter;
   }

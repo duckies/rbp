@@ -7,9 +7,9 @@ import {
 } from '@mikro-orm/core';
 import {
   CacheInterceptor,
+  HttpService,
   INestApplication,
   ValidationPipe,
-  HttpService,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -40,7 +40,6 @@ import { User } from '../src/user/user.entity';
 import { UserModule } from '../src/user/user.module';
 import { ProfileServiceMock } from './mocks/profile-api.factory';
 import { RaiderIOServiceMock } from './mocks/raiderio.factory';
-import { AxiosResponse } from 'axios';
 
 describe('Form Submissions', () => {
   let app: INestApplication;
@@ -279,7 +278,7 @@ describe('Form Submissions', () => {
     test('should accept images in submissions', async () => {
       const submission = await em.findOneOrFail(FormSubmission, { id: 1 });
 
-      em.remove(FormSubmission, submission);
+      em.remove(submission);
 
       await em.flush();
 

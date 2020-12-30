@@ -58,7 +58,7 @@ export class FormCharacterQueue {
             status.data.is_valid === false
           ) {
             results.deleted++;
-            return this.em.remove(FormCharacter, formCharacter);
+            return this.em.remove(formCharacter);
           }
 
           formCharacter.last_modified = status.headers['last-modified'];
@@ -74,7 +74,7 @@ export class FormCharacterQueue {
             }
 
             if (error.getStatus() === 404) {
-              this.em.remove(FormCharacter, formCharacter);
+              this.em.remove(formCharacter);
               results.deleted++;
               return;
             }

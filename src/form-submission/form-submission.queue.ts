@@ -39,7 +39,7 @@ export class FormSubmissionQueue {
   private async sendSubmissionWebhook(job: Job<FormSubmission>) {
     const main = job.data.characters[0];
     const color =
-      main && main.class_id && main.class_id in classIdToColor
+      main?.class_id && main.class_id in classIdToColor
         ? classIdToColor[main.class_id]
         : 12790015;
     const title = main.class_name
@@ -96,37 +96,33 @@ export class FormSubmissionQueue {
       });
     }
 
-    if (main.raiderIO && main.raiderIO.mythic_plus_scores_by_season) {
-      const rankings = main.raiderIO.mythic_plus_scores_by_season.map(
-        (season) => {
-          const seasonNums = season.season.match(/\d+/);
-          if (!season) return '';
-
-          const isPost = season.season.includes('post');
-
-          return `Season ${seasonNums[0]}${isPost ? '.5' : ''}: ${
-            season.scores.all
-          }`;
-        },
-      );
+    if (main.raiderIO?.mythic_plus_scores_by_season.length) {
       data.embeds[0].fields.push({
         name: 'Raider.IO',
-        value: rankings.join('\n'),
-        inline: true,
-      });
+        value: main.raiderIO.mythic_plus_scores_by_season.map(
+          (season) => {
+            const seasonNum = season.season.match(/\d+/);
+
+            if (!season) return '';
+
+            const isPost = season.season.includes('post');
+
+            return `Season ${seasonNum[0]}${isPost ? '.5' : ''}: ${season.scores.all}`
+          }
+        ).join('\n'),
+        inline: true
+      })
     }
 
-    if (main.raiderIO && main.raiderIO.mythic_plus_best_runs) {
-      const runs = main.raiderIO.mythic_plus_best_runs.map(
-        (run) =>
-          `${run.mythic_level} ${run.short_name} ${
-            run.num_keystone_upgrades > 0 ? '+' + run.num_keystone_upgrades : ''
-          }`,
-      );
-
+    if (main.raiderIO?.mythic_plus_best_runs.length) {
       data.embeds[0].fields.push({
         name: 'Best Dungeons',
-        value: runs.join('\n'),
+        value: main.raiderIO?.mythic_plus_best_runs.map(
+          (run) =>
+            `${run.mythic_level} ${run.short_name} ${
+              run.num_keystone_upgrades > 0 ? '+' + run.num_keystone_upgrades : ''
+            }`
+        ).join('\n'),
         inline: true,
       });
     }
@@ -141,7 +137,7 @@ export class FormSubmissionQueue {
         );
 
         if (mythic) {
-          progression += `\n:crossed_swords: ${instance.instance.name} (${mythic.progress.completed_count}/${mythic.progress.total_count})`;
+          progression += `\n:crossed_swords: ${instance.instance.name} (${mythic.progress.completed_count}/${mythic.progress.total_count} M)`;
         }
       }
       data.embeds[0].fields.push({
@@ -162,7 +158,10 @@ export class FormSubmissionQueue {
       value: `[Armory](http://www.worldofwarcraft.com/en-us/character/us/${main.realm}/${main.name}) | [Raider.IO](https://www.raider.io/characters/us/${main.realm}/${main.name}) | [WarcraftLogs](https://www.warcraftlogs.com/character/us/${main.realm}/${main.name})`,
     });
 
-    this.http.post(this.config.get('DISCORD_WEBHOOK'), data).toPromise();
+    console.log(this.config.get('DISCORD_WEBHOOK'), data)
+    const resp = await this.http.post(this.config.get('DISCORD_WEBHOOK'), data).toPromise();
+    
+    console.log(resp)
   }
 
   @OnQueueError()
@@ -172,7 +171,8 @@ export class FormSubmissionQueue {
 
   @OnQueueFailed()
   private onFailed(_job: Job<number>, error: Error): void {
-    this.logger.error('Failed: ' + error);
+    this.logger.error('Failed');
+    console.error(error)
   }
 
   @OnQueueCompleted()

@@ -18,3 +18,21 @@ export const DISCORD_PARAM_ROLE = 'DISCORD_PARAM_ROLE';
 
 export const ACCESS_CONTROL = 'ACCESS_CONTROL';
 export const PERMISSION_METADATA = 'PERMISSION_METADATA';
+
+/**
+ * Twitch
+ */
+
+export const TWITCH_CLIENT_ID = 'TWITCH_CLIENT_ID';
+export const TWITCH_SECRET_KEY = 'TWITCH_SECRET_KEY';
+export const TWITCH_AUTH_URL = 'https://id.twitch.tv/oauth2/token';
+export const TWITCH_USER_ENDPOINT = 'https://api.twitch.tv/helix/users';
+export const TWITCH_STREAM_ENDPOINT = 'https://api.twitch.tv/helix/streams';
+export const TWITCH_GAME_ENDPOINT = 'https://api.twitch.tv/helix/games';
+
+/**
+ * World of Warcraft
+ */
+
+export const RESET_DAY = 0;
+export const RESET_HOUR_UTC = 15;

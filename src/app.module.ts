@@ -40,6 +40,8 @@ import { UserModule } from './user/user.module';
         DISCORD_CALLBACK: Joi.string().default(
           'http://localhost:3030/callback',
         ),
+        TWITCH_CLIENT_ID: Joi.string().required(),
+        TWITCH_SECRET_KEY: Joi.string().required(),
         BASE_URL: Joi.string().default('http://localhost:3030/'),
       }),
     }),
@@ -56,6 +58,7 @@ import { UserModule } from './user/user.module';
           'GUILD_MESSAGES',
           'GUILD_VOICE_STATES',
           'GUILD_MESSAGE_REACTIONS',
+          'GUILD_PRESENCES',
         ],
       },
     }),

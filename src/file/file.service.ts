@@ -48,6 +48,8 @@ export class FileService {
 
     await unlink(file.path);
 
-    return this.fileRepository.remove(file);
+    this.fileRepository.remove(file);
+
+    await this.fileRepository.flush();
   }
 }

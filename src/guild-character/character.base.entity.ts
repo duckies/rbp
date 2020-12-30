@@ -1,4 +1,4 @@
-import { Enum, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, Enum, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { RealmSlug, RealmType } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
@@ -9,6 +9,7 @@ import { SpecializationMeta } from '../blizzard/interfaces/profile/character-spe
 import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.interface';
 
 @Unique({ properties: ['name', 'realm', 'region'] })
+@Entity({ abstract: true })
 export abstract class Character {
   private findCharacterDTO: FindCharacterDto;
 
@@ -21,7 +22,6 @@ export abstract class Character {
   @PrimaryKey()
   id!: number;
 
-  // TODO: Add index for lowercase names.
   @Property()
   name!: string;
 
