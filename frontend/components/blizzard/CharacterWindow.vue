@@ -5,11 +5,11 @@
     :data-class="character.class.id"
     :data-race="character.race_id"
   >
-    <v-img class="character--bg__image card-expand" :src="character.media.render" height="280">
+    <v-img class="character--bg__image card-expand" :src="media.main" height="280">
       <div class="character--content">
         <div class="character--avatars">
           <v-img
-            :src="character.media.avatar"
+            :src="media.avatar"
             height="90"
             width="90"
             :class="'character--avatar class-border-' + character.class.id"
@@ -72,6 +72,10 @@ export default class CharacterWindow extends Vue {
     return this.character.specialization.media.value
   }
 
+  get media() {
+    return this.character.media
+  }
+
   get titledName() {
     const name = `<span class="class-color-${this.character.class.id}"><strong>${this.character.name}</strong></span>`
 
@@ -80,21 +84,21 @@ export default class CharacterWindow extends Vue {
     return this.character.title.replace('{name}', name)
   }
 
-  get rank(): string {
+  get rank() {
     return typeof this.character.guild_rank === 'number' ? Ranks[this.character.guild_rank] : 'none'
   }
 
-  get armoryLink(): string {
+  get armoryLink() {
     return `https://www.worldofwarcraft.com/en-us/character/us/${
       this.character.realm
     }/${this.character.name.toLowerCase()}`
   }
 
-  get raiderIOLink(): string {
+  get raiderIOLink() {
     return `https://raider.io/characters/us/${this.character.realm}/${this.character.name.toLowerCase()}`
   }
 
-  get wclLink(): string {
+  get wclLink() {
     return `https://www.warcraftlogs.com/character/${this.character.region}/${
       this.character.realm
     }/${this.character.name.toLowerCase()}`
