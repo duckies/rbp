@@ -154,6 +154,10 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
     this.average_item_level = data.average_item_level;
     this.equipped_item_level = data.equipped_item_level;
     this.last_login = new Date(data.last_login_timestamp);
+
+    if (data.active_title) {
+      this.title = data.active_title.display_string;
+    }
   }
 
   setCharacterMediaSummary(data: ProfileAPI.CharacterMediaSummary) {
