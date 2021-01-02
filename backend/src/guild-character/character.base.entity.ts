@@ -17,6 +17,7 @@ import * as ProfileAPI from '../blizzard/interfaces/profile';
 import { RaidExpansion } from '../blizzard/interfaces/profile/character-encounters/character-raids.interface';
 import { EquippedItem } from '../blizzard/interfaces/profile/character-equipment/character-equipment-summary.interface';
 import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.interface';
+import { Covenant } from './enums/covenant.enum';
 import { CharacterMedia } from './interfaces/character-media.interface';
 
 @Unique({ properties: ['name', 'realm', 'region'] })
@@ -70,6 +71,12 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
 
   @Property({ nullable: true })
   equipped_item_level?: number;
+
+  @Enum({ items: () => Covenant, nullable: true })
+  covenant?: Covenant;
+
+  @Property({ type: 'smallint', nullable: true })
+  renown?: number;
 
   @Property({ nullable: true })
   last_login?: Date;
@@ -154,6 +161,11 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
     this.average_item_level = data.average_item_level;
     this.equipped_item_level = data.equipped_item_level;
     this.last_login = new Date(data.last_login_timestamp);
+
+    if (data.covenant_progress) {
+      this.covenant = data.covenant_progress.chosen_covenant.name;
+      this.renown = data.covenant_progress.renown_level;
+    }
 
     if (data.active_title) {
       this.title = data.active_title.display_string;
