@@ -1,4 +1,10 @@
 /**
+ * Cron Constants
+ */
+
+export const EVERY_TEN_MINUTES = '*/10 * * * *';
+
+/**
  * Discord Constants
  */
 

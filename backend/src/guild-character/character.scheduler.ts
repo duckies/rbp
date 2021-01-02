@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Timeout } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
+import { EVERY_TEN_MINUTES } from '../app.constants';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
@@ -23,8 +24,7 @@ export class CharacterScheduler {
     private readonly characterService: CharacterService,
   ) {}
 
-  // @Cron('0 */2 * * *')
-  @Timeout(500)
+  @Cron(EVERY_TEN_MINUTES)
   private async updateGuildMembers() {
     const results = {
       total: 0,
