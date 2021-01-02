@@ -105,13 +105,13 @@ export interface RaiderIOCharacter {
 //   @Action({ commit: 'setTiers' })
 //   async getRaiderIO(): Promise<Tier[]> {
 //     try {
-//       this.context.commit('setStatus', { status: 'loading' })
+//       this.context.commit('setStatus', StateStatus.BUSY)
 //       const data = await $axios.$get('/raids/featured')
-//       this.context.commit('setStatus', { status: 'success' })
+//       this.context.commit('setStatus', StateStatus.WAITING)
 
 //       return data
 //     } catch (error) {
-//       this.context.commit('setStatus', { status: 'error', error })
+//       this.context.commit('setError', error)
 //       return []
 //     }
 //   }
@@ -119,13 +119,13 @@ export interface RaiderIOCharacter {
 //   @Action({ commit: 'setTiers' })
 //   async getCharacterRaiderIO(data: CharacterLookupDto): Promise<RaiderIOCharacter | undefined> {
 //     try {
-//       this.context.commit('setStatus', { status: 'loading' })
+//       this.context.commit('setStatus', StateStatus.BUSY)
 //       const resp = await $axios.$get(`/raiderio/${data.region}/${data.realm}/${data.name}`)
-//       this.context.commit('setStatus', { status: 'success' })
+//       this.context.commit('setStatus', StateStatus.WAITING)
 
 //       return resp
 //     } catch (error) {
-//       this.context.commit('setStatus', { status: 'error', error })
+//       this.context.commit('setError', error)
 //     }
 //   }
 // }

@@ -1,127 +1,53 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { ProfileEquipment } from '../interfaces/profile/profile-equipment.interface'
-import { ProfileSpecializations, Specialization } from '../interfaces/profile/profile-specializations.interface'
-import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
-import { RootState } from './'
-import { User } from './user'
-
-export interface FindCharacterDto {
-  name: string
-  realm: string
-  region: string
-}
-
-export interface FormCharacter {
-  id: number
-  name: string
-  realm: string
-  region: string
-  equipment?: ProfileEquipment
-  submissionId?: number
-  isMain?: number
-  avatar_url?: string
-  bust_url?: string
-  render_url?: string
-  race_id?: number
-  race_name?: string
-  class_id?: number
-  class_name?: string
-  gender?: string
-  specializations?: ProfileSpecializations
-  specialization_id?: number
-  specialization_name?: string
-  raiderIO?: CharacterRaiderIO
-  updatedAt: Date
-}
-
-export interface Character {
-  id: number
-  character_id: number
-  region: string
-  realm: string
-  name: string
-  class_id: number
-  class_name: string
-  race_id: number
-  race_name: number
-  gender: string
-  level: number
-  avatar_url?: string
-  bust_url?: string
-  render_url?: string
-  faction: string
-  achievement_points: number
-  guild_id?: number
-  guild_name?: string
-  guild_realm?: string
-  guild_rank?: number
-  title?: string
-  items: JSON
-  professions: JSON
-  spec: string
-  specIcon: string
-  talents: JSON
-  mountsCollected: number
-  mountsNotCollected: number
-  petsCollected: number
-  progression: JSON
-  pvp: JSON
-  honorableKills: number
-  lastModified: Date
-  status: string
-  retries: number
-  account?: User
-  missingSince: Date
-  isDeleted: boolean
-  notUpdated: boolean
-  // Optional
-  specialization_id?: number
-  specialization_name?: string
-  specializations?: Specialization
-}
-
-export interface CharacterRequest {
-  name: string
-  realm: string
-  region: string
-}
+import { actionTree, getterTree, mutationTree } from 'nuxt-typed-vuex'
+import { FindCharacterDto } from '../../backend/src/blizzard/dto/find-character.dto'
+import { FormCharacter, GuildCharacter } from '../interfaces/entities.interface'
+import { StateError } from '../interfaces/state/state-error.interface'
+import { StateStatus } from '../interfaces/state/state-status.enum'
+import { parseAxiosError } from '../utils/state.utils'
 
 export const state = () => ({
-  status: 'unloaded',
-  error: null as Error | null,
-  roster: [] as Character[],
+  status: StateStatus.UNLOADED,
+  error: null as StateError | null,
+  roster: [] as GuildCharacter[],
 })
 
-export type RosterState = ReturnType<typeof state>
+export const getters = getterTree(state, {
+  isLoading: (state) => state.status === StateStatus.BUSY,
+})
 
-export const getters: GetterTree<RosterState, RootState> = {
-  isLoading: (state) => state.status === 'loading',
-}
+export const mutations = mutationTree(state, {
+  setStatus(state, status: StateStatus) {
+    state.status = status
 
-export const mutations: MutationTree<RosterState> = {
-  setStatus(state, data: { status: string; error?: Error }) {
-    state.status = data.status
-    state.error = data.error || null
-  },
-  setRoster(state, characters: Character[]) {
-    state.roster = characters
-  },
-}
-
-export const actions: ActionTree<RosterState, RootState> = {
-  async getRoster({ commit }) {
-    try {
-      commit('setStatus', { status: 'loading' })
-      const [characters] = await this.$axios.$get('/characters/roster')
-
-      commit('setStatus', { status: 'success' })
-      commit('setRoster', characters)
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
+    if (status === StateStatus.BUSY) {
+      state.error = null
     }
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getCharacterData({ commit }, { name, realm, region }: FindCharacterDto): Promise<FormCharacter> {
-    return this.$axios.$get(`/form-character/${region}/${realm}/${name}`)
+  setError(state, error: any) {
+    state.status = StateStatus.ERROR
+    state.error = parseAxiosError(error)
   },
-}
+  setRoster(state, characters: GuildCharacter[]) {
+    state.roster = characters
+  },
+})
+
+export const actions = actionTree(
+  { state, getters, mutations },
+  {
+    async getRoster({ commit }) {
+      try {
+        commit('setStatus', StateStatus.BUSY)
+        const [characters] = await this.$axios.$get('/characters/roster')
+
+        commit('setStatus', StateStatus.WAITING)
+        commit('setRoster', characters)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+    getCharacterData(_ctx, { name, realm, region }: FindCharacterDto): Promise<FormCharacter> {
+      return this.$axios.$get(`/form-character/${region}/${realm}/${name}`)
+    },
+  }
+)

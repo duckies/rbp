@@ -15,17 +15,16 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
-import { Question } from '@/store/form'
-import { AnswerData } from '@/store/submission'
+import { FormQuestion } from '../../interfaces/entities.interface'
 
 @Component
 export default class Select extends Vue {
-  @Prop() readonly question!: Question
+  @Prop() readonly question!: FormQuestion
   @Prop() readonly readOnly?: boolean
   @Prop() readonly errors?: Error[]
 
-  get questionData(): AnswerData {
-    return this.$store.state.submission.answers[this.question.id]
+  get questionData() {
+    return this.$accessor.submission.answers[this.question.id]
   }
 
   set questionData(value) {

@@ -1,24 +1,9 @@
-import { GetterTree, MutationTree, ActionTree } from 'vuex'
-import { RootState } from '~/store'
-
-export interface User {
-  id: number
-  displayname?: string
-  avatar?: string
-  customAvatar: boolean
-  battletag: string
-  blizzardid: number
-  blizzardtoken?: string
-  blizzardTokenExpiration?: Date
-  discord_id: string
-  discord_avatar?: string
-  discord_username: string
-  discord_discriminator: string
-  roles: string[]
-  createdAt: Date
-  updatedAt: Date
-  lastLogin?: Date
-}
+import { actionTree, mutationTree } from 'nuxt-typed-vuex'
+import { Roles } from '../../backend/src/app.roles'
+import { User } from '../interfaces/entities.interface'
+import { StateError } from '../interfaces/state/state-error.interface'
+import { StateStatus } from '../interfaces/state/state-status.enum'
+import { parseAxiosError } from '../utils/state.utils'
 
 export interface Avatars {
   gif?: string
@@ -39,29 +24,40 @@ export const Ranks: string[] = [
 ]
 
 export const state = () => ({
-  status: 'unloaded',
+  status: StateStatus.UNLOADED,
+  error: null as StateError | null,
   user: null as User | null,
   token: null as string | null,
 })
 
 export type UserState = ReturnType<typeof state>
 
-export const getters: GetterTree<UserState, RootState> = {
-  isLoggedIn: (state) => state.user != null,
-  isOfficer: (state) => !!(state?.user?.roles.includes('Rank0') || state?.user?.roles.includes('Rank1')),
-  avatar: (state) => {
+export const getters = {
+  isLoggedIn: (state: UserState) => state.user != null,
+  isOfficer: (state: UserState) =>
+    !!(state?.user?.roles.includes(Roles.GuildMaster) || state?.user?.roles.includes(Roles.Officer)),
+  avatar: (state: UserState) => {
     if (state?.user?.discord_avatar) {
       return `https://cdn.discordapp.com/avatars/${state.user.discord_id}/${state.user.discord_avatar}${
         state.user.discord_avatar.includes('a_') ? '.gif' : '.png'
       }`
     }
   },
-  tag: (state) => (state.user == null ? null : `${state.user.discord_username}#${state.user.discord_discriminator}`),
+  tag: (state: UserState) =>
+    state.user == null ? null : `${state.user.discord_username}#${state.user.discord_discriminator}`,
 }
 
-export const mutations: MutationTree<UserState> = {
-  setStatus(state, status: string) {
+export const mutations = mutationTree(state, {
+  setStatus(state, status: StateStatus) {
     state.status = status
+
+    if (status === StateStatus.BUSY) {
+      state.error = null
+    }
+  },
+  setError(state, error: any) {
+    state.status = StateStatus.ERROR
+    state.error = parseAxiosError(error)
   },
   setUser(state, user: User | null) {
     state.user = user ? Object.assign({}, user) : null
@@ -69,25 +65,27 @@ export const mutations: MutationTree<UserState> = {
   setToken(state, token: string | null) {
     state.token = token
   },
-}
+})
 
-export const actions: ActionTree<UserState, RootState> = {
-  logout({ commit }) {
-    commit('setUser', null)
-    commit('setToken', null)
-    this.$cookies.remove('rbp.token')
-  },
-  async getProfile({ commit }) {
-    try {
-      commit('setStatus', 'loading')
+export const actions = actionTree(
+  { state, getters, mutations },
+  {
+    logout({ commit }): void {
+      commit('setUser', null)
+      commit('setToken', null)
+      this.$cookies.remove('rbp.token')
+    },
+    async getProfile({ commit }): Promise<void> {
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      const resp = await this.$axios.$get('/user/me')
+        const resp = await this.$axios.$get('/user/me')
 
-      commit('setStatus', 'success')
-      commit('setUser', resp)
-    } catch (error) {
-      commit('setStatus', 'error')
-      console.error(error)
-    }
-  },
-}
+        commit('setStatus', StateStatus.WAITING)
+        commit('setUser', resp)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+  }
+)

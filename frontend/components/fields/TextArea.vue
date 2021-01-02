@@ -15,9 +15,9 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
-import { AnswerData } from '@/store/submission'
-import { Question } from '@/store/form'
-import FormResponse from '@/components/fields/FormResponse.vue'
+import FormResponse from '~/components/fields/FormResponse.vue'
+import { FormQuestion } from '~/interfaces/entities.interface'
+import { AnswerData } from '~/store/submission'
 
 @Component({
   components: {
@@ -25,7 +25,7 @@ import FormResponse from '@/components/fields/FormResponse.vue'
   },
 })
 export default class TextArea extends Vue {
-  @Prop() readonly question!: Question
+  @Prop() readonly question!: FormQuestion
   @Prop() readonly readOnly?: boolean
   @Prop() readonly errors?: Error[]
 

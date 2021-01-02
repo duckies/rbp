@@ -1,5 +1,4 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { RootState } from '.'
+import { actionTree, getterTree, mutationTree } from 'nuxt-typed-vuex'
 
 export interface Channel {
   position: number
@@ -41,15 +40,12 @@ export const state = () => ({
   discord: null as Discord | null,
 })
 
-export type DiscordState = ReturnType<typeof state>
-
-export const getters: GetterTree<DiscordState, RootState> = {
+export const getters = getterTree(state, {
   channels: (state) => state?.discord?.channels || [],
-  online: (state) =>
-    state?.discord?.members.length ? state.discord.members.filter((m) => m.status === 'online').length : 0,
-}
+  online: (state) => state?.discord?.members?.filter((m) => m.status === 'online').length || 0,
+})
 
-export const mutations: MutationTree<DiscordState> = {
+export const mutations = mutationTree(state, {
   setDiscord(state, discord: Discord) {
     state.discord = discord
 
@@ -70,12 +66,15 @@ export const mutations: MutationTree<DiscordState> = {
       }
     })
   },
-}
+})
 
-export const actions: ActionTree<DiscordState, RootState> = {
-  async getDiscord({ commit }) {
-    const resp = await this.$axios.$get('https://discord.com/api/servers/142372929961721856/embed.json')
+export const actions = actionTree(
+  { state, getters, mutations },
+  {
+    async getDiscord({ commit }) {
+      const resp = await this.$axios.$get('https://discord.com/api/servers/142372929961721856/embed.json')
 
-    commit('setDiscord', resp)
-  },
-}
+      commit('setDiscord', resp)
+    },
+  }
+)

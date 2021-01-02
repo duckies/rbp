@@ -1,41 +1,14 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
+import { actionTree, getterTree, mutationTree } from 'nuxt-typed-vuex'
 import Vue from 'vue'
-
-import { CharacterRaiderIO } from '../interfaces/raiderIO/character.interface'
-import { FormCharacter } from './roster'
-import { User } from './user'
-import { RootState } from '.'
+import { FileUpload, FormCharacter, FormSubmission } from '../interfaces/entities.interface'
+import { StateError } from '../interfaces/state/state-error.interface'
+import { StateStatus } from '../interfaces/state/state-status.enum'
+import { parseAxiosError } from '../utils/state.utils'
 
 export type AnswerData = string | string[] | boolean | null
 
 export interface Answers {
   [uuid: string]: AnswerData
-}
-
-export interface FormAuthor {
-  id: number
-  nickname?: string
-  discord_id: string
-  discord_avatar: string
-  discord_username: string
-  discord_discriminator: string
-}
-
-export interface FormSubmission {
-  id: number
-  status: string
-  createdAt: Date
-  formId: number
-  characters: FormCharacter[]
-  author: FormAuthor
-  seen?: boolean
-}
-
-export interface Pagination {
-  page_current: number
-  page_total: number
-  page_size: number
-  submission_total: number
 }
 
 export enum SubmissionStatus {
@@ -46,30 +19,11 @@ export enum SubmissionStatus {
 }
 export type OpenSubmission = Pick<FormSubmission, 'id' | 'status'>
 
-export interface FormCharacterIdentity {
-  name: string
-  realm: string
-  realm_name: string
-  region: string
-  blizzard?: Omit<FormCharacter, 'raiderIO'>
-  raiderIO?: CharacterRaiderIO
-}
-
-export interface FileUpload {
-  id: number
-  filename: string
-  mimetype: string
-  path: string
-  sizE: number
-  author: User
-  immune: boolean
-}
-
 export const state = () => ({
-  status: 'unloaded',
-  error: null as Error | null,
+  status: StateStatus.UNLOADED,
+  error: null as StateError | null,
   answers: {} as Answers,
-  characters: [] as FormCharacterIdentity[],
+  characters: [] as FormCharacter[],
   submission: null as FormSubmission | null,
   submissions: [] as FormSubmission[],
   selectedSubmission: null as FormSubmission | null,
@@ -81,20 +35,27 @@ export const state = () => ({
     page_total: 0,
     page_size: 10,
     submission_total: 0,
-  } as Pagination,
+  },
 })
 
 export type SubmissionState = ReturnType<typeof state>
 
-export const getters: GetterTree<SubmissionState, RootState> = {
-  isLoading: (state) => state.status === 'loading',
-  mainCharacter: (state) => (state?.submission?.characters.length ? state.submission.characters[0] : undefined),
-}
+export const getters = getterTree(state, {
+  isLoading: (state) => state.status === StateStatus.BUSY,
+  mainCharacter: (state) => state.submission?.characters?.[0],
+})
 
-export const mutations: MutationTree<SubmissionState> = {
-  setStatus(state, data: { status: string; error: Error }) {
-    state.status = data.status
-    state.error = data.error || null
+export const mutations = mutationTree(state, {
+  setStatus(state, status: StateStatus) {
+    state.status = status
+
+    if (status === StateStatus.BUSY) {
+      state.error = null
+    }
+  },
+  setError(state, error: any) {
+    state.status = StateStatus.ERROR
+    state.error = parseAxiosError(error)
   },
   setAnswers(state, answers: Answers) {
     state.answers = Object.assign({}, answers)
@@ -102,10 +63,10 @@ export const mutations: MutationTree<SubmissionState> = {
   setAnswer(state, data: { id: string; value: string | string[] | boolean | null }) {
     Vue.set(state.answers, data.id, data.value)
   },
-  setCharacters(state, characters: FormCharacterIdentity[]) {
+  setCharacters(state, characters: FormCharacter[]) {
     state.characters = characters
   },
-  addCharacter(state, character: FormCharacterIdentity) {
+  addCharacter(state, character: FormCharacter) {
     state.characters.push(character)
   },
   setSubmission(state, submission: FormSubmission) {
@@ -144,107 +105,111 @@ export const mutations: MutationTree<SubmissionState> = {
 
     if (index !== -1) state.files.splice(index, 1)
   },
-}
+})
 
-export const actions: ActionTree<SubmissionState, RootState> = {
-  async createSubmission({ commit, state }, formId: number) {
-    try {
-      commit('setStatus', { status: 'loading' })
+export const actions = actionTree(
+  { state, getters, mutations },
+  {
+    async createSubmission({ commit, state }, formId: number): Promise<void> {
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      const characters = state.characters.map((c) => ({
-        name: c.name,
-        realm: c.realm,
-        region: 'us',
-      }))
+        const characters = state.characters.map((c) => ({
+          name: c.name,
+          realm: c.realm,
+          region: 'us',
+        }))
 
-      const resp = await this.$axios.$post('/submission', {
-        formId,
-        answers: state.answers,
-        files: [...state.files.map((file) => file.id)],
-        characters,
-      })
+        const resp = await this.$axios.$post('/submission', {
+          formId,
+          answers: state.answers,
+          files: [...state.files.map((file) => file.id)],
+          characters,
+        })
 
-      commit('setStatus', { status: 'success' })
-      commit('setSubmission', resp)
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
-  },
-  async getSubmission({ commit }, params: { id?: number | string; status?: string }) {
-    const param = params.id ? params.id : `status/${params.status}`
+        commit('setSubmission', resp)
+        commit('setStatus', StateStatus.WAITING)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+    async getSubmission({ commit }, params: { id?: number | string; status?: string }): Promise<void> {
+      const param = params.id ? params.id : `status/${params.status}`
 
-    try {
-      commit('setStatus', { status: 'loading' })
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      const resp = await this.$axios.$get(`/submission/${param}`)
+        const resp = await this.$axios.$get(`/submission/${param}`)
 
-      commit('setSubmission', resp)
-      commit('setAnswers', resp.answers)
-      commit('form/setForm', resp.form, { root: true })
-      commit('setStatus', { status: 'success' })
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
-  },
-  async updateSubmission({ commit, state }, data: { status?: SubmissionStatus }) {
-    if (!state.submission) {
-      return Promise.reject(new Error('No submission to update.'))
-    }
+        commit('setSubmission', resp)
+        commit('setAnswers', resp.answers)
+        this.app.$accessor.form.setForm(resp.form)
 
-    try {
-      commit('setStatus', { status: 'loading' })
+        commit('setStatus', StateStatus.WAITING)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+    async updateSubmission({ commit, state }, data: { status?: SubmissionStatus }): Promise<void> {
+      if (!state.submission) {
+        return Promise.reject(new Error('No submission to update.'))
+      }
 
-      await this.$axios.$patch(`/submission/${state.submission.id}`, { ...data })
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      commit('setStatus', { status: 'success' })
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
-  },
-  async getSubmissions(
-    { commit },
-    params?: {
-      limit?: number
-      offset?: number
-      status?: string
-    }
-  ) {
-    try {
-      commit('setStatus', { status: 'loading' })
+        await this.$axios.$patch(`/submission/${state.submission.id}`, { ...data })
 
-      const resp = await this.$axios.$get('/submission', { params })
-      const status = params && params.status ? params.status : resp[0].length ? resp[0][0].status : 'open'
+        commit('setStatus', StateStatus.WAITING)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+    async getSubmissions(
+      { commit },
+      params?: {
+        limit?: number
+        offset?: number
+        status?: string
+      }
+    ): Promise<void> {
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      commit('setTotalSubmissions', resp[1])
-      commit('setStatusCategory', status)
-      commit('setSubmissions', resp[0])
+        const resp = await this.$axios.$get('/submission', { params })
+        const status = params && params.status ? params.status : resp[0].length ? resp[0][0].status : 'open'
 
-      commit('setStatus', { status: 'success' })
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
-  },
-  async getUserOpenSubmission({ commit }) {
-    try {
-      commit('setStatus', { status: 'loading' })
+        commit('setTotalSubmissions', resp[1])
+        commit('setStatusCategory', status)
+        commit('setSubmissions', resp[0])
 
-      const resp = await this.$axios.$get('/submission/user/open')
+        commit('setStatus', StateStatus.WAITING)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+    async getUserOpenSubmission({ commit }): Promise<void> {
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      commit('setStatus', { status: 'success' })
-      commit('setOpenSubmission', resp)
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
-  },
-  async removeFile({ commit }, id: number) {
-    try {
-      commit('setStatus', { status: 'loading' })
+        const resp = await this.$axios.$get('/submission/user/open')
 
-      await this.$axios.$delete('/submission/file/' + id)
+        commit('setStatus', StateStatus.WAITING)
+        commit('setOpenSubmission', resp)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+    async removeFile({ commit }, id: number): Promise<void> {
+      try {
+        commit('setStatus', StateStatus.BUSY)
 
-      commit('setStatus', { status: 'success' })
-    } catch (error) {
-      commit('setStatus', { status: 'error', error })
-    }
-  },
-}
+        await this.$axios.$delete('/submission/file/' + id)
+
+        commit('setStatus', StateStatus.WAITING)
+      } catch (error) {
+        commit('setError', error)
+      }
+    },
+  }
+)

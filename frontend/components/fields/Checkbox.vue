@@ -18,15 +18,14 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
-import { AnswerData } from '../../store/submission'
-import { Question } from '@/store/form'
+import { FormQuestion } from '../../interfaces/entities.interface'
 
 @Component
 export default class Checkbox extends Vue {
-  @Prop({ required: true }) question!: Question
+  @Prop({ required: true }) question!: FormQuestion
 
-  get questionData(): AnswerData {
-    return this.$store.state.submission.answers[this.question.id]
+  get questionData() {
+    return this.$accessor.submission.answers[this.question.id]
   }
 
   set questionData(value) {

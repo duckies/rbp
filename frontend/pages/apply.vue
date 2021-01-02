@@ -57,9 +57,7 @@
     <v-row v-else-if="hasOpenApplication">
       <v-col>
         <v-card>
-          <v-card-title>
-            Pending Open Application
-          </v-card-title>
+          <v-card-title> Pending Open Application </v-card-title>
 
           <v-card-text>
             You may
@@ -72,18 +70,13 @@
 
     <v-row v-else>
       <v-col>
-        <validation-observer ref="form" v-slot="{ invalid, handleSubmit }">
+        <validation-observer ref="form" v-slot="{ handleSubmit }">
           <v-form @submit.prevent="handleSubmit(submit)">
             <character-picker />
             <character-panel
               v-for="(character, i) in $store.state.submission.characters"
               :key="character.name + ' ' + character.realm"
-              :name="character.name"
-              :realm="character.realm"
-              :realm-name="character.realm_name"
-              :region="character.region"
-              :blizzard="character.blizzard"
-              :raider-i-o="character.raiderIO"
+              :character="character"
               :applying="true"
               :order="i"
             />
@@ -121,11 +114,10 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { ValidationObserver } from 'vee-validate'
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import Dropzone from 'nuxt-dropzone'
 import 'nuxt-dropzone/dropzone.css'
-import { FileUpload } from '~/store/submission'
+import { FileUpload } from '../interfaces/entities.interface'
 
 @Component({
   components: {
@@ -183,7 +175,7 @@ export default class Apply extends Vue {
     }
   }
 
-  uploadSuccess(file: unknown, response: FileUpload[]): void {
+  uploadSuccess(_file: unknown, response: FileUpload[]): void {
     this.$store.commit('submission/addFile', response[0])
   }
 

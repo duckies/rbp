@@ -17,7 +17,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import { formatRelative } from 'date-fns'
-import { Article } from '../store/blog'
+import { Article } from '../interfaces/entities.interface'
 
 @Component
 export default class BlogPost extends Vue {

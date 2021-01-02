@@ -2,17 +2,17 @@
   <div
     class="character elevation-5 border-card"
     :data-name="character.name"
-    :data-class="character.class"
-    :data-race="character.race"
+    :data-class="character.class.id"
+    :data-race="character.race_id"
   >
-    <v-img class="character--bg__image card-expand" :src="character.render_url" height="280">
+    <v-img class="character--bg__image card-expand" :src="character.media.render" height="280">
       <div class="character--content">
         <div class="character--avatars">
           <v-img
-            :src="character.avatar_url"
+            :src="character.media.avatar"
             height="90"
             width="90"
-            :class="'character--avatar class-border-' + character.class_id"
+            :class="'character--avatar class-border-' + character.class.id"
           />
           <!-- Not implemented yet -->
           <!-- <v-img :src="specIcon" height="33" width="33" :class="'character--spec class-border-' + character.class_id" /> -->
@@ -28,7 +28,7 @@
       <div class="character--links">
         <a class="character--links__link" :href="armoryLink" target="blank">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34.25 34.25" class="character--links__icon">
-            <circle cx="17.13" cy="17.13" r="14.13" style="fill: none;" />
+            <circle cx="17.13" cy="17.13" r="14.13" style="fill: none" />
             <path
               d="M44.13,40.34a17,17,0,0,0,0-20V16.2H39.92a17.07,17.07,0,0,0-19.65.24H16.12v4.22a17.11,17.11,0,0,0,0,19.33v4.47h4.47a17.11,17.11,0,0,0,19.33,0h4.21V40.34Zm-28-10A14.13,14.13,0,1,1,30.25,44.46,14.13,14.13,0,0,1,16.12,30.33Z"
               transform="translate(-13.13 -13.2)"
@@ -50,7 +50,7 @@
           </svg>
         </a>
         <a :href="wclLink" target="_blank">
-          <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px;"></v-img>
+          <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px"></v-img>
         </a>
       </div>
     </v-img>
@@ -62,18 +62,18 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import { Ranks } from '~/store/user'
-import { Character } from '~/store/roster'
+import { GuildCharacter } from '~/interfaces/entities.interface'
 
 @Component
 export default class CharacterWindow extends Vue {
-  @Prop() readonly character!: Character
+  @Prop() readonly character!: GuildCharacter
 
-  get specIcon(): string {
-    return `https://render-us.worldofwarcraft.com/icons/56/${this.character.specIcon}.jpg`
+  get specIcon() {
+    return this.character.specialization.media.value
   }
 
-  get titledName(): string {
-    const name = `<span class="class-color-${this.character.class_id}"><strong>${this.character.name}</strong></span>`
+  get titledName() {
+    const name = `<span class="class-color-${this.character.class.id}"><strong>${this.character.name}</strong></span>`
 
     if (!this.character.title) return name
 
@@ -85,11 +85,13 @@ export default class CharacterWindow extends Vue {
   }
 
   get armoryLink(): string {
-    return `https://www.worldofwarcraft.com/en-us/character/us/${this.character.realm.toLowerCase()}/${this.character.name.toLowerCase()}`
+    return `https://www.worldofwarcraft.com/en-us/character/us/${
+      this.character.realm
+    }/${this.character.name.toLowerCase()}`
   }
 
   get raiderIOLink(): string {
-    return `https://raider.io/characters/us/${this.character.realm.toLowerCase()}/${this.character.name.toLowerCase()}`
+    return `https://raider.io/characters/us/${this.character.realm}/${this.character.name.toLowerCase()}`
   }
 
   get wclLink(): string {

@@ -13,9 +13,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn text @click="invalidDialog = !invalidDialog">
-            OK!
-          </v-btn>
+          <v-btn text @click="invalidDialog = !invalidDialog"> OK! </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -129,10 +127,8 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
-import { FormCharacter } from '~/store/roster'
-import { FormSubmission, Pagination } from '~/store/submission'
-import { Avatars, User } from '~/store/user'
-import { Question } from '~/store/form'
+import { Avatars } from '~/store/user'
+import { FormCharacter, FormQuestion, FormSubmission, User } from '~/interfaces/entities.interface'
 
 @Component({})
 export default class Applications extends Vue {
@@ -171,7 +167,7 @@ export default class Applications extends Vue {
     return this.$store.state.submission.submissions
   }
 
-  get formQuestions(): Question[] {
+  get formQuestions(): FormQuestion[] {
     return this.$store.state.form.questions
   }
 
@@ -179,8 +175,8 @@ export default class Applications extends Vue {
     return this.$store.state.submission.statusCategory
   }
 
-  get pagination(): Pagination {
-    return this.$store.state.submission.pagination
+  get pagination() {
+    return this.$accessor.submission.pagination
   }
 
   get paginationCurrent(): number {
@@ -206,8 +202,8 @@ export default class Applications extends Vue {
   defaultingTitle(submission: FormSubmission): string {
     if (submission.characters[0]) {
       return submission.characters[0].name
-    } else if (submission.author.nickname) {
-      return submission.author.nickname
+    } else if (submission.author.discord_username) {
+      return submission.author.discord_username
     } else {
       return submission.author.discord_username
     }
@@ -239,12 +235,6 @@ export default class Applications extends Vue {
     }
 
     return `Character Missing`
-  }
-
-  classUnread(submission: FormSubmission): object {
-    return {
-      unread: submission.seen,
-    }
   }
 
   defaultingClassBlur(character?: FormCharacter): object {

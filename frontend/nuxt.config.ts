@@ -119,7 +119,7 @@ const config: NuxtConfig = {
 
   modern: process.env.NODE_ENV === 'production',
 
-  buildModules: ['@nuxt/typescript-build'],
+  buildModules: ['@nuxt/typescript-build', 'nuxt-typed-vuex'],
 
   build: {
     // Currently causing performance issues, investigate.

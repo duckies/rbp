@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-card v-if="!blizzard" class="left-border-rounded character class-border-5 mb-4">
+    <!-- <v-card v-if="!blizzard" class="left-border-rounded character class-border-5 mb-4">
       <v-card-title>Character Missing</v-card-title>
       <v-card-subtitle>Void lords have kidnapped your character.</v-card-subtitle>
       <v-card-text>
-        The character <strong>{{ titledName }} - {{ realmName }}</strong> was not found or was in error. Please check
-        the spelling and presence of any special characters. If the name and realm are correct, void lords may be
-        assaulting Blizzard servers. Our website will retry the download periodically.
+        The character <strong>{{ character.name }} - {{ character.realm }}</strong> was not found or was in error.
+        Please check the spelling and presence of any special characters. If the name and realm are correct, void lords
+        may be assaulting Blizzard servers. Our website will retry the download periodically.
       </v-card-text>
 
       <v-layout>
@@ -22,25 +22,25 @@
           </v-col>
         </v-row>
       </v-layout>
-    </v-card>
+    </v-card> -->
 
-    <v-card v-else :class="`left-border-rounded character class-border-${blizzard.class_id} mb-4`">
+    <v-card :class="`left-border-rounded character class-border-${character.class.id} mb-4`">
       <v-layout wrap>
-        <v-row no-gutters :class="`character--bg class-logo-${blizzard.class_id}`">
+        <v-row no-gutters :class="`character--bg class-logo-${character.class.id}`">
           <v-col cols="auto" class="character--bg__clear ma-7">
             <v-row class="flex-column fill-height" no-gutters align="center" justify="center">
               <div>
-                <v-img :src="avatar" height="84" width="84" :class="`thumbnail class-color-${blizzard.class_id}`" />
+                <v-img :src="avatar" height="84" width="84" :class="`thumbnail class-color-${character.class.id}`" />
               </div>
 
-              <h2 class="character--name mt-2">{{ titledName }}</h2>
-              <span v-if="hasSpecData" class="character--info mb-2">
-                {{ blizzard.specialization_name }} {{ blizzard.class_name }}
-              </span>
-              <span v-else class="character--info mb-2">{{ blizzard.race_name }} {{ blizzard.class_name }}</span>
+              <h2 class="character--name mt-2">{{ character.name }}</h2>
+              <span class="character--info mb-2"> {{ character.specialization.name }} {{ character.class.name }}</span>
 
               <div class="character--links">
-                <a :href="`https://www.worldofwarcraft.com/en-us/character/${region}/${realm}/${name}`" target="_blank">
+                <a
+                  :href="`https://www.worldofwarcraft.com/en-us/character/${character.region}/${character.realm}/${character.name}`"
+                  target="_blank"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34.25 34.25" class="character--links__icon">
                     <circle cx="17.13" cy="17.13" r="14.13" style="fill: none" />
                     <path
@@ -53,7 +53,10 @@
                     />
                   </svg>
                 </a>
-                <a :href="`https://www.raider.io/characters/${region}/${realm}/${name}`" target="_blank">
+                <a
+                  :href="`https://www.raider.io/characters/${character.region}/${character.realm}/${character.name}`"
+                  target="_blank"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" class="character--links__icon">
                     <path
                       d="M294.91,117.4a8.75,8.75,0,0,0,2.22-7.3c-.21-.8-.4-1.6-.63-2.4a8.93,8.93,0,0,0-5.68-5.31l-27.93-8.3a13.45,13.45,0,0,1-9.38-16l6.66-27.94a8.9,8.9,0,0,0-1-6.71A9.36,9.36,0,0,0,249,39.19l-28.41,6.55a13.73,13.73,0,0,1-16.24-9.22L195.91,9.05a8.89,8.89,0,0,0-5.27-5.52c-.91-.25-1.82-.46-2.74-.69A9,9,0,0,0,180.65,5L159.38,24.67a13.89,13.89,0,0,1-18.76,0L119.35,5a9,9,0,0,0-7.25-2.19c-.91.23-1.83.44-2.74.69a8.89,8.89,0,0,0-5.27,5.52L95.65,36.52a13.73,13.73,0,0,1-16.24,9.22L51,39.19a9.36,9.36,0,0,0-10.13,4.28,8.9,8.9,0,0,0-1,6.71l6.66,27.94a13.45,13.45,0,0,1-9.38,16l-27.93,8.3a8.89,8.89,0,0,0-5.68,5.32c-.23.79-.42,1.59-.63,2.39a8.72,8.72,0,0,0,2.22,7.3l20,20.92a13.31,13.31,0,0,1,0,18.44l-20,20.93a8.72,8.72,0,0,0-2.22,7.4c.19.74.37,1.47.57,2.2a9,9,0,0,0,5.74,5.4L37.11,201a13.44,13.44,0,0,1,9.38,16l-6.66,27.95a8.88,8.88,0,0,0,1.45,7.26,9.54,9.54,0,0,0,2.3,2.27A9.23,9.23,0,0,0,51,255.89l47-5a4.32,4.32,0,0,0,3.92-4.67c-1.57-16.95-8.93-80.33-11.7-104A17.51,17.51,0,0,1,96,127.13L142,85.9a12,12,0,0,1,16,0l46,41.23a17.53,17.53,0,0,1,5.78,15.08c-2.74,23.64-10.06,87.05-11.62,104a4.32,4.32,0,0,0,3.92,4.67l47,5a9.42,9.42,0,0,0,9.71-3.72,8.84,8.84,0,0,0,1.46-7.26L253.51,217a13.46,13.46,0,0,1,9.38-16l27.93-8.3a8.9,8.9,0,0,0,5.73-5.4c.21-.73.39-1.47.58-2.2a8.76,8.76,0,0,0-2.22-7.4l-20-20.93a13.32,13.32,0,0,1,0-18.44Z"
@@ -63,7 +66,10 @@
                     />
                   </svg>
                 </a>
-                <a :href="`https://www.warcraftlogs.com/character/${region}/${realm}/${name}`" target="_blank">
+                <a
+                  :href="`https://www.warcraftlogs.com/character/${character.region}/${character.realm}/${character.name}`"
+                  target="_blank"
+                >
                   <v-img src="/images/svg/warcraftlog-logo.png" width="30" height="30" style="margin: 0 7px" />
                 </a>
               </div>
@@ -71,13 +77,13 @@
           </v-col>
 
           <v-col class="character--bg__clear pa-4">
-            <h3 class="character--header" :class="`class-color-${blizzard.class_id}`">Raid Progression</h3>
+            <h3 class="character--header" :class="`class-color-${character.class.id}`">Raid Progression</h3>
             <div v-if="progression.length">
               <div v-for="raid in progression" :key="raid.name">
                 <div class="character--subheader">{{ raid.name }}</div>
 
                 <v-progress-linear
-                  :class="`character--progress class-progress-${blizzard.class_id}`"
+                  :class="`character--progress class-progress-${character.class.id}`"
                   :value="raid.progress"
                   height="20px"
                 >
@@ -88,35 +94,25 @@
           </v-col>
 
           <v-col class="character--bg__clear pa-4">
-            <h3 class="character--header" :class="`class-color-${blizzard.class_id}`">RaiderIO Scores</h3>
+            <h3 class="character--header" :class="`class-color-${character.class.id}`">RaiderIO Scores</h3>
 
-            <div v-if="false && raiderIO && raiderIO.mythic_plus_scores_by_season.length">
-              <v-row>
-                <v-col class="character--raiderIO">
-                  <div :class="`character--raiderIO--score class-color-${blizzard.class_id}`">
-                    {{ Math.round(raiderIO.mythic_plus_scores_by_season[0].scores.all) }}
-                  </div>
-                  <span>Current Season</span>
-                </v-col>
-
-                <v-col class="character--raiderIO">
-                  <div :class="`character--raiderIO--score class-color-${blizzard.class_id}`">
-                    {{ Math.round(raiderIO.mythic_plus_scores_by_season[1].scores.all) }}
-                  </div>
-                  <span>Last Season</span>
-                </v-col>
-              </v-row>
-            </div>
-            <span v-else>RaiderIO data was not available.</span>
+            <v-row>
+              <v-col v-for="score in scores" :key="score.season" class="character--raiderIO">
+                <div :class="`character--raiderIO--score class-color-${character.class.id}`">
+                  {{ Math.round(score.score) }}
+                </div>
+                <span>{{ score.season }}</span>
+              </v-col>
+            </v-row>
           </v-col>
 
           <v-col cols="12" sm="12" lg="12" xl="4" class="character--bg__clear pa-4">
-            <h3 class="character--header" :class="`class-color-${blizzard.class_id}`">Gear</h3>
-            <div v-if="blizzard.equipment && blizzard.equipment.length > 0" class="character-item-grid">
-              <div v-for="item in blizzard.equipment" :key="item.item.id">
+            <h3 class="character--header" :class="`class-color-${character.class.id}`">Gear</h3>
+            <div v-if="character.equipment && character.equipment.length > 0" class="character-item-grid">
+              <div v-for="item in character.equipment" :key="item.item.id">
                 <a
                   :href="'https://www.wowhead.com/item=' + item.item.id"
-                  :data-wowhead="wowheadTooltip(blizzard.class_id, item)"
+                  :data-wowhead="wowheadTooltip(character.class.id, item)"
                   target="blank"
                   :class="`item item-quality-border-${item.quality.name.toLowerCase()}`"
                 >
@@ -161,14 +157,8 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { formatRelative, differenceInDays, format } from 'date-fns'
 import { Prop } from 'vue-property-decorator'
-import { EquippedItemsEntity } from '../../interfaces/profile/profile-equipment.interface'
-import { CharacterRaiderIO } from '../../interfaces/raiderIO/character.interface'
-import { FormCharacter } from '../../store/roster'
-import { Raid } from '../../store/raid'
-
-interface ComputedRaidList {
-  [slug: string]: ComputedRaid
-}
+import { FormCharacter } from '~/interfaces/entities.interface'
+import { EquippedItem } from '~/../backend/src/blizzard/interfaces/profile/character-equipment/character-equipment-summary.interface'
 
 interface ComputedRaid {
   name: string
@@ -178,35 +168,22 @@ interface ComputedRaid {
 
 @Component
 export default class CharacterPanel extends Vue {
-  @Prop() readonly name!: string
-  @Prop() readonly realm!: string
-  @Prop() readonly realmName!: string
-  @Prop() readonly region!: string
-  @Prop() readonly blizzard?: FormCharacter
-  @Prop() readonly raiderIO?: CharacterRaiderIO
+  @Prop({ required: true }) readonly character!: FormCharacter
   @Prop() readonly applying?: boolean
   @Prop() readonly order?: number
 
   iconFailures = {}
-
-  get titledName(): string {
-    return this.name.charAt(0).toUpperCase() + this.name.slice(1)
-  }
-
-  get hasSpecData(): boolean {
-    return Boolean(this.blizzard && this.blizzard.specialization_id)
-  }
 
   get lastUpdated(): string {
     if (this.applying) {
       return 'Not persisted.'
     }
 
-    if (!this.blizzard?.updatedAt) {
+    if (!this.character?.updatedAt) {
       return 'Character retreival failed.'
     }
 
-    const updatedAt = new Date(this.blizzard.updatedAt)
+    const updatedAt = new Date(this.character.updatedAt)
     const now = new Date()
 
     return Math.abs(differenceInDays(updatedAt, now)) < 6
@@ -214,23 +191,36 @@ export default class CharacterPanel extends Vue {
       : format(updatedAt, `MM.dd a HH:mm`)
   }
 
-  get raids(): Raid[] {
-    return this.$store.state.raid.raids
+  get raids() {
+    return this.$accessor.raid.raids
   }
 
-  get dungeons() {
-    if (!this.raiderIO?.)
+  get scores() {
+    const seasonNames = ['Current Season', 'Last Season']
+    const seasons = this.character.raiderIO?.mythic_plus_scores_by_season
+
+    if (!seasons) return [{ season: 'Current Season', score: 0 }]
+
+    const retval = []
+    for (let i = 0; i < seasons.length; i++) {
+      retval[i] = {
+        season: seasonNames[i] || 'Unknown Season',
+        score: seasons[i].scores.all,
+      }
+    }
+
+    return retval
   }
 
   get progression(): ComputedRaid[] {
-    if (!this.raids.length || !this.raiderIO?.raid_progression) return []
+    if (!this.raids.length || !this.character.raiderIO?.raid_progression) return []
 
     const retval: ComputedRaid[] = []
 
     for (const raid of this.raids) {
-      const data = this.raiderIO.raid_progression[raid.slug]
+      const data = this.character.raiderIO.raid_progression[raid.slug]
 
-      if (!data) continue
+      if (!data || !raid.name) continue
 
       retval.push({
         name: raid.name,
@@ -244,15 +234,15 @@ export default class CharacterPanel extends Vue {
   }
 
   get avatar(): string {
-    if (this.blizzard && this.blizzard.avatar_url) {
-      return this.blizzard.avatar_url
-    } else if (this.blizzard && this.blizzard.race_id && this.blizzard.gender) {
-      return `https://render-us.worldofwarcraft.com/shadow/avatar/${this.blizzard.race_id}-${
-        this.blizzard.gender === 'Female' ? 1 : 0
+    if (this.character?.media?.avatar) {
+      return this.character.media.avatar
+    } else if (this.character.race_id && this.character.gender) {
+      return `https://render-us.worldofwarcraft.com/shadow/avatar/${this.character.race_id}-${
+        this.character.gender === 'Female' ? 1 : 0
       }.jpg`
-    } else {
-      return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
     }
+
+    return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
   }
 
   // Replace this when the v-img component has proper fallback support.
@@ -273,7 +263,7 @@ export default class CharacterPanel extends Vue {
   }
 
   // TODO: Support set bonuses.
-  wowheadTooltip(classId: number, item: EquippedItemsEntity): string {
+  wowheadTooltip(classId: number, item: EquippedItem): string {
     let str = ''
 
     if (item.level && item.level.value) {

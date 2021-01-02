@@ -26,7 +26,6 @@
 import { SwiperOptions } from 'swiper/types/swiper-options'
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Slide } from '@/store/slide'
 
 @Component
 export default class Carousel extends Vue {
@@ -35,8 +34,8 @@ export default class Carousel extends Vue {
     lazy: true,
   }
 
-  get slides(): Slide[] {
-    return this.$store.state.slide.slides
+  get slides() {
+    return this.$accessor.slide.slides
   }
 }
 </script>

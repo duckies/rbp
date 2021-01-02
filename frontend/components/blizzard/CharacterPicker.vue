@@ -50,8 +50,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { ValidationProvider } from 'vee-validate'
 import { RealmSlugs, RealmList } from '../../interfaces/realms'
-import { FormCharacterIdentity } from '../../store/submission'
-import { CharacterLookupDto } from '../../interfaces/character-lookup.dto'
+import { Region } from '../../../backend/src/blizzard/enums/region.enum'
 
 @Component({
   components: { ValidationProvider },
@@ -66,27 +65,15 @@ export default class CharacterPicker extends Vue {
     slug: '',
   }
 
-  async addCharacter(): Promise<void> {
-    if (!this.realm || !this.name) {
-      return
-    }
-
-    const character: FormCharacterIdentity = {
-      name: this.name,
-      realm: this.realm.slug,
-      realm_name: this.realm.name,
-      region: 'us',
-    }
+  async addCharacter() {
+    if (!this.realm || !this.name) return
 
     // Avoid trying to make requests when we already have this character.
-    const existing = this.$store.state.submission.characters.find(
-      (c: CharacterLookupDto) =>
-        c.name.toLowerCase() === character.name.toLowerCase() &&
-        c.realm === character.realm &&
-        c.region === character.region
+    const hasCharacter = this.$accessor.submission.characters.find(
+      (c) => c.name === this.name && c.realm === this.realm.slug
     )
 
-    if (existing) {
+    if (hasCharacter) {
       this.characterError = 'That character has already been entered.'
       return
     } else {
@@ -96,17 +83,18 @@ export default class CharacterPicker extends Vue {
     try {
       this.downloading = true
 
-      const { raiderIO, ...blizzard } = await this.$store.dispatch('roster/getCharacterData', character)
+      const formCharacter = await this.$accessor.roster.getCharacterData({
+        name: this.name,
+        realm: this.realm.slug,
+        region: Region.US,
+      })
 
-      character.blizzard = blizzard
-      character.raiderIO = raiderIO
+      this.$accessor.submission.addCharacter(formCharacter)
     } catch (error) {
       console.error(error)
     } finally {
       this.downloading = false
     }
-
-    this.$store.commit('submission/addCharacter', character)
   }
 }
 </script>

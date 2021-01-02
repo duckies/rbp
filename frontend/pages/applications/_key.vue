@@ -130,8 +130,8 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { formatRelative } from 'date-fns'
-import { Question } from '~/store/form'
-import { FormSubmission, SubmissionStatus, FileUpload } from '@/store/submission'
+import { SubmissionStatus } from '../../store/submission'
+import { FileUpload, FormQuestion, FormSubmission } from '../../interfaces/entities.interface'
 
 @Component({
   validate({ params }) {
@@ -229,7 +229,7 @@ export default class ApplicationKey extends Vue {
     return 'Unknown User'
   }
 
-  get formQuestions(): Question[] {
+  get formQuestions(): FormQuestion[] {
     return this.$store.state?.form.questions
   }
 
