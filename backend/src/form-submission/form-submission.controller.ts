@@ -109,7 +109,7 @@ export class SubmissionController {
   findAll(@Query() { limit, offset, status }: FindAllFormSubmissionsDto) {
     return this.submissionService.findAll(
       { status },
-      ['author', 'characters'],
+      ['author', 'characters', 'characters.class'],
       { id: QueryOrder.DESC },
       limit,
       offset,

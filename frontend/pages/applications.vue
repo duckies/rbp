@@ -40,7 +40,7 @@
               :items="formStatuses"
               @change="changeStatus"
             >
-              <template v-slot:selection="{ item }">
+              <template #selection="{ item }">
                 <div class="category-title">{{ pagination.submission_total }} {{ item.text }} Applications</div>
               </template>
             </v-select>
@@ -230,8 +230,8 @@ export default class Applications extends Vue {
   }
 
   defaultingCharSubtitle(character?: FormCharacter): string {
-    if (character && character.race_name && character.class_name) {
-      return `${character.race_name} ${character.class_name} Application`
+    if (character && character.race_name && character.class.name) {
+      return `${character.race_name} ${character.class.name} Application`
     }
 
     return `Character Missing`
@@ -240,9 +240,9 @@ export default class Applications extends Vue {
   defaultingClassBlur(character?: FormCharacter): object {
     const classObj = {}
 
-    if (character && character.class_id) {
+    if (character?.class.id) {
       Object.assign(classObj, {
-        [`class-blur-bg-${character.class_id}`]: true,
+        [`class-blur-bg-${character.class.id}`]: true,
       })
     }
 
@@ -254,9 +254,9 @@ export default class Applications extends Vue {
       [baseClass]: true,
     }
 
-    if (character && character.class_id) {
+    if (character?.class.id) {
       Object.assign(classObj, {
-        [`class-border-${character.class_id}`]: true,
+        [`class-border-${character.class.id}`]: true,
       })
     }
 

@@ -15,15 +15,7 @@
 
     <!-- Character Window -->
     <template v-if="submission && submission.characters && submission.characters.length">
-      <character-panel
-        v-for="character in submission.characters"
-        :key="character.id"
-        :name="character.name"
-        :realm="character.realm"
-        :region="character.region"
-        :blizzard="character"
-        :raider-i-o="character.raiderIO"
-      />
+      <character-panel v-for="character in submission.characters" :key="character.id" :character="character" />
     </template>
 
     <template v-else>
@@ -137,18 +129,18 @@ import { FileUpload, FormQuestion, FormSubmission } from '../../interfaces/entit
   validate({ params }) {
     return /^(\d+|open|approved|rejected|cancelled)$/.test(params.key)
   },
-  async fetch({ redirect, params, store }) {
+  async fetch({ redirect, params, store, app: { $accessor } }) {
     const id = parseInt(params.key, 10)
     const param = id ? { id } : { status: params.key }
 
     if (param.status) {
-      await store.dispatch('submission/getSubmissions', {
-        limit: store.state.submission.pagination.page_size,
+      await $accessor.submission.getSubmissions({
+        limit: $accessor.submission.pagination.page_size,
         offset: 0,
         status: param.status,
       })
 
-      if (store.state.submission.submissions.length) {
+      if ($accessor.submission.submissions.length) {
         redirect(302, `/applications/${store.state.submission.submissions[0].id}`)
       }
     } else {
