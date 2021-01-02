@@ -1,3 +1,4 @@
+import { Covenant } from '../../../../guild-character/enums/covenant.enum';
 import {
   Enum,
   Guild,
@@ -40,6 +41,17 @@ export interface CharacterProfileSummary {
   quests: Link;
   achievements_statistics: Link;
   professions: Link;
+  covenant_progress: CovenantProgress;
+}
+
+export interface CovenantProgress {
+  chosen_covenant: {
+    key: Link;
+    name: Covenant;
+    id: number;
+  };
+  renown_level: number;
+  soulbinds: Link;
 }
 
 export interface Title {
