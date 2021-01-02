@@ -393,10 +393,11 @@ export class WarcraftLogsPlugin extends DiscordPlugin {
         const fields = this.splitFieldText(bosses);
 
         for (let i = 0; i < fields.length; i++) {
+          const pages =
+            fields.length === 1 ? '' : ` (${i + 1}/${fields.length})`;
+
           embed.addField(
-            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance} (${
-              i + 1
-            }/${fields.length})`,
+            `${difficulty === 'Mythic+' ? '' : difficulty} ${instance}${pages}`,
             fields[i].join('\n'),
           );
         }
