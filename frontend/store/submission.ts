@@ -38,10 +38,9 @@ export const state = () => ({
   },
 })
 
-export type SubmissionState = ReturnType<typeof state>
-
 export const getters = getterTree(state, {
   isLoading: (state) => state.status === StateStatus.BUSY,
+  isErrored: (state) => state.status === StateStatus.ERROR,
   mainCharacter: (state) => state.submission?.characters?.[0],
 })
 

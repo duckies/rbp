@@ -95,14 +95,7 @@
               />
             </v-card>
 
-            <v-btn
-              :loading="$store.state.form.isLoading || $store.state.submission.isLoading"
-              type="submit"
-              x-large
-              color="primary"
-            >
-              Submit
-            </v-btn>
+            <v-btn :loading="isLoading" type="submit" x-large color="primary">Submit</v-btn>
           </v-form>
         </validation-observer>
       </v-col>
@@ -156,6 +149,10 @@ export default class Apply extends Vue {
     form: InstanceType<typeof ValidationObserver>
   }
 
+  get isLoading() {
+    return this.$accessor.form.isLoading || this.$accessor.submission.isLoading
+  }
+
   get hasOpenApplication(): boolean {
     return !!this.openApplicationId
   }
@@ -192,7 +189,7 @@ export default class Apply extends Vue {
     }
   }
 
-  async submit(): Promise<void> {
+  async submit() {
     this.shouldntRemove = true
 
     if (!this.$store.state.submission.characters.length) {
@@ -200,10 +197,11 @@ export default class Apply extends Vue {
         realm: 'You must select at least one main character.',
       })
     }
-    await this.$store.dispatch('submission/createSubmission', 1)
 
-    if (this.$store.state.submission.status === 'success' && this.$store.state.submission.submission) {
-      this.$router.push(`/applications/${this.$store.state.submission.submission.id}`)
+    await this.$accessor.submission.createSubmission(1)
+
+    if (!this.$accessor.submission.isErrored && this.$accessor.submission.submission) {
+      this.$router.push(`/applications/${this.$accessor.submission.submission.id}`)
     }
   }
 }
