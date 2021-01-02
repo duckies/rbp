@@ -47,12 +47,6 @@ export class FormSubmissionQueue {
       : `New Application: ${main.name}`;
 
     const data: DiscordWebhook = {
-      username: job.data.author.discord_username,
-      avatar_url: job.data.author.discord_avatar
-        ? `https://cdn.discord.com/avatars/${job.data.author.discord_id}/${
-            job.data.author.discord_avatar
-          }${job.data.author.discord_avatar.includes('a_') ? '.gif' : '.png'}`
-        : undefined,
       embeds: [
         {
           title,
