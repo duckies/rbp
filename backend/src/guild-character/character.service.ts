@@ -4,12 +4,14 @@ import {
   QueryOrder,
   QueryOrderMap,
 } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/knex';
+import { EntityManager, EntityRepository } from '@mikro-orm/knex';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
+import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
+import { RaiderIOService } from '../raiderIO/raiderIO.service';
 import { GuildCharacter } from './character.entity';
 
 @Injectable()
@@ -21,8 +23,10 @@ export class CharacterService {
   constructor(
     @InjectRepository(GuildCharacter)
     private readonly characterRepository: EntityRepository<GuildCharacter>,
+    private readonly em: EntityManager,
     private readonly profileService: ProfileService,
     private readonly config: ConfigService,
+    private readonly raiderIOService: RaiderIOService,
   ) {}
 
   /**
@@ -52,21 +56,40 @@ export class CharacterService {
   }
 
   public async populateGuildCharacter(guildCharacter: GuildCharacter) {
-    const [summary, media] = await Promise.allSettled([
-      this.profileService.getCharacterProfileSummary(
-        guildCharacter.getFindCharacterDTO(),
-      ),
-      this.profileService.getCharacterMediaSummary(
-        guildCharacter.getFindCharacterDTO(),
-      ),
+    const dto = guildCharacter.getFindCharacterDTO();
+
+    const [
+      summary,
+      specialization,
+      media,
+      raiderIO,
+    ] = await Promise.allSettled([
+      this.profileService.getCharacterProfileSummary(dto),
+      this.profileService.getCharacterSpecializationsSummary(dto),
+      this.profileService.getCharacterMediaSummary(dto),
+      this.raiderIOService.getCharacterRaiderIO(dto, [
+        RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
+        RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
+      ]),
     ]);
 
     if (summary.status === 'fulfilled') {
-      guildCharacter.setCharacterProfileSummary(summary.value.data);
+      guildCharacter.setCharacterProfileSummary(summary.value.data, this.em);
+    }
+
+    if (specialization.status === 'fulfilled') {
+      guildCharacter.setCharacterSpecializationsSummary(
+        specialization.value.data,
+        this.em,
+      );
     }
 
     if (media.status === 'fulfilled') {
       guildCharacter.setCharacterMediaSummary(media.value.data);
+    }
+
+    if (raiderIO.status === 'fulfilled') {
+      guildCharacter.setCharacterRaiderIO(raiderIO.value);
     }
 
     return guildCharacter;

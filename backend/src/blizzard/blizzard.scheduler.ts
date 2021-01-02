@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { NestSchedule, Timeout } from 'nest-schedule';
-import { TokenService } from './services/token.service';
 import { ConfigService } from '@nestjs/config';
+import { Timeout } from '@nestjs/schedule';
+import { TokenService } from './services/token.service';
 
 @Injectable()
-export class BlizzardScheduler extends NestSchedule {
+export class BlizzardScheduler {
   constructor(
     private readonly tokenService: TokenService,
     private readonly config: ConfigService,
-  ) {
-    super();
-  }
+  ) {}
 
   @Timeout(1000)
   async getToken() {

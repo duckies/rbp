@@ -8,6 +8,17 @@ export interface Link {
   href: string;
 }
 
+export interface GenderedString {
+  male: string;
+  female: string;
+}
+
+export interface Asset {
+  key: string;
+  value: string;
+  file_data_id: number;
+}
+
 export interface Key {
   key: Link;
 }

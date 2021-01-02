@@ -1,6 +1,7 @@
 # compiled output
-/dist
-/node_modules
+dist/
+.nuxt/
+node_modules/
 
 # Uploaded files
 /uploads

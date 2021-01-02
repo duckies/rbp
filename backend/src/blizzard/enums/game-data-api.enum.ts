@@ -61,7 +61,8 @@ export enum GameDataEndpoint {
   PlayableRacesIndex = '/playable-race/index',
   PlayableRace = '/playable-race/{playableRaceId}',
   // Playable Specialization API
-  PlayableSpecializationsIndex = '/plaable-specialization/index',
+  PlayableSpecializationsIndex = '/playable-specialization/index',
+  PlayableSpecializationMedia = '/media/playable-specialization/{specId}',
   PlayableSpecialization = '/playable-specialization/{specId}',
   // Power Type API
   PowerTypesIndex = '/power-type/index',

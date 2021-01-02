@@ -39,11 +39,11 @@ export class FormSubmissionQueue {
   private async sendSubmissionWebhook(job: Job<FormSubmission>) {
     const main = job.data.characters[0];
     const color =
-      main?.class_id && main.class_id in classIdToColor
-        ? classIdToColor[main.class_id]
+      main?.class.id in classIdToColor
+        ? classIdToColor[main.class.id]
         : 12790015;
-    const title = main.class_name
-      ? `New ${main.class_name} Application: ${main.name}`
+    const title = main.class.name
+      ? `New ${main.class.name} Application: ${main.name}`
       : `New Application: ${main.name}`;
 
     const data: DiscordWebhook = {
@@ -65,9 +65,9 @@ export class FormSubmissionQueue {
       ],
     };
 
-    if (main.avatar_url) {
+    if (main.media) {
       data.embeds[0].thumbnail = {
-        url: main.avatar_url,
+        url: main.media.avatar,
       };
     }
 
@@ -99,30 +99,36 @@ export class FormSubmissionQueue {
     if (main.raiderIO?.mythic_plus_scores_by_season.length) {
       data.embeds[0].fields.push({
         name: 'Raider.IO',
-        value: main.raiderIO.mythic_plus_scores_by_season.map(
-          (season) => {
+        value: main.raiderIO.mythic_plus_scores_by_season
+          .map((season) => {
             const seasonNum = season.season.match(/\d+/);
 
             if (!season) return '';
 
             const isPost = season.season.includes('post');
 
-            return `Season ${seasonNum[0]}${isPost ? '.5' : ''}: ${season.scores.all}`
-          }
-        ).join('\n'),
-        inline: true
-      })
+            return `Season ${seasonNum[0]}${isPost ? '.5' : ''}: ${
+              season.scores.all
+            }`;
+          })
+          .join('\n'),
+        inline: true,
+      });
     }
 
     if (main.raiderIO?.mythic_plus_best_runs.length) {
       data.embeds[0].fields.push({
         name: 'Best Dungeons',
-        value: main.raiderIO?.mythic_plus_best_runs.map(
-          (run) =>
-            `${run.mythic_level} ${run.short_name} ${
-              run.num_keystone_upgrades > 0 ? '+' + run.num_keystone_upgrades : ''
-            }`
-        ).join('\n'),
+        value: main.raiderIO?.mythic_plus_best_runs
+          .map(
+            (run) =>
+              `${run.mythic_level} ${run.short_name} ${
+                run.num_keystone_upgrades > 0
+                  ? '+' + run.num_keystone_upgrades
+                  : ''
+              }`,
+          )
+          .join('\n'),
         inline: true,
       });
     }
@@ -158,10 +164,12 @@ export class FormSubmissionQueue {
       value: `[Armory](http://www.worldofwarcraft.com/en-us/character/us/${main.realm}/${main.name}) | [Raider.IO](https://www.raider.io/characters/us/${main.realm}/${main.name}) | [WarcraftLogs](https://www.warcraftlogs.com/character/us/${main.realm}/${main.name})`,
     });
 
-    console.log(this.config.get('DISCORD_WEBHOOK'), data)
-    const resp = await this.http.post(this.config.get('DISCORD_WEBHOOK'), data).toPromise();
-    
-    console.log(resp)
+    console.log(this.config.get('DISCORD_WEBHOOK'), data);
+    const resp = await this.http
+      .post(this.config.get('DISCORD_WEBHOOK'), data)
+      .toPromise();
+
+    console.log(resp);
   }
 
   @OnQueueError()
@@ -172,7 +180,7 @@ export class FormSubmissionQueue {
   @OnQueueFailed()
   private onFailed(_job: Job<number>, error: Error): void {
     this.logger.error('Failed');
-    console.error(error)
+    console.error(error);
   }
 
   @OnQueueCompleted()

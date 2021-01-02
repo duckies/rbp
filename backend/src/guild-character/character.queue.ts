@@ -1,4 +1,5 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { UseRequestContext } from '@mikro-orm/nestjs';
 import {
   OnQueueCompleted,
   OnQueueError,
@@ -21,7 +22,6 @@ import { CharacterUpdateResult } from './interfaces/character-update.interface';
 @Processor('character')
 export class CharacterQueue {
   private readonly logger: Logger = new Logger(CharacterQueue.name);
-  private readonly em: EntityManager;
 
   private findGuildDTO: FindGuildDto = {
     name: 'really-bad-players',
@@ -35,92 +35,106 @@ export class CharacterQueue {
     private readonly characterService: CharacterService,
     private readonly profileService: ProfileService,
     private readonly config: ConfigService,
-    orm: MikroORM,
+    private readonly orm: MikroORM,
   ) {
     this.minLVL = Math.max(
       this.config.get<number>('MINIMUM_CHARACTER_LEVEL'),
       10,
     );
-    this.em = orm.em.fork();
   }
 
   @Process({ name: 'update-guild-members', concurrency: 1 })
+  @UseRequestContext()
   private async updateGuildMembers(job: Job): Promise<CharacterUpdateResult> {
-    const [guildCharacters, roster] = await Promise.all([
-      this.em.find(GuildCharacter, null),
-      this.profileService.getGuildRoster(this.findGuildDTO, this.minLVL),
-    ]);
+    try {
+      const [characters, roster] = await Promise.all([
+        this.orm.em.find(GuildCharacter, {}),
+        this.profileService.getGuildRoster(this.findGuildDTO, this.minLVL),
+      ]);
 
-    const results: CharacterUpdateResult = {
-      total: roster.data.members.length,
-      processed: 0,
-      success: 0,
-      deleted: 0,
-      ignored: 0,
-      failed: 0,
-    };
+      const results: CharacterUpdateResult = {
+        total: roster.data.members.length,
+        processed: 0,
+        success: 0,
+        deleted: 0,
+        ignored: 0,
+        failed: 0,
+      };
 
-    await Promise.all(
-      roster.data.members.map(async (member) => {
-        let guildCharacter = guildCharacters.find(
-          (c) => c.id === member.character.id,
+      try {
+        await Promise.all(
+          roster.data.members.map(async (member) => {
+            let character = characters.find(
+              (c) => c.id === member.character.id,
+            );
+
+            try {
+              if (!character) {
+                character = new GuildCharacter(
+                  member.character.name,
+                  member.character.realm.slug,
+                  Region.US,
+                );
+
+                await this.characterService.populateGuildCharacter(character);
+
+                // This can be missing if the profile summary fails.
+                if (character.id) {
+                  this.orm.em.persist(character);
+                  character.guild_rank = member.rank;
+
+                  results.added++;
+                }
+              } else {
+                const status = await this.profileService.getCharacterProfileStatus(
+                  character.getFindCharacterDTO(),
+                  character.last_modified,
+                );
+
+                if (!status.data.is_valid || status.data.id !== character.id) {
+                  results.deleted++;
+                  this.orm.em.remove(character);
+                } else {
+                  character.last_modified = status.headers['last-modified'];
+                }
+              }
+
+              results.success++;
+            } catch (error) {
+              if (!(error instanceof HttpException)) {
+                console.error('ERRROR', error);
+              }
+
+              if (error instanceof HttpException) {
+                if (error.getStatus() === 304) {
+                  results.ignored++;
+                  return;
+                }
+
+                if (error.getStatus() === 404) {
+                  this.orm.em.remove(character);
+                  return;
+                }
+              }
+
+              this.logger.error(error.message, error.stack);
+            }
+
+            job.progress(++results.processed / results.total);
+          }),
         );
+      } catch (error) {
+        console.error('UNHANDLED', error);
+      }
 
-        try {
-          if (!guildCharacter) {
-            guildCharacter = new GuildCharacter(
-              member.character.name,
-              member.character.realm.slug,
-              Region.US,
-            );
+      await this.orm.em.flush();
 
-            this.em.persist(guildCharacter);
-            results.added++;
-          } else {
-            const status = await this.profileService.getCharacterProfileStatus(
-              guildCharacter.getFindCharacterDTO(),
-              guildCharacter.last_modified,
-            );
+      console.log(results);
 
-            if (
-              status.data.is_valid === false ||
-              status.data.id !== guildCharacter.id
-            ) {
-              results.deleted++;
-              return this.em.remove(guildCharacter);
-            }
-
-            guildCharacter.last_modified = status.headers['last-modified'];
-          }
-
-          guildCharacter.guild_rank = member.rank;
-
-          await this.characterService.populateGuildCharacter(guildCharacter);
-
-          results.success++;
-        } catch (error) {
-          if (error instanceof HttpException) {
-            if (error.getStatus() === 304) {
-              results.ignored++;
-              return;
-            }
-
-            if (error.getStatus() === 404) {
-              this.em.remove(guildCharacter);
-              return;
-            }
-          }
-
-          this.logger.error(error.message, error.stack);
-        }
-
-        job.progress(++results.processed / results.total);
-      }),
-    );
-
-    await this.em.flush();
-
-    return results;
+      return results;
+    } catch (error) {
+      console.error('Top?', error);
+    }
   }
 
   @Process({ name: 'add-remove-members', concurrency: 1 })
@@ -129,23 +143,22 @@ export class CharacterQueue {
 
     const ids = roster.data.members.map((m) => m.character.id);
 
-    const notInGuild = await this.em.find(GuildCharacter, {
+    const notInGuild = await this.orm.em.find(GuildCharacter, {
       id: { $nin: ids },
     });
 
     const names = notInGuild.map((m) => m.name);
 
-    this.em.remove(notInGuild);
+    this.orm.em.remove(notInGuild);
 
-    await this.em.flush();
+    await this.orm.em.flush();
 
     return { names };
   }
 
   @OnQueueError()
   private onError(_job: Job<number>, error: Error): void {
-    console.error(error);
-    this.logger.error('Global Error: ' + error);
+    this.logger.error('Global Error: ' + error, error.stack, error.message);
   }
 
   @OnQueueCompleted()
@@ -183,6 +196,7 @@ export class CharacterQueue {
 
   @OnQueueFailed()
   private onFailed(_job: Job<number>, error: Error): void {
+    console.error('Error2', error);
     this.logger.error(error);
   }
 }

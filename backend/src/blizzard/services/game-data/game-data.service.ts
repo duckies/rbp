@@ -1,7 +1,13 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { HttpService, Injectable } from '@nestjs/common';
+import { template } from '../../../app.utils';
 import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
+import { BlizzardService } from '../../blizzard.service';
+import { PlayableClassMedia } from '../../entities/playable-class-media.entity';
+import { PlayableClass } from '../../entities/playable-class.entity';
+import { PlayableSpecializationMedia } from '../../entities/playable-specialization-media.entity';
+import { PlayableSpecialization } from '../../entities/playable-specialization.entity';
 import { AssetType } from '../../enums/asset-type.enum';
 import { GameDataEndpoint } from '../../enums/game-data-api.enum';
 import * as GameData from '../../interfaces/game-data';
@@ -56,6 +62,7 @@ export type GameDataReturnType = {
   [GameDataEndpoint.PlayableRacesIndex]: void;
   [GameDataEndpoint.PlayableRace]: void;
   [GameDataEndpoint.PlayableSpecializationsIndex]: void;
+  [GameDataEndpoint.PlayableSpecializationMedia]: void;
   [GameDataEndpoint.PlayableSpecialization]: void;
   [GameDataEndpoint.PowerTypesIndex]: void;
   [GameDataEndpoint.PowerType]: void;
@@ -85,13 +92,14 @@ export class GameDataService {
   constructor(
     @InjectRepository(BlizzardAsset)
     private readonly assetRepository: EntityRepository<BlizzardAsset>,
+    private readonly blizzardService: BlizzardService,
     private readonly tokenService: TokenService,
     private readonly http: HttpService,
     private readonly em: EntityManager,
   ) {}
 
-  async getGameItemMedia(id: number): Promise<GameData.ItemMedia> {
-    const asset = await this.assetRepository.findOne({
+  async getGameItemMedia(id: number) {
+    const asset = await this.em.findOne(BlizzardAsset, {
       id,
       type: AssetType.Icon,
     });
@@ -106,22 +114,125 @@ export class GameDataService {
           [id, data.assets[0].value],
         );
 
-      return data;
+      return { id, type: AssetType.Icon, value: data.assets[0].value };
     }
 
-    return {
-      _links: {
-        self: {
-          href: `https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-8.2.5_31884-us`,
-        },
-      },
-      assets: [
-        {
-          key: 'icon',
-          value: asset.value,
-        },
-      ],
-    };
+    return asset;
+  }
+
+  async getPlayableClass(classId: number, cache = true) {
+    let playableClass: PlayableClass = await this.em.findOne(
+      PlayableClass,
+      classId,
+      ['media', 'specializations.media'],
+    );
+
+    if (playableClass) return playableClass;
+
+    const endpoint = template(GameDataEndpoint.PlayableClass, { classId });
+    const { data } = await this.blizzardService.getData<GameData.PlayableClass>(
+      endpoint,
+    );
+
+    playableClass = new PlayableClass();
+    playableClass.id = data.id;
+    playableClass.name = data.name;
+    playableClass.media = await this.getPlayableClassMedia(classId, cache);
+
+    if (cache) {
+      await this.em.persist(playableClass).flush();
+    }
+
+    return playableClass;
+  }
+
+  async getPlayableClassMedia(playableClassId: number, cache = true) {
+    let playableClassMedia: PlayableClassMedia = await this.em.findOne(
+      PlayableClassMedia,
+      playableClassId,
+    );
+
+    if (playableClassMedia) return playableClassMedia;
+
+    const endpoint = template(GameDataEndpoint.PlayableClassMedia, {
+      playableClassId,
+    });
+    const {
+      data,
+    } = await this.blizzardService.getData<GameData.PlayableClassMedia>(
+      endpoint,
+    );
+
+    playableClassMedia = new PlayableClassMedia();
+    playableClassMedia.id = data.id;
+    playableClassMedia.key = data.assets[0].key;
+    playableClassMedia.value = data.assets[0].value;
+
+    if (cache) {
+      await this.em.persist(playableClassMedia).flush();
+    }
+
+    return playableClassMedia;
+  }
+
+  async getPlayableSpecialization(specId: number, cache = true) {
+    let specialization = await this.em.findOne(PlayableSpecialization, specId, [
+      'class',
+      'media',
+    ]);
+
+    if (specialization) return specialization;
+
+    const endpoint = template(GameDataEndpoint.PlayableSpecialization, {
+      specId,
+    });
+
+    const {
+      data,
+    } = await this.blizzardService.getData<GameData.PlayableSpecialization>(
+      endpoint,
+    );
+
+    specialization = new PlayableSpecialization();
+    specialization.id = data.id;
+    specialization.name = data.name;
+    specialization.class = await this.getPlayableClass(
+      data.playable_class.id,
+      false,
+    );
+    specialization.media = await this.getPlayableSpecializationMedia(
+      specId,
+      false,
+    );
+
+    if (cache) {
+      await this.em.persist(specialization).flush();
+    }
+
+    return specialization;
+  }
+
+  async getPlayableSpecializationMedia(specId: number, cache = true) {
+    let media = await this.em.findOne(PlayableSpecializationMedia, specId);
+
+    if (media) return media;
+
+    const endpoint = template(GameDataEndpoint.PlayableSpecializationMedia, {
+      specId,
+    });
+    const {
+      data,
+    } = await this.blizzardService.getData<GameData.PlayableSpecializationMedia>(
+      endpoint,
+    );
+
+    media = new PlayableSpecializationMedia(data);
+
+    if (cache) {
+      await this.em.persist(media).flush();
+    }
+
+    return media;
   }
 
   async getGameData<T extends GameDataEndpoint>(

@@ -3,7 +3,9 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { ScheduleModule } from '@nestjs/schedule';
 import { SentryModule } from '@ntegral/nestjs-sentry';
+import path from 'path';
 import MikroOrmConfig from '../mikro-orm.config';
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
@@ -23,6 +25,7 @@ import { UserModule } from './user/user.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: path.resolve(__dirname, '../backend.env'),
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
@@ -33,7 +36,7 @@ import { UserModule } from './user/user.module';
         BLIZZARD_CLIENTID: Joi.string().required(),
         BLIZZARD_SECRET: Joi.string().required(),
         BLIZZARD_CALLBACK: Joi.string().required(),
-        MINIMUM_CHARACTER_LEVEL: Joi.number().default(110),
+        MINIMUM_CHARACTER_LEVEL: Joi.number().default(10),
         CODECOV_TOKEN: Joi.string(),
         DISCORD_CLIENT_ID: Joi.string().required(),
         DISCORD_SECRET: Joi.string().required(),
@@ -71,6 +74,7 @@ import { UserModule } from './user/user.module';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     ConfigModule,
     UserModule,
     AuthModule,

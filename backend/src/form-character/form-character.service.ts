@@ -1,4 +1,4 @@
-import { EntityRepository, wrap } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
@@ -15,6 +15,7 @@ export class FormCharacterService {
     private readonly formCharacterRepository: EntityRepository<FormCharacter>,
     private readonly profileService: ProfileService,
     private readonly raiderIOService: RaiderIOService,
+    private readonly em: EntityManager,
   ) {}
 
   public async upsert(findCharacterDto: FindCharacterDto) {
@@ -50,7 +51,10 @@ export class FormCharacterService {
     return formCharacter;
   }
 
-  public async populateFormCharacter(formCharacter: FormCharacter) {
+  public async populateFormCharacter(
+    formCharacter: FormCharacter,
+    em?: EntityManager,
+  ) {
     const findCharacterDto = formCharacter.getFindCharacterDTO();
 
     const [
@@ -75,11 +79,17 @@ export class FormCharacterService {
     ]);
 
     if (summary.status === 'fulfilled') {
-      formCharacter.setCharacterProfileSummary(summary.value.data);
+      formCharacter.setCharacterProfileSummary(
+        summary.value.data,
+        em || this.em,
+      );
     }
 
     if (specs.status === 'fulfilled') {
-      formCharacter.setCharacterSpecializationsSummary(specs.value.data);
+      formCharacter.setCharacterSpecializationsSummary(
+        specs.value.data,
+        em || this.em,
+      );
     }
 
     if (media.status === 'fulfilled') {
@@ -97,6 +107,11 @@ export class FormCharacterService {
     if (raiderIO.status === 'fulfilled') {
       formCharacter.setCharacterRaiderIO(raiderIO.value);
     }
+
+    await this.em.populate(formCharacter, [
+      'class.media',
+      'specialization.media',
+    ]);
 
     return formCharacter;
   }

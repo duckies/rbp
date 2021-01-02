@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { template } from '../../../app.utils';
 import { User } from '../../../user/user.entity';
 import { RateLimiter } from '../../blizzard.rate-limiter';
+import { BlizzardService } from '../../blizzard.service';
 import { FindCharacterDto } from '../../dto/find-character.dto';
+import { AssetType } from '../../enums/asset-type.enum';
 import { ProfileEndpoint } from '../../enums/profile-api.enum';
 import * as Profile from '../../interfaces/profile';
 import { GameDataService } from '../game-data/game-data.service';
@@ -18,6 +21,7 @@ export class ProfileService {
   constructor(
     private readonly rateLimiter: RateLimiter,
     private readonly gameDataService: GameDataService,
+    private readonly blizzardService: BlizzardService,
   ) {}
 
   async getAccountProfileSummary(user: User) {
@@ -116,25 +120,25 @@ export class ProfileService {
   }
 
   async getCharacterRaids({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterRaids>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterRaids.replace('{realmSlug}', realm).replace(
-          '{characterName}',
-          name.toLowerCase(),
-        ),
-    );
+    const endpoint = template(ProfileEndpoint.CharacterRaids, {
+      realm,
+      name: name.toLowerCase(),
+    });
+
+    return this.blizzardService.getProfile<Profile.CharacterRaids>(endpoint);
   }
 
   async getCharacterEquipmentSummary(
     { name, realm }: FindCharacterDto,
     cache = true,
   ) {
-    const resp = await this.rateLimiter.get<Profile.CharacterEquipmentSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterEquipmentSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    const endpoint = template(ProfileEndpoint.CharacterEquipmentSummary, {
+      realm,
+      name: name.toLowerCase(),
+    });
+
+    const resp = await this.blizzardService.getProfile<Profile.CharacterEquipmentSummary>(
+      endpoint,
     );
 
     if (cache) {
@@ -146,8 +150,8 @@ export class ProfileService {
             );
 
             slot.media.assets = {
-              key: media.assets[0].key,
-              value: media.assets[0].value,
+              key: AssetType.Icon,
+              value: media.value,
             };
 
             return slot;
@@ -173,12 +177,13 @@ export class ProfileService {
   }
 
   async getCharacterMediaSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterMediaSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterMediaSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    const endpoint = template(ProfileEndpoint.CharacterMediaSummary, {
+      realm,
+      name: name.toLowerCase(),
+    });
+
+    return this.blizzardService.getProfile<Profile.CharacterMediaSummary>(
+      endpoint,
     );
   }
 
@@ -209,12 +214,13 @@ export class ProfileService {
   }
 
   async getCharacterProfileSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterProfileSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterProfileSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    const endpoint = template(ProfileEndpoint.CharacterProfileSummary, {
+      realm,
+      name: name.toLowerCase(),
+    });
+
+    return this.blizzardService.getProfile<Profile.CharacterProfileSummary>(
+      endpoint,
     );
   }
 
@@ -222,13 +228,17 @@ export class ProfileService {
     { name, realm }: FindCharacterDto,
     lastModified?: string,
   ) {
-    return this.rateLimiter.get<Profile.CharacterProfileStatus>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterProfileStatus.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
-      lastModified,
+    const endpoint = template(ProfileEndpoint.CharacterProfileStatus, {
+      realm,
+      name: name.toLowerCase(),
+    });
+    const headers = lastModified
+      ? { 'If-Modified-Since': lastModified }
+      : undefined;
+
+    return this.blizzardService.getProfile<Profile.CharacterProfileStatus>(
+      endpoint,
+      headers,
     );
   }
 
@@ -285,12 +295,13 @@ export class ProfileService {
   }
 
   async getCharacterSpecializationsSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterSpecializationsSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterSpecializationsSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    const endpoint = template(ProfileEndpoint.CharacterSpecializationsSummary, {
+      realm,
+      name: name.toLowerCase(),
+    });
+
+    return this.blizzardService.getProfile<Profile.CharacterSpecializationsSummary>(
+      endpoint,
     );
   }
 
@@ -344,20 +355,19 @@ export class ProfileService {
     );
   }
 
-  async getGuildRoster({ name, realm }: FindCharacterDto, minLevel?: number) {
-    const resp = await this.rateLimiter.get<Profile.GuildRoster>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.GuildRoster.replace(
-          '{realmSlug}',
-          realm as string,
-        ).replace('{nameSlug}', name.toLowerCase()),
+  async getGuildRoster({ name, realm }: FindCharacterDto, min = 10) {
+    const endpoint = template(ProfileEndpoint.GuildRoster, {
+      realm,
+      nameSlug: name.toLowerCase(),
+    });
+
+    const resp = await this.blizzardService.getProfile<Profile.GuildRoster>(
+      endpoint,
     );
 
-    if (minLevel) {
-      resp.data.members = resp.data.members.filter(
-        (m) => m.character.level >= minLevel,
-      );
-    }
+    resp.data.members = resp.data.members.filter(
+      (m) => m.character.level >= min,
+    );
 
     return resp;
   }
