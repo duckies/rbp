@@ -201,6 +201,29 @@ export class WelcomerPlugin extends DiscordPlugin {
     );
   }
 
+  @Command({
+    name: 'bye',
+    group: 'welcome',
+    description: 'Tests out the goodbye messages.',
+  })
+  private async byebye(ctx: Context) {
+    if (!ctx.guild) {
+      return await ctx.send('This command does not work in DMs.');
+    }
+
+    await ctx.guild.members.fetch();
+
+    const member = ctx.guild.members.cache.get(ctx.message.author.id);
+
+    if (!member) {
+      return await ctx.send(
+        'There was an issue looking you up within the guild.',
+      );
+    }
+
+    await this.sendGoobyeMessage(ctx.message.channel as TextChannel, member);
+  }
+
   private async sendGoobyeMessage(channel: TextChannel, member: GuildMember) {
     const message = sample(this.goodbyeMessages).replace(
       '{username}',
