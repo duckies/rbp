@@ -37,6 +37,7 @@ export class WelcomerPlugin extends DiscordPlugin {
     '{username} graduated to high school teacher.',
     "{username} potted on Jaina's wall.",
     '{username} left for classic WoW.',
+    '{username} sounded like one of Bang\'s "people".',
     '{username} argued with Drang. It was not effective.',
     '{username} reimagined themselves as a career simp artist on Moon Guard.',
   ];
