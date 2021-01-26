@@ -29,14 +29,16 @@ export class WelcomerPlugin extends DiscordPlugin {
     date: Date;
   }>;
   private readonly goodbyeMessages = [
-    '{username} is off to certainly greener pastures.',
     '{username} became a born-again.',
     '{username} had their car broken into.',
     "{username} didn't like that one black joke.",
     '{username} found a married woman in an open relationship.',
-    'Peace out girl scout! {username}',
-    'Well... good luck {username}',
-    'Take it sleazy {username}',
+    "{username} has looted *[Supple Supplicant's Gloves]*.",
+    '{username} graduated to high school teacher.',
+    "{username} potted on Jaina's wall.",
+    '{username} left for classic WoW.',
+    '{username} argued with Drang. It was not effective.',
+    '{username} reimagined themselves as a career simp artist on Moon Guard.',
   ];
 
   constructor(
