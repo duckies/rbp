@@ -35,6 +35,9 @@ export class FinancePlugin extends DiscordPlugin {
       console.log(data);
 
       const increase = !!(data.change >= 0);
+      const emoji = increase
+        ? ':chart_with_upwards_trend:'
+        : ':chart_with_downwards_trend:';
 
       const embed = new MessageEmbed();
       embed.setTitle(`(${data.symbol}) ${data.companyName}`);
@@ -42,13 +45,26 @@ export class FinancePlugin extends DiscordPlugin {
       embed.setDescription(`Stock value $${data.latestPrice}`);
       embed.addField(
         'Change',
-        `${increase ? '+' : ''}${data.change} (${data.changePercent * 100}%) ${
-          increase
-            ? ':chart_with_upwards_trend:'
-            : ':chart_with_downwards_trend:'
-        }`,
+        `${increase ? '+' : ''}${data.change} (${(
+          data.changePercent * 100
+        ).toFixed(2)}%) ${emoji}`,
       );
-      embed.setFooter(`${data.latestSource} at ${data.latestTime}`);
+
+      if (data.latestSource === 'Close') {
+        const increase = !!(data.extendedChange >= 0);
+        const emoji = increase
+          ? ':chart_with_upwards_trend:'
+          : ':chart_with_downwards_trend:';
+
+        embed.addField(
+          'After Hours',
+          `${increase ? '+' : ''}${data.extendedChange} (${(
+            data.extendedChangePercent * 100
+          ).toFixed(2)}%) ${emoji}`,
+        );
+      }
+
+      embed.setFooter(`${data.latestSource}`);
       embed.setTimestamp(data.latestUpdate);
 
       await ctx.send(embed);
