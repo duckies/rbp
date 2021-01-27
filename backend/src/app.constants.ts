@@ -42,3 +42,8 @@ export const TWITCH_GAME_ENDPOINT = 'https://api.twitch.tv/helix/games';
 
 export const RESET_DAY = 0;
 export const RESET_HOUR_UTC = 15;
+
+/**
+ * IEX Cloud
+ */
+export const IEX_TOKEN = 'IEX_TOKEN';
