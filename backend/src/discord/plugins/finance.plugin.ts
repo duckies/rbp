@@ -32,12 +32,24 @@ export class FinancePlugin extends DiscordPlugin {
           .toPromise()
       ).data;
 
+      console.log(data);
+
+      const increase = !!(data.change >= 0);
+
       const embed = new MessageEmbed();
       embed.setTitle(`(${data.symbol}) ${data.companyName}`);
       embed.setColor(await ctx.settings.getEmbedColor());
-      embed.setDescription(`Stock value $${data.latestPrice}.`);
-      embed.addField('Change', `${data.change} ${data.changePercent * 100}%`);
+      embed.setDescription(`Stock value $${data.latestPrice}`);
+      embed.addField(
+        'Change',
+        `${increase ? '+' : ''}${data.change} (${data.changePercent * 100}%) ${
+          increase
+            ? ':chart_with_upwards_trend:'
+            : ':chart_with_downwards_trend:'
+        }`,
+      );
       embed.setFooter(`${data.latestSource} at ${data.latestTime}`);
+      embed.setTimestamp(data.latestUpdate);
 
       await ctx.send(embed);
     } catch (error) {
