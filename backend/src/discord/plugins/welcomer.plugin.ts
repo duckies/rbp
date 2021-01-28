@@ -40,6 +40,7 @@ export class WelcomerPlugin extends DiscordPlugin {
     '{username} sounded like one of Bang\'s "people".',
     '{username} argued with Drang. It was not effective.',
     '{username} reimagined themselves as a career simp artist on Moon Guard.',
+    '{username} joined the Warlock Aviation Academy.',
   ];
 
   constructor(
