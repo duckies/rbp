@@ -1,12 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { Plugin, Command, CommandGroup } from '../discord.decorators';
-import { DiscordPlugin } from './plugin.class';
-import { Context } from '../discord.context';
 import { MessageEmbed } from 'discord.js';
+import { PluginConfig } from '../discord-config.class';
+import { Context } from '../discord.context';
+import { Command, CommandGroup, Plugin } from '../discord.decorators';
+import { DiscordService } from '../discord.service';
+import { DiscordPlugin } from './plugin.class';
 
 @Injectable()
 @Plugin('Announcements')
 export class AnnouncePlugin extends DiscordPlugin {
+  private readonly config: PluginConfig<{
+    link: string;
+  }>;
+
+  constructor(discordService: DiscordService) {
+    super();
+    this.config = discordService.getConfig(AnnouncePlugin.name);
+    this.config.registerGuild({
+      link: '',
+    });
+  }
+
   @CommandGroup('announce')
   private group() {}
 
@@ -59,5 +73,37 @@ export class AnnouncePlugin extends DiscordPlugin {
     });
 
     await ctx.send(embed);
+  }
+
+  @Command({
+    name: '',
+  })
+  @Command({
+    name: 'setrecruitment',
+    group: 'announce',
+    description: 'Sets the recruitment announcement link.',
+  })
+  private async setRecruitmentMessage(ctx: Context, link: string) {
+    await this.config.setGuild(ctx.guild, { link });
+
+    await ctx.tick();
+  }
+
+  @Command({
+    name: 'recruitment',
+    group: 'announce',
+    description: 'Posts the recruitment announcement message.',
+  })
+  private async postRecruitmentMessage(ctx: Context) {
+    const { link } = await this.config.getGuild(ctx.guild);
+
+    const embed = new MessageEmbed({
+      title: 'Recruitment Bump',
+      description: `Please assist in bumping our [recruitment post](${link}).`,
+      color: await ctx.settings.getEmbedColor(),
+    });
+
+    await ctx.send(embed);
+    await ctx.message.delete();
   }
 }
