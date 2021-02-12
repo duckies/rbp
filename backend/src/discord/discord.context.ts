@@ -28,6 +28,10 @@ export class Context {
     this.guild = message.guild;
   }
 
+  get author() {
+    return this.message.author;
+  }
+
   /**
    * Instructs the bot to add a checkmark emoji to the initiating command.
    */

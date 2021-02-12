@@ -34,6 +34,7 @@ import { DiscordQueue } from './discord.queue';
 import { DiscordService } from './discord.service';
 import { AnnouncePlugin } from './plugins/announce.plugin';
 import { AudioPlugin } from './plugins/audio.plugin';
+import { CustomColor } from './plugins/custom-color.plugin';
 import { FinancePlugin } from './plugins/finance.plugin';
 import { HelpPlugin } from './plugins/help.plugin';
 import { LoggerPlugin } from './plugins/logger.plugin';
@@ -68,6 +69,7 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     LoggerPlugin,
     AnnouncePlugin,
     FinancePlugin,
+    CustomColor,
   ],
   controllers: [DiscordController],
   exports: [DiscordService],
