@@ -11,6 +11,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Client, ClientOptions } from 'discord.js';
 import { FormSubmissionModule } from '../form-submission/form-submission.module';
+import { TwitchModule } from '../twitch/twitch.module';
+import { WarcraftLogsModule } from '../warcraftlogs/warcraftlogs.module';
 import {
   DISCORD_CLIENT,
   DISCORD_COMMAND_ARGS,
@@ -43,7 +45,8 @@ import { DiscordPlugin } from './plugins/plugin.class';
 import { ReactRolesPlugin } from './plugins/react-roles.plugin';
 import { ReactionsPlugin } from './plugins/reactions.plugin';
 import { SettingsPlugin } from './plugins/settings.plugin';
-import { WarcraftLogsPlugin } from './plugins/warcraftlogs.plugin';
+import { TwitchPlugin } from './plugins/twitch/twitch.plugin';
+import { WarcraftLogsPlugin } from './plugins/warcraftlogs/warcraftlogs.plugin';
 import { WelcomerPlugin } from './plugins/welcomer.plugin';
 
 @Module({
@@ -52,6 +55,8 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     MikroOrmModule.forFeature({ entities: [DiscordConfig] }),
     DiscoveryModule,
     FormSubmissionModule,
+    WarcraftLogsModule,
+    TwitchModule,
     BullModule.registerQueue({ name: 'discord' }),
   ],
   providers: [
@@ -69,6 +74,7 @@ import { WelcomerPlugin } from './plugins/welcomer.plugin';
     LoggerPlugin,
     AnnouncePlugin,
     FinancePlugin,
+    TwitchPlugin,
     CustomColor,
   ],
   controllers: [DiscordController],

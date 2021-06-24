@@ -23,21 +23,25 @@
 </template>
 
 <script lang="ts">
-import { SwiperOptions } from 'swiper/types/swiper-options'
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import { defineComponent } from '@nuxtjs/composition-api'
+import { SwiperOptions } from 'swiper'
+import { useSlides } from '../composables/slide'
 
-@Component
-export default class Carousel extends Vue {
-  private swiper: SwiperOptions = {
-    preloadImages: false,
-    lazy: true,
-  }
+export default defineComponent({
+  setup() {
+    const swiper: SwiperOptions = {
+      preloadImages: false,
+      lazy: true,
+    }
 
-  get slides() {
-    return this.$accessor.slide.slides
-  }
-}
+    const { slides } = useSlides()
+
+    return {
+      swiper,
+      slides,
+    }
+  },
+})
 </script>
 
 <style lang="scss" scoped>

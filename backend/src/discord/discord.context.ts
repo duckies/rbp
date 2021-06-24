@@ -7,9 +7,8 @@ import {
   MessageAdditions,
   MessageEmbed,
   MessageOptions,
-
   SplitOptions,
-  StringResolvable
+  StringResolvable,
 } from 'discord.js';
 import { PluginMap } from './discord.service';
 import { SettingsPlugin } from './plugins/settings.plugin';
@@ -39,15 +38,31 @@ export class Context {
     await this.message.react('✅');
   }
 
-  public send(content: APIMessageContentResolvable | (MessageOptions & { split?: false }) | MessageAdditions): Promise<Message>;
-  public send(options: MessageOptions & { split: true | SplitOptions }): Promise<Message[]>;
-  public send(options: MessageOptions | APIMessage): Promise<Message | Message[]>;
-  public send(content: StringResolvable, options: (MessageOptions & { split?: false }) | MessageAdditions): Promise<Message>;
-  public send(content: StringResolvable, options: MessageOptions & { split: true | SplitOptions }): Promise<Message[]>;
-  public send(content: StringResolvable, options: MessageOptions): Promise<Message | Message[]>;
   public send(
-    content: any,
-    options?: any): Promise<Message | Message[]> {
+    content:
+      | APIMessageContentResolvable
+      | (MessageOptions & { split?: false })
+      | MessageAdditions,
+  ): Promise<Message>;
+  public send(
+    options: MessageOptions & { split: true | SplitOptions },
+  ): Promise<Message[]>;
+  public send(
+    options: MessageOptions | APIMessage,
+  ): Promise<Message | Message[]>;
+  public send(
+    content: StringResolvable,
+    options: (MessageOptions & { split?: false }) | MessageAdditions,
+  ): Promise<Message>;
+  public send(
+    content: StringResolvable,
+    options: MessageOptions & { split: true | SplitOptions },
+  ): Promise<Message[]>;
+  public send(
+    content: StringResolvable,
+    options: MessageOptions,
+  ): Promise<Message | Message[]>;
+  public send(content: any, options?: any): Promise<Message | Message[]> {
     return this.message.channel.send(content, options);
   }
 

@@ -14,17 +14,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import { defineComponent } from '@nuxtjs/composition-api'
 
-@Component({
-  async fetch({ store }): Promise<void> {
-    await Promise.all([
-      store.dispatch('blog/getArticles'),
-      store.dispatch('raid/getRaids'),
-      store.dispatch('slide/getSlides'),
-    ])
-  },
-})
-export default class Index extends Vue {}
+export default defineComponent({})
 </script>
+

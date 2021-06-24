@@ -140,51 +140,35 @@ export default class Applications extends Vue {
     { text: 'Cancelled', value: 'cancelled' },
   ]
 
-  get submissionBackground(): string {
-    return this.$store.state.submission.submission &&
-      this.$store.state.submission.submission.characters &&
-      this.$store.state.submission.submission.characters.length &&
-      this.$store.state.submission.submission.characters[0].render_url
-      ? this.$store.state.submission.submission.characters[0].render_url
-      : 'https://cdnassets.raider.io/images/login/backgrounds/bfa/blood-temple.jpg'
+  get submission() {
+    return this.$accessor.submission.submission
   }
 
-  get title(): string {
-    return `${
-      this.$store.state.submission.submission &&
-      this.$store.state.submission.submission.characters &&
-      this.$store.state.submission.submission.characters[0].name
-        ? this.$store.state.submission.submission.characters[0].name + ' Application'
-        : 'Really Bad Applications'
-    }`
+  get submissions() {
+    return this.$accessor.submission.submissions
   }
 
-  get submission(): FormSubmission | null {
-    return this.$store.state.submission.submission
+  get submissionBackground() {
+    return (
+      this.submission?.characters?.[0]?.media?.main ||
+      'https://cdnassets.raider.io/images/login/backgrounds/bfa/blood-temple.jpg'
+    )
   }
 
-  get submissions(): FormSubmission[] {
-    return this.$store.state.submission.submissions
+  get title() {
+    return this.submission?.characters?.[0].name + ' Application' || 'Really Bad Application'
   }
 
-  get formQuestions(): FormQuestion[] {
-    return this.$store.state.form.questions
+  get questions() {
+    return this.$accessor.form.questions
   }
 
-  get statusCategory(): string {
-    return this.$store.state.submission.statusCategory
+  get statusCategory() {
+    return this.$accessor.submission.statusCategory
   }
 
   get pagination() {
     return this.$accessor.submission.pagination
-  }
-
-  get paginationCurrent(): number {
-    return this.$store.state.submission.pagination.current
-  }
-
-  set paginationCurrent(current: number) {
-    this.$store.dispatch('submission/setPaginationCurrent', current)
   }
 
   created(): void {
@@ -209,24 +193,8 @@ export default class Applications extends Vue {
     }
   }
 
-  avatar(user: User): string {
-    if (user.discord_avatar) {
-      const base = `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.discord_avatar}`
-
-      const avatars: Avatars = {
-        webp: `${base}.webp`,
-        png: `${base}.png`,
-        jpg: `${base}.jpg`,
-      }
-
-      if (user.discord_avatar.startsWith('a_')) {
-        avatars.gif = `${base}.gif`
-      }
-
-      return avatars.gif ? avatars.gif : avatars.png
-    }
-
-    return `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
+  avatar(user: User) {
+    return user.avatar || `https://render-us.worldofwarcraft.com/shadow/avatar/10-${Math.round(Math.random())}.jpg`
   }
 
   defaultingCharSubtitle(character?: FormCharacter): string {
@@ -273,9 +241,9 @@ export default class Applications extends Vue {
   }
 
   async paginate(step: number): Promise<void> {
-    this.$store.commit('submission/setPaginationCurrent', this.pagination.page_current + step)
+    this.$accessor.submission.setPaginationCurrent(this.pagination.page_current + step)
 
-    await this.$store.dispatch('submission/getSubmissions', {
+    await this.$accessor.submission.getSubmissions({
       limit: this.pagination.page_size,
       offset: (this.pagination.page_current - 1) * this.pagination.page_size,
       status: this.statusCategory,

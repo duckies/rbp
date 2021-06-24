@@ -1,9 +1,9 @@
-import { HttpService, Injectable } from '@nestjs/common';
-import { RateLimiter } from '../../blizzard.rate-limiter';
+import { Injectable } from '@nestjs/common';
+import { HttpService } from '../../../http/http.service';
 
 @Injectable()
 export class BattleNetService {
-  constructor(private readonly http: HttpService, private readonly rateLimiter: RateLimiter) {}
+  constructor(private readonly http: HttpService) {}
 
   /**
    * Checks if the Blizzard user token is valid.

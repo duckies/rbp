@@ -5,7 +5,7 @@ import {
   Entity,
   OneToMany,
   PrimaryKey,
-  Property,
+  Property
 } from '@mikro-orm/core';
 import { Roles } from '../app.roles';
 import { Article } from '../article/article.entity';
@@ -47,6 +47,19 @@ export class User extends BaseEntity<User, 'id'> {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
+
+  @Property({ persist: false })
+  get avatar() {
+    if (!this.discord_avatar) return null;
+
+    const base = `https://cdn.discordapp.com/avatars/${this.discord_id}/${this.discord_avatar}`
+
+    if (this.discord_avatar.endsWith('a_')) {
+      return `${base}.gif`
+    } else {
+      return `${base}.png`
+    }
+  }
 
   @OneToMany(() => Article, (a) => a.author, { hidden: true })
   articles = new Collection<Article>(this);

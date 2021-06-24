@@ -51,7 +51,7 @@ export class DiscordHandler {
       // Remove command and/or group names.
       args.splice(0, match.depth);
 
-      const ctx = new Context(
+      ctx = new Context(
         this.discord.client,
         this.prefix,
         message,
@@ -90,7 +90,7 @@ export class DiscordHandler {
    *
    * @see https://stackoverflow.com/a/46946490/8354855
    *
-   * @param message message received from the onMessage event
+   * @param message Message received from the onMessage event.
    */
   private getMessageTokens(message: Message): string[] {
     const args = message.content.slice(this.prefix.length).trim();
@@ -133,8 +133,10 @@ export class DiscordHandler {
     // Ideally, this is removed if I eventually want to add non-string types.
     if (!command.mentions.length) return args;
 
+    console.log(command.mentions);
+
     for (let i = 0; i < args.length; i++) {
-      // Offset due to metadata considering the injected context parameter.
+      // Offset arguments for the context parameter.
       const mention = command.mentions.find((m) => m.index === i + 1);
 
       if (!mention) {
@@ -142,16 +144,25 @@ export class DiscordHandler {
         continue;
       }
 
-      if (mention.paramtype === CommandParamtypes.MEMBER) {
-        ret.push(this.getMemberMention(args[i], guild));
-      } else if (mention.paramtype === CommandParamtypes.CHANNEL) {
-        ret.push(this.getChannelMention(args[i], guild));
-      } else if (mention.paramtype === CommandParamtypes.ROLE) {
-        ret.push(this.getRoleMention(args[i], guild));
-      } else {
-        throw new BadCommandArgsException();
+      switch (mention.paramtype) {
+        case CommandParamtypes.MEMBER:
+          ret.push(this.getMemberMention(args[i], guild));
+          break;
+
+        case CommandParamtypes.CHANNEL:
+          ret.push(this.getChannelMention(args[i], guild));
+          break;
+
+        case CommandParamtypes.ROLE:
+          ret.push(this.getRoleMention(args[i], guild));
+          break;
+
+        default:
+          throw new BadCommandArgsException();
       }
     }
+
+    console.log(ret);
 
     if (method.length - 1 > ret.length) throw new BadCommandArgsException();
 
@@ -205,6 +216,8 @@ export class DiscordHandler {
    */
   public getRoleMention(argument: string, guild: Guild) {
     const matches = argument.match(/<@&(\d{17,19})>/);
+
+    console.log(argument, guild);
 
     if (!matches) throw new BadCommandArgsException();
 

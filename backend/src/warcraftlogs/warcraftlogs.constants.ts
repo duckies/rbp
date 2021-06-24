@@ -1,0 +1,3 @@
+export const WCL_CLIENT_ID = 'WCL_CLIENT_ID';
+export const WCL_CLIENT_SECRET = 'WCL_CLIENT_SECRET';
+export const WCL_TOKEN_URL = 'WCL_TOKEN_URL';

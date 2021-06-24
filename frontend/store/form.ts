@@ -14,7 +14,7 @@ export const state = () => ({
 
 export const getters = getterTree(state, {
   isLoading: (state) => state.status === StateStatus.BUSY,
-  questions: (state) => (state.form?.questions ? state.form.questions : []),
+  questions: (state) => state.form?.questions || ([] as FormQuestion[]),
 })
 
 export const mutations = mutationTree(state, {

@@ -39,6 +39,8 @@ export class SubmissionService implements OnModuleInit {
     const uploadPath = path.join(process.cwd(), 'uploads', 'applications');
 
     fs.access(uploadPath, (error) => {
+      this.logger.log(`Ensured upload directory: ${uploadPath}`);
+
       if (error) {
         this.logger.log(`Creating upload directory: ${uploadPath}`);
 

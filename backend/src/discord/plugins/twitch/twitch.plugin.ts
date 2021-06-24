@@ -3,19 +3,11 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import {
-  Client,
-  GuildMember,
-  MessageEmbed,
-  Presence,
-  Role,
-  TextChannel,
-} from 'discord.js';
+import { Client, MessageEmbed, Presence, Role, TextChannel } from 'discord.js';
 import { TwitchService } from '../../../twitch/twitch.service';
 import {
   ChannelMention,
   RoleMention,
-  UserMention,
 } from '../../decorators/mention.decorator';
 import { PluginConfig } from '../../discord-config.class';
 import { Context } from '../../discord.context';
@@ -104,20 +96,43 @@ export class TwitchPlugin extends DiscordPlugin {
     description: 'Adds a role to automatically scan for Twitch streams.',
     syntax: '<@role>',
   })
-  async addRole(
-    ctx: Context,
-    @UserMention() user: GuildMember,
-    @RoleMention() role: Role,
-  ) {
-    console.log(user, role);
-    // await ctx.guild.roles.fetch();
-    // console.log(roleId);
-    // console.log(ctx.guild.roles.cache.keys());
-    // const role = ctx.guild.roles.cache.get(roleId);
-    // if (!role) {
-    //   return ctx.send('That role was not found.');
-    // }
-    // return ctx.send(ctx.formatCode(role, 'JSON'));
+  async addRole(ctx: Context, @RoleMention() role: Role) {
+    const { roles } = await this.config.getGuild(ctx.guild);
+
+    const existing = roles.find((r) => r === role.id);
+
+    if (existing) {
+      return ctx.send('This role is already being tracked.');
+    }
+
+    roles.push(role.id);
+
+    await this.config.setGuild(ctx.guild, { roles });
+
+    return ctx.tick();
+  }
+
+  @Command({
+    name: 'removerole',
+    group: 'twitch',
+    description:
+      'Removes a role from being automatically scanned for Twitch streams.',
+    syntax: '<@role>',
+  })
+  async removeRole(ctx: Context, @RoleMention() role: Role) {
+    const { roles } = await this.config.getGuild(ctx.guild);
+
+    const existing = roles.find((r) => r === role.id);
+
+    if (!existing) {
+      return ctx.send('This role was already not being tracked.');
+    }
+
+    const newRoles = roles.filter((r) => r !== role.id);
+
+    await this.config.setGuild(ctx.guild, { roles: newRoles });
+
+    return ctx.tick();
   }
 
   @Command({

@@ -5,6 +5,8 @@ import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
 DotenvConfig()
 
 const config: NuxtConfig = {
+  ssr: true,
+
   env: {
     FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL || 'http://localhost:3030',
     FRONTEND_FILE_UPLOAD_URL: process.env.FRONTEND_FILE_UPLOAD_URL || 'http://localhost:3000/submission/upload',
@@ -119,7 +121,7 @@ const config: NuxtConfig = {
 
   modern: process.env.NODE_ENV === 'production',
 
-  buildModules: ['@nuxt/typescript-build', 'nuxt-typed-vuex'],
+  buildModules: ['@nuxt/typescript-build', 'nuxt-typed-vuex', '@nuxtjs/composition-api'],
 
   build: {
     // Currently causing performance issues, investigate.

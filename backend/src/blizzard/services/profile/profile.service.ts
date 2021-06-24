@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { template } from '../../../app.utils';
-import { User } from '../../../user/user.entity';
-import { RateLimiter } from '../../blizzard.rate-limiter';
+import { HttpService } from '../../../http/http.service';
 import { BlizzardService } from '../../blizzard.service';
 import { FindCharacterDto } from '../../dto/find-character.dto';
 import { AssetType } from '../../enums/asset-type.enum';
@@ -19,103 +18,95 @@ export interface ProfileParams {
 @Injectable()
 export class ProfileService {
   constructor(
-    private readonly rateLimiter: RateLimiter,
+    private readonly http: HttpService,
     private readonly gameDataService: GameDataService,
     private readonly blizzardService: BlizzardService,
-  ) {}
-
-  async getAccountProfileSummary(user: User) {
-    return this.rateLimiter.get<Profile.AccountProfileSummary>(
-      'https://us.api.blizzard.com/profile/user/wow',
-      null,
-      user,
-    );
+  ) {
+    http.setLimits({
+      autoStart: true,
+      intervalCap: 100,
+      interval: 1000,
+    });
   }
 
   async getProtectedCharacterProfileSummary(
     realmId: number,
     characterId: number,
   ) {
-    return this.rateLimiter.get<Profile.ProtectedCharacterProfileSummary>(
-      `https://us.api.blizzard.com/profile/user/wow/protected-character/${realmId}-${characterId}`,
+    return this.http.get<Profile.ProtectedCharacterProfileSummary>(
+      `/profile/user/wow/protected-character/${realmId}-${characterId}`,
     );
   }
 
   async getAccountCollectionsIndex() {
-    return this.rateLimiter.get<Profile.AccountCollectionsIndex>(
-      'https://us.api.blizzard.com/profile/user/wow/collections',
+    return this.http.get<Profile.AccountCollectionsIndex>(
+      '/profile/user/wow/collections',
     );
   }
 
   async getAccountMountsCollectionSummary() {
-    return this.rateLimiter.get<Profile.AccountMountsCollectionSummary>(
-      'https://us.api.blizzard.com/profile/user/wow/collections/mounts',
+    return this.http.get<Profile.AccountMountsCollectionSummary>(
+      '/profile/user/wow/collections/mounts',
     );
   }
 
   async getAccountPetsCollectionSummary() {
-    return this.rateLimiter.get<Profile.AccountPetsCollectionSummary>(
-      'https://us.api.blizzard.com/profile/user/wow/collections/mounts',
+    return this.http.get<Profile.AccountPetsCollectionSummary>(
+      '/profile/user/wow/collections/mounts',
     );
   }
 
   async getCharacterAchievementsSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterAchievementsSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterAchievementsSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterAchievementsSummary>(
+      ProfileEndpoint.CharacterAchievementsSummary.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
   async getCharacterAchievementStatistics({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterAchievementStatistics>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterAchievementStatistics.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterAchievementStatistics>(
+      ProfileEndpoint.CharacterAchievementStatistics.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
   async getCharacterAppearanceSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterAppearanceSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterAppearanceSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterAppearanceSummary>(
+      ProfileEndpoint.CharacterAppearanceSummary.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
   async getCharacterCollectionsIndex({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterCollectionsIndex>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterCollectionsIndex.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterCollectionsIndex>(
+      ProfileEndpoint.CharacterCollectionsIndex.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
   async getCharacterMountsCollectionSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterMountsCollectionSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterMountsCollectionSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name),
+    return this.http.get<Profile.CharacterMountsCollectionSummary>(
+      ProfileEndpoint.CharacterMountsCollectionSummary.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name),
     );
   }
 
   async getCharacterPetsCollectionSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterPetsCollectionSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterPetsCollectionSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterPetsCollectionSummary>(
+      ProfileEndpoint.CharacterPetsCollectionSummary.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
@@ -167,12 +158,11 @@ export class ProfileService {
   }
 
   async getCharacterHunterPetsSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterHunterPetsSummary>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterHunterPetsSummary.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterHunterPetsSummary>(
+      ProfileEndpoint.CharacterHunterPetsSummary.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
@@ -191,12 +181,11 @@ export class ProfileService {
     name,
     realm,
   }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterMythicKeystoneProfileIndex>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterMythicKeystoneProfileIndex.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name),
+    return this.http.get<Profile.CharacterMythicKeystoneProfileIndex>(
+      ProfileEndpoint.CharacterMythicKeystoneProfileIndex.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name),
     );
   }
 
@@ -204,12 +193,11 @@ export class ProfileService {
     name,
     realm,
   }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterMythicKeystoneSeasonDetails>(
-      'https://us.api.blizzard.com' +
-        ProfileEndpoint.CharacterMythicKeystoneSeasonDetails.replace(
-          '{realmSlug}',
-          realm,
-        ).replace('{characterName}', name.toLowerCase()),
+    return this.http.get<Profile.CharacterMythicKeystoneSeasonDetails>(
+      ProfileEndpoint.CharacterMythicKeystoneSeasonDetails.replace(
+        '{realmSlug}',
+        realm,
+      ).replace('{characterName}', name.toLowerCase()),
     );
   }
 
@@ -243,7 +231,7 @@ export class ProfileService {
   }
 
   async getCharacterPvPBracketStatistics({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterPvPBracketStatistics>(
+    return this.http.get<Profile.CharacterPvPBracketStatistics>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterPvPBracketStatistics.replace(
           '{realmSlug}',
@@ -256,7 +244,7 @@ export class ProfileService {
     { name, realm }: FindCharacterDto,
     pvpBracket: number,
   ) {
-    return this.rateLimiter.get<Profile.CharacterPvPSummary>(
+    return this.http.get<Profile.CharacterPvPSummary>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterPvPSummary.replace('{realmSlug}', realm)
           .replace('{characterName}', name.toLowerCase())
@@ -265,7 +253,7 @@ export class ProfileService {
   }
 
   async getCharacterQuests({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterQuests>(
+    return this.http.get<Profile.CharacterQuests>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterQuests.replace('{realmSlug}', realm).replace(
           '{characterName}',
@@ -275,7 +263,7 @@ export class ProfileService {
   }
 
   async getCharacterCompletedQuests({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterCompletedQuests>(
+    return this.http.get<Profile.CharacterCompletedQuests>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterCompletedQuests.replace(
           '{realmSlug}',
@@ -285,7 +273,7 @@ export class ProfileService {
   }
 
   async getCharacterReputationsSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterReputationsSummary>(
+    return this.http.get<Profile.CharacterReputationsSummary>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterReputationsSummary.replace(
           '{realmSlug}',
@@ -306,7 +294,7 @@ export class ProfileService {
   }
 
   async getCharacterStatisticsSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterStatisticsSummary>(
+    return this.http.get<Profile.CharacterStatisticsSummary>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterStatisticsSummary.replace(
           '{realmSlug}',
@@ -316,7 +304,7 @@ export class ProfileService {
   }
 
   async getCharacterTitlesSummary({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.CharacterTitlesSummary>(
+    return this.http.get<Profile.CharacterTitlesSummary>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.CharacterTitlesSummary.replace(
           '{realmSlug}',
@@ -326,7 +314,7 @@ export class ProfileService {
   }
 
   async getGuild({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.Guild>(
+    return this.http.get<Profile.Guild>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.Guild.replace('{realmSlug}', realm).replace(
           '{nameSlug}',
@@ -336,7 +324,7 @@ export class ProfileService {
   }
 
   async getGuildActivity({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.GuildActivity>(
+    return this.http.get<Profile.GuildActivity>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.GuildActivity.replace('{realmSlug}', realm).replace(
           '{nameSlug}',
@@ -346,7 +334,7 @@ export class ProfileService {
   }
 
   async getGuildAchievements({ name, realm }: FindCharacterDto) {
-    return this.rateLimiter.get<Profile.GuildAchievements>(
+    return this.http.get<Profile.GuildAchievements>(
       'https://us.api.blizzard.com' +
         ProfileEndpoint.GuildAchievements.replace('{realmSlug}', realm).replace(
           '{nameSlug}',

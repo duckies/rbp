@@ -1,8 +1,9 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { HttpService, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { template } from '../../../app.utils';
 import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
+import { HttpService } from '../../../http/http.service';
 import { BlizzardService } from '../../blizzard.service';
 import { PlayableClassMedia } from '../../entities/playable-class-media.entity';
 import { PlayableClass } from '../../entities/playable-class.entity';
@@ -11,7 +12,6 @@ import { PlayableSpecialization } from '../../entities/playable-specialization.e
 import { AssetType } from '../../enums/asset-type.enum';
 import { GameDataEndpoint } from '../../enums/game-data-api.enum';
 import * as GameData from '../../interfaces/game-data';
-import { TokenService } from '../token.service';
 
 export type GameDataReturnType = {
   [GameDataEndpoint.AchievementCategoriesIndex]: void;
@@ -93,7 +93,6 @@ export class GameDataService {
     @InjectRepository(BlizzardAsset)
     private readonly assetRepository: EntityRepository<BlizzardAsset>,
     private readonly blizzardService: BlizzardService,
-    private readonly tokenService: TokenService,
     private readonly http: HttpService,
     private readonly em: EntityManager,
   ) {}
@@ -235,14 +234,12 @@ export class GameDataService {
     return media;
   }
 
-  async getGameData<T extends GameDataEndpoint>(
+  getGameData<T extends GameDataEndpoint>(
     endpoint: T,
     param: string | number = '',
   ): Promise<GameDataReturnType[T]> {
-    await this.tokenService.getToken();
-
-    const uri = `https://us.api.blizzard.com/data/wow${endpoint}/${param}?namespace=static-us&locale=en_US`;
-
-    return (await this.http.get(uri).toPromise()).data;
+    return this.http.$get(
+      `/data/wow${endpoint}/${param}?namespace=static-us&locale=en_US`,
+    );
   }
 }

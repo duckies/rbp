@@ -20,6 +20,12 @@ import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raiderIO/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
 import { UserModule } from './user/user.module';
+import {
+  WCL_CLIENT_ID,
+  WCL_CLIENT_SECRET,
+  WCL_TOKEN_URL,
+} from './warcraftlogs/warcraftlogs.constants';
+import { WarcraftLogsModule } from './warcraftlogs/warcraftlogs.module';
 
 @Module({
   imports: [
@@ -47,8 +53,12 @@ import { UserModule } from './user/user.module';
         TWITCH_CLIENT_ID: Joi.string().required(),
         TWITCH_SECRET_KEY: Joi.string().required(),
         BASE_URL: Joi.string().default('http://localhost:3030/'),
+        [WCL_CLIENT_ID]: Joi.string().required(),
+        [WCL_CLIENT_SECRET]: Joi.string().required(),
+        [WCL_TOKEN_URL]: Joi.string().required(),
       }),
     }),
+    WarcraftLogsModule,
     PassportModule.register({
       defaultStrategy: 'blizzard',
     }),

@@ -1,4 +1,4 @@
-import { computed, reactive } from '@nuxtjs/composition-api';
+import { computed, reactive, reqRef } from '@nuxtjs/composition-api';
 import { BaseState, Status } from '../interfaces/base-state.interface';
 import { User } from '../store/user';
 
@@ -17,9 +17,6 @@ const setUser = (user: User) => state.user = user
 
 const isLoggedIn = computed(() => !!state.token)
 
-const avatar = computed(() => state.user ? getAvatar(state.user) : '')
-
-
 const getAvatar = (user: User) => {
   if (user.discord_avatar) {
     const ext = user.discord_avatar.includes('a_') ? '.gif' : '.png'
@@ -31,5 +28,6 @@ const getAvatar = (user: User) => {
 
 export default {
   state: reactive(state),
+  avatar: computed(() => state.user ? getAvatar(state.user) : ''),
   setUser,
 }
