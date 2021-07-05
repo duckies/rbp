@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["esnext", "esnext.asynciterable", "dom"],
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "strict": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"]
+    },
+    "types": [
+      "@types/node",
+      "@types/lodash",
+      "@types/cookie",
+      "@nuxt/types",
+      "@nuxt/image",
+      "@nuxtjs/axios",
+      "pinia/nuxt/types",
+      "vuetify",
+      "cookie-universal-nuxt"
+    ]
+  },
+  "exclude": ["node_modules", ".nuxt"]
+}

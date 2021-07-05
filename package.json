@@ -1,0 +1,13 @@
+{
+  "name": "@rbp/monorepo",
+  "version": "1.0.0",
+  "description": "Online gaming community website",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "client": "yarn workspace @rbp/client",
+    "server": "yarn workspace @rbp/server"
+  }
+}
