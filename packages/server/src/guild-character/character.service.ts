@@ -58,8 +58,8 @@ export class CharacterService {
   public async populateGuildCharacter(guildCharacter: GuildCharacter) {
     const dto = guildCharacter.getFindCharacterDTO();
 
-    const [summary, specialization, media, raiderIO] = await Promise.allSettled(
-      [
+    const [summary, specialization, media, raiderIO, ...rankings] =
+      await Promise.allSettled([
         this.profileService.getCharacterProfileSummary(dto),
         this.profileService.getCharacterSpecializationsSummary(dto),
         this.profileService.getCharacterMediaSummary(dto),
@@ -67,8 +67,7 @@ export class CharacterService {
           RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
           RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
         ]),
-      ],
-    );
+      ]);
 
     if (summary.status === 'fulfilled') {
       guildCharacter.setCharacterProfileSummary(summary.value.data, this.em);
@@ -89,7 +88,7 @@ export class CharacterService {
       guildCharacter.setCharacterRaiderIO(raiderIO.value);
     }
 
-    return guildCharacter;
+    if (rankings) return guildCharacter;
   }
 
   /**

@@ -33,7 +33,7 @@ export class RaidService {
    * @param offset number of raids to offset by
    */
   async findAll(limit = 10, offset = 0) {
-    const [result, total] = await this.raidRepository.findAndCount(
+    return this.raidRepository.findAndCount(
       {},
       {
         orderBy: { id: QueryOrder.DESC },
@@ -41,8 +41,6 @@ export class RaidService {
         offset,
       },
     );
-
-    return { result, total };
   }
 
   /**
@@ -60,8 +58,8 @@ export class RaidService {
    * @param limit number of raids to retrieve
    * @param offset number of raids to offset by
    */
-  async findAllFeatured(limit = 4, offset = 0) {
-    const [result, total] = await this.raidRepository.findAndCount(
+  public findAllFeatured(limit = 4, offset = 0) {
+    return this.raidRepository.findAndCount(
       { isFeatured: true },
       {
         orderBy: { order: QueryOrder.ASC },
@@ -69,8 +67,6 @@ export class RaidService {
         offset,
       },
     );
-
-    return { result, total };
   }
 
   /**

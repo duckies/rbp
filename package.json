@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Online gaming community website",
   "private": true,
+  "license": "MIT",
   "workspaces": [
     "packages/*"
   ],

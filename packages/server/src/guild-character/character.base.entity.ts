@@ -17,8 +17,11 @@ import * as ProfileAPI from '../blizzard/interfaces/profile';
 import { RaidExpansion } from '../blizzard/interfaces/profile/character-encounters/character-raids.interface';
 import { EquippedItem } from '../blizzard/interfaces/profile/character-equipment/character-equipment-summary.interface';
 import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.interface';
+import { RoleType } from '../warcraftlogs/interfaces/role-type.enum';
+import { ZoneRankings } from '../warcraftlogs/interfaces/zone-rankings.interface';
 import { Covenant } from './enums/covenant.enum';
 import { CharacterMedia } from './interfaces/character-media.interface';
+import { CharacterRankings } from './interfaces/character-rankings.interface';
 
 @Unique({ properties: ['name', 'realm', 'region'] })
 @Entity({ abstract: true })
@@ -132,19 +135,14 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
   @Property({ nullable: true })
   raiderIO?: RaiderIOCharacter;
 
-  /**
-   * Timestamps
-   */
+  @Property({ nullable: true })
+  rankings?: CharacterRankings;
 
   @Property()
   createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
-
-  /**
-   * Updating Methods
-   */
 
   setCharacterProfileSummary(
     data: ProfileAPI.CharacterProfileSummary,
@@ -222,6 +220,11 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
 
   setCharacterRaiderIO(data: RaiderIOCharacter) {
     this.raiderIO = data;
+  }
+
+  setCharacterRankings(role: RoleType, data: ZoneRankings) {
+    this.rankings = this.rankings || {};
+    this.rankings[role] = data;
   }
 
   /**

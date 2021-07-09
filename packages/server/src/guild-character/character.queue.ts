@@ -86,10 +86,11 @@ export class CharacterQueue {
                   results.added++;
                 }
               } else {
-                const status = await this.profileService.getCharacterProfileStatus(
-                  character.getFindCharacterDTO(),
-                  character.last_modified,
-                );
+                const status =
+                  await this.profileService.getCharacterProfileStatus(
+                    character.getFindCharacterDTO(),
+                    character.last_modified,
+                  );
 
                 if (!status.data.is_valid || status.data.id !== character.id) {
                   results.deleted++;
@@ -187,9 +188,9 @@ export class CharacterQueue {
     if (job.name === 'add-remove-members') {
       const len = (results as CharacterRemoveResult).names.length;
       this.logger.log(
-        `Removed ${len} Character${
-          len === 0 ? 's' : len === 1 ? ':' : 's:'
-        } ${(results as CharacterRemoveResult).names.join(', ')}`,
+        `Removed ${len} Character${len === 0 ? 's' : len === 1 ? ':' : 's:'} ${(
+          results as CharacterRemoveResult
+        ).names.join(', ')}`,
       );
     }
   }

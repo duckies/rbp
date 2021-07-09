@@ -1,7 +1,7 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BlizzardAsset } from '../blizzard-asset/blizzard-asset.entity';
+import { BlizzardAsset } from './entities/blizzard-asset.entity';
 import { HttpModule } from '../http/http.module';
 import { BlizzardService } from './blizzard.service';
 import { PlayableClassMedia } from './entities/playable-class-media.entity';

@@ -128,9 +128,10 @@ export class ProfileService {
       name: name.toLowerCase(),
     });
 
-    const resp = await this.blizzardService.getProfile<Profile.CharacterEquipmentSummary>(
-      endpoint,
-    );
+    const resp =
+      await this.blizzardService.getProfile<Profile.CharacterEquipmentSummary>(
+        endpoint,
+      );
 
     if (cache) {
       resp.data.equipped_items = await Promise.all(

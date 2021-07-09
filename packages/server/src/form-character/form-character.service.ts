@@ -5,6 +5,8 @@ import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
 import { RaiderIOService } from '../raiderIO/raiderIO.service';
+import { RoleType } from '../warcraftlogs/interfaces/role-type.enum';
+import { WarcraftLogsService } from '../warcraftlogs/warcraftlogs.service';
 import { UpdateFormCharacterDto } from './dto/update-form-character.dto';
 import { FormCharacter } from './form-character.entity';
 
@@ -15,6 +17,7 @@ export class FormCharacterService {
     private readonly formCharacterRepository: EntityRepository<FormCharacter>,
     private readonly profileService: ProfileService,
     private readonly raiderIOService: RaiderIOService,
+    private readonly warcraftLogsService: WarcraftLogsService,
     private readonly em: EntityManager,
   ) {}
 
@@ -55,7 +58,7 @@ export class FormCharacterService {
     formCharacter: FormCharacter,
     em?: EntityManager,
   ) {
-    const findCharacterDto = formCharacter.getFindCharacterDTO();
+    const dto = formCharacter.getFindCharacterDTO();
 
     const [
       summary,
@@ -64,18 +67,25 @@ export class FormCharacterService {
       media,
       raids,
       raiderIO,
+      rankingsDPS,
+      rankingsHeal,
+      rankingsTank,
     ] = await Promise.allSettled([
-      this.profileService.getCharacterProfileSummary(findCharacterDto),
-      this.profileService.getCharacterEquipmentSummary(findCharacterDto),
-      this.profileService.getCharacterSpecializationsSummary(findCharacterDto),
-      this.profileService.getCharacterMediaSummary(findCharacterDto),
-      this.profileService.getCharacterRaids(findCharacterDto),
-      this.raiderIOService.getCharacterRaiderIO(findCharacterDto, [
+      this.profileService.getCharacterProfileSummary(dto),
+      this.profileService.getCharacterEquipmentSummary(dto),
+      this.profileService.getCharacterSpecializationsSummary(dto),
+      this.profileService.getCharacterMediaSummary(dto),
+      this.profileService.getCharacterRaids(dto),
+      this.raiderIOService.getCharacterRaiderIO(dto, [
         RaiderIOCharacterFields.GEAR,
         RaiderIOCharacterFields.RAID_PROGRESSION,
         RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
         RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
       ]),
+
+      this.warcraftLogsService.getCharacterRankings(dto, null, RoleType.DPS),
+      this.warcraftLogsService.getCharacterRankings(dto, null, RoleType.Healer),
+      this.warcraftLogsService.getCharacterRankings(dto, null, RoleType.Tank),
     ]);
 
     if (summary.status === 'fulfilled') {
@@ -106,6 +116,18 @@ export class FormCharacterService {
 
     if (raiderIO.status === 'fulfilled') {
       formCharacter.setCharacterRaiderIO(raiderIO.value);
+    }
+
+    if (rankingsDPS.status === 'fulfilled') {
+      formCharacter.setCharacterRankings(RoleType.DPS, rankingsDPS.value);
+    }
+
+    if (rankingsHeal.status === 'fulfilled') {
+      formCharacter.setCharacterRankings(RoleType.Healer, rankingsHeal.value);
+    }
+
+    if (rankingsTank.status === 'fulfilled') {
+      formCharacter.setCharacterRankings(RoleType.Tank, rankingsTank.value);
     }
 
     await this.em.populate(formCharacter, [

@@ -10,10 +10,8 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "5.13.6",
-    "@nuxtjs/composition-api": "0.24.5",
-    "@nuxtjs/google-analytics": "2.4.0",
-    "babel-runtime": "6.26.0",
-    "cookie": "0.4.1",
+    "@nuxtjs/composition-api": "0.24.6",
+    "@vueuse/core": "^5.1.0",
     "cookie-universal-nuxt": "2.1.5",
     "cross-env": "7.0.3",
     "date-fns": "2.22.1",
@@ -23,49 +21,32 @@
     "nuxt-dropzone": "1.0.4",
     "pinia": "0.5.2",
     "swiper": "6.7.1",
-    "typescript": "4.3.4",
     "vee-validate": "3.4.10",
     "vue-awesome-swiper": "4.1.1",
-    "vue-class-component": "7.2.6",
-    "vue-property-decorator": "9.1.2",
     "vuebar": "0.0.20",
-    "vuetify": "2.5.5",
+    "vuetify": "2.5.6",
     "vuetify-loader": "1.7.2"
   },
   "devDependencies": {
-    "@nuxt/image": "^0.4.17",
+    "@nuxt/image": "^0.5.0",
+    "@nuxt/postcss8": "1.1.3",
     "@nuxt/types": "2.15.7",
     "@nuxt/typescript-build": "2.1.0",
     "@nuxtjs/eslint-config-typescript": "6.0.1",
-    "@types/cookie": "0.4.0",
     "@types/lodash": "4.14.170",
-    "@vue/runtime-dom": "^3.1.2",
+    "@vue/runtime-dom": "3.1.4",
     "deepmerge": "4.2.2",
-    "eslint": "7.29.0",
+    "eslint": "7.30.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-nuxt": "2.0.0",
     "eslint-plugin-prettier": "3.4.0",
     "fibers": "5.0.0",
-    "imagemin-mozjpeg": "9.0.0",
-    "imagemin-pngquant": "9.0.2",
-    "imagemin-svgo": "9.0.0",
-    "lqip-loader": "2.2.1",
     "prettier": "2.3.1",
-    "responsive-loader": "2.3.0",
-    "sass": "1.32.2",
-    "sass-loader": "10.1.1",
-    "sqip-loader": "1.0.0",
-    "webp-loader": "0.6.0"
+    "sass": "1.32.13",
+    "sass-loader": "10.2.0"
   },
-  "renovate-config": {
-    "default": {
-      "extends": [
-        "config:base",
-        "group:allNonMajor"
-      ],
-      "meteor": {
-        "enabled": false
-      }
-    }
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
   }
 }

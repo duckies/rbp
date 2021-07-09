@@ -1,8 +1,8 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 import { template } from '../../../app.utils';
-import { BlizzardAsset } from '../../../blizzard-asset/blizzard-asset.entity';
+import { BlizzardAsset } from '../../entities/blizzard-asset.entity';
 import { HttpService } from '../../../http/http.service';
 import { BlizzardService } from '../../blizzard.service';
 import { PlayableClassMedia } from '../../entities/playable-class-media.entity';
@@ -98,7 +98,7 @@ export class GameDataService {
   ) {}
 
   async getGameItemMedia(id: number) {
-    const asset = await this.em.findOne(BlizzardAsset, {
+    let asset = await this.em.findOne(BlizzardAsset, {
       id,
       type: AssetType.Icon,
     });
@@ -107,11 +107,11 @@ export class GameDataService {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);
 
       await this.em
-        .getConnection()
-        .execute(
-          `insert into "blizzard_asset" (id, type, value) values (?, 'icon', ?) on conflict do nothing;`,
-          [id, data.assets[0].value],
-        );
+        .createQueryBuilder(BlizzardAsset)
+        .insert({ id, type: AssetType.Icon, value: data.assets[0].value })
+        .onConflict()
+        .ignore()
+        .execute();
 
       return { id, type: AssetType.Icon, value: data.assets[0].value };
     }
@@ -156,11 +156,8 @@ export class GameDataService {
     const endpoint = template(GameDataEndpoint.PlayableClassMedia, {
       playableClassId,
     });
-    const {
-      data,
-    } = await this.blizzardService.getData<GameData.PlayableClassMedia>(
-      endpoint,
-    );
+    const { data } =
+      await this.blizzardService.getData<GameData.PlayableClassMedia>(endpoint);
 
     playableClassMedia = new PlayableClassMedia();
     playableClassMedia.id = data.id;
@@ -186,11 +183,10 @@ export class GameDataService {
       specId,
     });
 
-    const {
-      data,
-    } = await this.blizzardService.getData<GameData.PlayableSpecialization>(
-      endpoint,
-    );
+    const { data } =
+      await this.blizzardService.getData<GameData.PlayableSpecialization>(
+        endpoint,
+      );
 
     specialization = new PlayableSpecialization();
     specialization.id = data.id;
@@ -219,11 +215,10 @@ export class GameDataService {
     const endpoint = template(GameDataEndpoint.PlayableSpecializationMedia, {
       specId,
     });
-    const {
-      data,
-    } = await this.blizzardService.getData<GameData.PlayableSpecializationMedia>(
-      endpoint,
-    );
+    const { data } =
+      await this.blizzardService.getData<GameData.PlayableSpecializationMedia>(
+        endpoint,
+      );
 
     media = new PlayableSpecializationMedia(data);
 

@@ -48,7 +48,10 @@ export type RaiderIOCharacterReturnType = {
 
 @Injectable()
 export class RaiderIOService {
-  private guildFields = [GuildRaiderIOFields.RAID_PROGRESSION, GuildRaiderIOFields.RAID_RANKINGS];
+  private guildFields = [
+    GuildRaiderIOFields.RAID_PROGRESSION,
+    GuildRaiderIOFields.RAID_RANKINGS,
+  ];
 
   constructor(private readonly http: HttpService) {}
 
@@ -56,7 +59,9 @@ export class RaiderIOService {
    * Obtains guild data from Raider.IO.
    * @param fields
    */
-  async getGuildRaiderIO(fields: GuildRaiderIOFields[] = this.guildFields): Promise<RaiderIOGuild> {
+  async getGuildRaiderIO(
+    fields: GuildRaiderIOFields[] = this.guildFields,
+  ): Promise<RaiderIOGuild> {
     const api = `https://raider.io/api/v1/guilds/profile?region=us&realm=area-52&name=really bad players${
       fields.length ? `&fields=${fields}` : ''
     }`;

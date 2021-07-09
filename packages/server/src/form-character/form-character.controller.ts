@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { FindCharacterDto } from './../blizzard/dto/find-character.dto';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FormCharacterService } from './form-character.service';
 
 @Controller('form-character')

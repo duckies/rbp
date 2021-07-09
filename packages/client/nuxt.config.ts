@@ -1,21 +1,29 @@
+import { resolve } from 'path'
 import { NuxtConfig } from '@nuxt/types'
-import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
+import { VuetifyLoaderPlugin } from 'vuetify-loader'
 
 const config: NuxtConfig = {
   ssr: true,
-
-  env: {
-    FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL || 'http://localhost:3030',
-    FRONTEND_FILE_UPLOAD_URL: process.env.FRONTEND_FILE_UPLOAD_URL || 'http://localhost:3000/submission/upload',
-    BACKEND_SERVER_BASE_URL: process.env.BACKEND_SERVER_BASE_URL || 'http://localhost:3000/',
-    BACKEND_CLIENT_BASE_URL: process.env.BACKEND_CLIENT_BASE_URL || 'http://localhost:3000/',
-    REDIRECT_URL: process.env.REDIRECT_URL || 'http://localhost:3030/callback',
-  },
-
+  srcDir: 'src/',
+  buildDir: 'dist/',
   server: {
-    port: process.env.FRONTEND_PORT || 3030,
+    port: process.env.CLIENT_PORT || 9000,
   },
-
+  alias: {
+    '@client': resolve(__dirname, '../client/src'),
+    '@server': resolve(__dirname, '../server/src'),
+  },
+  env: {
+    FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL || 'http://localhost:9000',
+    FRONTEND_FILE_UPLOAD_URL:
+      process.env.FRONTEND_FILE_UPLOAD_URL ||
+      'http://localhost:3000/submission/upload',
+    BACKEND_SERVER_BASE_URL:
+      process.env.BACKEND_SERVER_BASE_URL || 'http://localhost:3000/',
+    BACKEND_CLIENT_BASE_URL:
+      process.env.BACKEND_CLIENT_BASE_URL || 'http://localhost:3000/',
+    REDIRECT_URL: process.env.REDIRECT_URL || 'http://localhost:9000/callback',
+  },
   head: {
     title: 'Really Bad Players',
     htmlAttrs: {
@@ -27,7 +35,8 @@ const config: NuxtConfig = {
       {
         hid: 'description',
         name: 'description',
-        content: 'Gaming platform for the Really Bad Players World of Warcraft Horde guild on Area 52',
+        content:
+          'Gaming platform for the Really Bad Players World of Warcraft Horde guild on Area 52',
       },
     ],
     link: [
@@ -51,51 +60,35 @@ const config: NuxtConfig = {
       },
     ],
   },
-
   loading: { color: '#854feb', continuous: true },
-
   css: ['~/assets/styles/global.scss'],
-
   plugins: [
     '~/plugins/vuetify',
+    // '~/plugins/pinia',
     '~/plugins/auth',
-    '~/plugins/axios',
     '~/plugins/vee-validate',
     { src: '~/plugins/swiper', mode: 'client' },
   ],
-
-  modules: ['@nuxtjs/axios', 'cookie-universal-nuxt', ['@nuxtjs/google-analytics', { id: 'UA-129680177-1' }]],
-
-  optimizedImages: {
-    optimizeImages: true,
-    optimizeImagesInDev: true,
-  },
-
   components: true,
-
+  typescript: {
+    typeCheck: false,
+  },
   axios: {
     baseURL: process.env.BACKEND_BASE_URL || 'http://localhost:3000/',
-    browserBaseURL: process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000/',
+    browserBaseURL:
+      process.env.BACKEND_BROWSER_BASE_URL || 'http://localhost:3000/',
   },
-
-  vue: {
-    config: {
-      productionTip: false,
-    },
-  },
-
-  router: {
-    middleware: 'callback',
-  },
-
   modern: process.env.NODE_ENV === 'production',
-
-  buildModules: ['@nuxt/typescript-build', '@nuxtjs/composition-api/module', 'pinia/nuxt'],
-
+  modules: ['@nuxtjs/axios', '@nuxt/image', 'cookie-universal-nuxt'],
+  buildModules: [
+    '@nuxt/typescript-build',
+    '@nuxtjs/composition-api/module',
+    '@nuxt/postcss8',
+    'pinia/nuxt',
+  ],
   build: {
-    // Currently causing performance issues, investigate.
-    // extractCSS: process.env.NODE_ENV === 'production',
-    transpile: ['vee-validate/dist/rules', 'vuetify'],
+    parallel: true,
+    transpile: ['vee-validate/dist/rules', 'vuetify/lib'],
     plugins: [new VuetifyLoaderPlugin()],
     loaders: {
       sass: {

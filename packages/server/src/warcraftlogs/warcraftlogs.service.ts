@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { HttpService } from '../http/http.service';
 import {
@@ -7,6 +8,7 @@ import {
   ReportsQuery,
   ZoneQuery,
 } from './interfaces/reports.interface';
+import { RoleType } from './interfaces/role-type.enum';
 
 @Injectable()
 export class WarcraftLogsService {
@@ -16,6 +18,24 @@ export class WarcraftLogsService {
       interval: 3600000,
       intervalCap: 3600,
     });
+  }
+
+  public async getCharacterRankings(
+    { name, realm, region }: FindCharacterDto,
+    zoneID: number = 0,
+    role = RoleType.ANY,
+  ) {
+    return (
+      await this.http.$post('/', {
+        query: `{
+          characterData {
+            character(name: "${name}", serverSlug: "${realm}", serverRegion: "${region}") {
+              zoneRankings(zoneID: ${zoneID}, role: ${role})
+            }
+          }
+        }`,
+      })
+    ).data.characterData.character.zoneRankings;
   }
 
   public async getReport(code: string) {
@@ -142,8 +162,6 @@ export class WarcraftLogsService {
         }
       }`,
     });
-
-    console.log(resp);
 
     return resp?.data?.worldData?.encounter?.zone;
   }
