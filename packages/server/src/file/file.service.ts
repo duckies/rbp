@@ -1,27 +1,22 @@
-import { EntityRepository } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { FilterQuery, Populate, EntityManager } from '@mikro-orm/core';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import fs from 'fs';
+import { unlink } from 'fs/promises';
 import { User } from '../user/user.entity';
 import { FileUpload } from './file.entity';
 import { File } from './interfaces/file.interface';
 
-const { unlink } = fs.promises;
-
 @Injectable()
 export class FileService {
-  constructor(
-    @InjectRepository(FileUpload)
-    private readonly fileRepository: EntityRepository<FileUpload>,
-  ) {}
+  constructor(private readonly em: EntityManager) {}
 
   async create(files: File[], user?: User) {
     const fileEntities = files.map((file) => {
-      const fileEntity = new FileUpload();
-      fileEntity.filename = file.filename;
-      fileEntity.mimetype = file.mimetype;
-      fileEntity.path = file.path;
-      fileEntity.size = file.size;
+      const fileEntity = this.em.create(FileUpload, {
+        filename: file.filename,
+        mimetype: file.mimetype,
+        path: file.path,
+        size: file.size,
+      });
 
       if (user) {
         fileEntity.author = user;
@@ -30,17 +25,20 @@ export class FileService {
       return fileEntity;
     });
 
-    await this.fileRepository.persistAndFlush(fileEntities);
+    await this.em.persist(fileEntities).flush();
 
     return fileEntities;
   }
 
-  find(ids: number[]) {
-    return this.fileRepository.find({ id: { $in: ids } }, ['author']);
+  findAll(
+    where: FilterQuery<FileUpload>,
+    populate: Populate<FileUpload> = ['author'],
+  ) {
+    return this.em.findAndCount(FileUpload, where, populate);
   }
 
-  async delete(id: number, user?: User) {
-    const file = await this.fileRepository.findOneOrFail(id, ['author']);
+  async delete(where: FilterQuery<FileUpload>, user?: User) {
+    const file = await this.em.findOneOrFail(FileUpload, where, ['author']);
 
     if (user && file.author.id !== user.id) {
       throw new UnauthorizedException('You do not own this file');
@@ -48,8 +46,6 @@ export class FileService {
 
     await unlink(file.path);
 
-    this.fileRepository.remove(file);
-
-    await this.fileRepository.flush();
+    await this.em.remove(file).flush();
   }
 }

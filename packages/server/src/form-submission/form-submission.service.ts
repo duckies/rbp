@@ -1,6 +1,10 @@
-import { EntityManager, FilterQuery, QueryOrderMap } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/knex';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import {
+  EntityManager,
+  FilterQuery,
+  FindOneOptions,
+  FindOneOrFailOptions,
+  FindOptions,
+} from '@mikro-orm/core';
 import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
@@ -26,8 +30,6 @@ export class SubmissionService implements OnModuleInit {
   private readonly logger = new Logger(SubmissionService.name);
 
   constructor(
-    @InjectRepository(FormSubmission)
-    private readonly formSubmissionRepository: EntityRepository<FormSubmission>,
     private readonly formCharacterService: FormCharacterService,
     private readonly fileService: FileService,
     private readonly em: EntityManager,
@@ -35,6 +37,9 @@ export class SubmissionService implements OnModuleInit {
     @InjectQueue('discord') private readonly discordQueue: Queue,
   ) {}
 
+  /**
+   * Creates the directory for storing uploads if it doesn't exist.
+   */
   onModuleInit() {
     const uploadPath = path.join(process.cwd(), 'uploads', 'applications');
 
@@ -54,6 +59,7 @@ export class SubmissionService implements OnModuleInit {
   /**
    * Creates a new form submission for a user with associated
    * answers and characters.
+   *
    * @param author Form submission author.
    * @param createSubmissionDto CreateSubmissionDto
    */
@@ -63,22 +69,20 @@ export class SubmissionService implements OnModuleInit {
   ) {
     const formSubmission = new FormSubmission();
 
-    const openForm = await this.formSubmissionRepository.find(
-      {
-        status: FormSubmissionStatus.Open,
-        author: { id: author.id },
-      },
+    const openForm = await this.em.findOne(
+      FormSubmission,
+      { status: FormSubmissionStatus.Open, author: author.id },
       ['author'],
     );
 
-    if (openForm.length) {
+    if (openForm) {
       throw new BadRequestException(
         'You already have an open form. Please wait for your other application to be processed or cancel it.',
       );
     }
 
-    if (files && files.length) {
-      const fileUploads = await this.fileService.find(files);
+    if (files?.length) {
+      const [fileUploads] = await this.fileService.findAll({ id: files });
 
       for (const upload of fileUploads) {
         if (upload.author && upload.author.id !== author.id) {
@@ -101,7 +105,7 @@ export class SubmissionService implements OnModuleInit {
     formSubmission.mainCharacter = formCharacters[0];
     formSubmission.answers = answers;
 
-    await this.formSubmissionRepository.persistAndFlush(formSubmission);
+    await this.em.persist(formSubmission).flush();
 
     // When not using the populate API, this needs to be manually set.
     formSubmission.author.populated();
@@ -118,18 +122,11 @@ export class SubmissionService implements OnModuleInit {
     return formSubmission;
   }
 
-  /**
-   * Proxy ORM method for finding a form submission.
-   *
-   * @param where properties to match to the entity
-   * @param populate denotes if all relationships, or specific relationships, should be loaded
-   */
   findOne(
     where: FilterQuery<FormSubmission>,
-    populate?: boolean | string[],
-    orderBy?: QueryOrderMap,
+    options?: FindOneOptions<FormSubmission>,
   ) {
-    return this.formSubmissionRepository.findOne(where, populate, orderBy);
+    return this.em.findOne(FormSubmission, where, options);
   }
 
   /**
@@ -141,14 +138,9 @@ export class SubmissionService implements OnModuleInit {
    */
   findOneOrFail(
     where: FilterQuery<FormSubmission>,
-    populate?: boolean | string[],
-    orderBy?: QueryOrderMap,
+    options?: FindOneOrFailOptions<FormSubmission, any>,
   ) {
-    return this.formSubmissionRepository.findOneOrFail(
-      where,
-      populate,
-      orderBy,
-    );
+    return this.em.findOneOrFail(FormSubmission, where, options);
   }
 
   /**
@@ -160,18 +152,9 @@ export class SubmissionService implements OnModuleInit {
    */
   findAll(
     where?: FilterQuery<FormSubmission>,
-    populate?: boolean | string[],
-    orderBy?: QueryOrderMap,
-    limit?: number,
-    offset?: number,
+    options?: FindOptions<FormSubmission>,
   ) {
-    return this.formSubmissionRepository.findAndCount(
-      where,
-      populate,
-      orderBy,
-      limit,
-      offset,
-    );
+    return this.em.findAndCount(FormSubmission, where, options);
   }
 
   /**
@@ -186,10 +169,9 @@ export class SubmissionService implements OnModuleInit {
     updateFormSubmissionDto: UpdateFormSubmissionDto,
     updateAny: boolean,
   ) {
-    const formSubmission = await this.formSubmissionRepository.findOneOrFail(
-      id,
-      ['author'],
-    );
+    const formSubmission = await this.em.findOneOrFail(FormSubmission, id, [
+      'author',
+    ]);
 
     if (!updateAny && formSubmission.author.id !== user.id) {
       throw new ForbiddenException();
@@ -211,7 +193,7 @@ export class SubmissionService implements OnModuleInit {
 
     formSubmission.assign(updateFormSubmissionDto);
 
-    await this.formSubmissionRepository.flush();
+    await this.em.flush();
 
     if (statusChange) {
       await this.discordQueue.add('app-status-notification', formSubmission);
@@ -226,13 +208,11 @@ export class SubmissionService implements OnModuleInit {
    * @param id id of the submission
    */
   async delete(id: number) {
-    const submission = await this.formSubmissionRepository.findOneOrFail(id, [
+    const submission = await this.em.findOneOrFail(FormSubmission, id, [
       'characters',
     ]);
 
-    this.formSubmissionRepository.remove(submission);
-
-    await this.formSubmissionRepository.flush();
+    await this.em.remove(submission).flush();
 
     return submission;
   }

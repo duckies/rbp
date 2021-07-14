@@ -33,7 +33,8 @@ export default defineComponent({
     },
     caption: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     background: {
       type: String,

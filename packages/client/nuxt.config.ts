@@ -69,7 +69,7 @@ const config: NuxtConfig = {
     '~/plugins/vee-validate',
     { src: '~/plugins/swiper', mode: 'client' },
   ],
-  components: true,
+  components: ['~/components', '~/components/inputs'],
   typescript: {
     typeCheck: false,
   },

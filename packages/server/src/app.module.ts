@@ -1,23 +1,24 @@
 import Joi from '@hapi/joi';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { ScheduleModule } from '@nestjs/schedule';
 import path from 'path';
 import MikroOrmConfig from '../mikro-orm.config';
-import { ArticleModule } from './article/article.module';
-import { AttendanceModule } from './attendance/attendance.module';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
-import { CharacterHistoryModule } from './character-history/character-history.module';
 import { DiscordModule } from './discord/discord.module';
 import { FormCharacterModule } from './form-character/form-character.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
 import { FormModule } from './form/form.module';
-import { CharacterModule } from './guild-character/character.module';
+import { GuildCharacterModule } from './guild-character/character.module';
+import { PostModule } from './post/post.module';
+import { RaidIdentityStatusModule } from './raid-identity-status/raid-identity-status.module';
+import { RaidIdentityModule } from './raid-identity/raid-identity.module';
+import { RaidNightModule } from './raid-night/raid-night.module';
 import { RaidModule } from './raid/raid.module';
-import { RaiderIOModule } from './raiderIO/raiderIO.module';
+import { RaiderIOModule } from './raider.io/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
 import { UserModule } from './user/user.module';
 import {
@@ -80,16 +81,17 @@ import { WarcraftLogsModule } from './warcraftlogs/warcraftlogs.module';
     UserModule,
     AuthModule,
     SlideModule,
-    ArticleModule,
+    PostModule,
+    GuildCharacterModule,
     RaidModule,
+    RaidIdentityModule,
+    RaidIdentityStatusModule,
+    RaidNightModule,
     FormModule,
     FormCharacterModule,
     FormSubmissionModule,
     BlizzardModule,
-    CharacterModule,
-    CharacterHistoryModule,
     RaiderIOModule,
-    AttendanceModule,
   ],
 })
 export class AppModule {}

@@ -37,7 +37,9 @@ describe('UserService', () => {
   it('should return a single user', async () => {
     const user = UserFactory.build();
 
-    jest.spyOn(service, 'findOne').mockReturnValue(Promise.resolve(user) as Promise<User>);
+    jest
+      .spyOn(service, 'findOne')
+      .mockReturnValue(Promise.resolve(user) as Promise<User>);
 
     expect(await service.findOne(1)).toEqual(user);
   });
@@ -45,7 +47,9 @@ describe('UserService', () => {
   it('should return a single user from a payload', async () => {
     const user = UserFactory.build();
 
-    jest.spyOn(service, 'findOneByJwtPayload').mockReturnValue(Promise.resolve(user) as Promise<User>);
+    jest
+      .spyOn(service, 'findOneByJwtPayload')
+      .mockReturnValue(Promise.resolve(user) as Promise<User>);
 
     expect(await service.findOneByJwtPayload({ id: 1 })).toEqual(user);
   });
@@ -53,15 +57,21 @@ describe('UserService', () => {
   it('should return a single user from a provider id', async () => {
     const user = UserFactory.build();
 
-    jest.spyOn(service, 'findOneByProviderId').mockReturnValue(Promise.resolve(user) as Promise<User>);
+    jest
+      .spyOn(service, 'findOneByProviderId')
+      .mockReturnValue(Promise.resolve(user) as Promise<User>);
 
-    expect(await service.findOneByProviderId(1, Provider.BLIZZARD)).toEqual(user);
+    expect(await service.findOneByProviderId(1, Provider.BLIZZARD)).toEqual(
+      user,
+    );
   });
 
   it('should return an array of users in the guild', async () => {
     const users = UserFactory.buildList(10);
 
-    jest.spyOn(service, 'findAllWithGuildCharacters').mockReturnValue(Promise.resolve(users) as Promise<User[]>);
+    jest
+      .spyOn(service, 'findAllWithGuildCharacters')
+      .mockReturnValue(Promise.resolve(users) as Promise<User[]>);
 
     expect(await service.findAllWithGuildCharacters()).toEqual(users);
   });

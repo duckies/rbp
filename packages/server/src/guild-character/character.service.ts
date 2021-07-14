@@ -10,8 +10,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
-import { RaiderIOCharacterFields } from '../raiderIO/dto/char-fields.dto';
-import { RaiderIOService } from '../raiderIO/raiderIO.service';
+import { RaiderIOCharacterFields } from '../raider.io/dto/char-fields.dto';
+import { RaiderIOService } from '../raider.io/raiderIO.service';
 import { GuildCharacter } from './character.entity';
 
 @Injectable()

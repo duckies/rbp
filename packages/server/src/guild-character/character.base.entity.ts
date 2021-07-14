@@ -11,12 +11,12 @@ import {
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { PlayableClass } from '../blizzard/entities/playable-class.entity';
 import { PlayableSpecialization } from '../blizzard/entities/playable-specialization.entity';
-import { RealmSlug, RealmType } from '../blizzard/enums/realm.enum';
+import { Realm, RealmSlug } from '../blizzard/enums/realm.enum';
 import { Region } from '../blizzard/enums/region.enum';
 import * as ProfileAPI from '../blizzard/interfaces/profile';
 import { RaidExpansion } from '../blizzard/interfaces/profile/character-encounters/character-raids.interface';
 import { EquippedItem } from '../blizzard/interfaces/profile/character-equipment/character-equipment-summary.interface';
-import { RaiderIOCharacter } from '../raiderIO/interfaces/raider-io-character.interface';
+import { RaiderIOCharacter } from '../raider.io/interfaces/raider-io-character.interface';
 import { RoleType } from '../warcraftlogs/interfaces/role-type.enum';
 import { ZoneRankings } from '../warcraftlogs/interfaces/zone-rankings.interface';
 import { Covenant } from './enums/covenant.enum';
@@ -28,7 +28,7 @@ import { CharacterRankings } from './interfaces/character-rankings.interface';
 export abstract class Character extends BaseEntity<Character, 'id'> {
   private findCharacterDTO: FindCharacterDto;
 
-  constructor(name: string, realm: RealmType, region: Region) {
+  constructor(name: string, realm: Realm, region: Region) {
     super();
     this.name = name;
     this.realm = realm;
@@ -45,7 +45,7 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
   region!: Region;
 
   @Enum(() => RealmSlug)
-  realm!: RealmType;
+  realm!: Realm;
 
   /**
    * Profile Summary

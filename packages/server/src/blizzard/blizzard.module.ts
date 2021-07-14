@@ -1,8 +1,8 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BlizzardAsset } from './entities/blizzard-asset.entity';
-import { HttpModule } from '../http/http.module';
+import { Asset } from './entities/asset.entity';
+import { HttpModule } from '../common/http/http.module';
 import { BlizzardService } from './blizzard.service';
 import { PlayableClassMedia } from './entities/playable-class-media.entity';
 import { PlayableClass } from './entities/playable-class.entity';
@@ -17,7 +17,7 @@ import { ProfileService } from './services/profile/profile.service';
 @Module({
   imports: [
     MikroOrmModule.forFeature([
-      BlizzardAsset,
+      Asset,
       PlayableClass,
       PlayableClassMedia,
       PlayableSpecialization,

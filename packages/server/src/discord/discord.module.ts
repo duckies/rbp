@@ -21,7 +21,7 @@ import {
   DISCORD_PLUGIN_EVENT,
   DISCORD_PLUGIN_GROUP,
   DISCORD_PLUGIN_LOOP,
-} from './../app.constants';
+} from '../app.constants';
 import { DiscordHandler } from './discord-handler.class';
 import { DiscordConfig } from './discord-plugin.entity';
 import { DiscordController } from './discord.controller';

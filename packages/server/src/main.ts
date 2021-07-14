@@ -25,6 +25,11 @@ async function bootstrap() {
    */
   app.enableCors();
 
+  /**
+   * Instructs NestJS to listen to shutdown signals.
+   */
+  app.enableShutdownHooks();
+
   await app.listen(config.get('PORT'));
 }
 

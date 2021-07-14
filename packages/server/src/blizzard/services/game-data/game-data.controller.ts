@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Param } from '@nestjs/common';
-import { GameDataAggregateDto } from '../../dto/game-data-endpoints.dto';
+import { Controller, Get, Param } from '@nestjs/common';
 import { GameDataService } from './game-data.service';
 
 @Controller('game-data')
@@ -19,12 +18,5 @@ export class GameDataController {
   @Get('/specialization/:id')
   getSpecialization(@Param('id') id: number) {
     return this.gameDataService.getPlayableSpecialization(id);
-  }
-
-  @Get('/aggregate')
-  getGameData(
-    @Body() { endpoints, param }: GameDataAggregateDto,
-  ): Promise<unknown> {
-    return this.gameDataService.getGameData(endpoints[0], param);
   }
 }

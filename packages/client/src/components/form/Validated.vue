@@ -17,7 +17,7 @@ export default defineComponent({
   setup(_, { emit }) {
     const observer = ref<InstanceType<typeof ValidationObserver>>()
 
-    const onSubmit = emit('form:submit')
+    const onSubmit = () => emit('form:submit')
 
     const resetValidation = () => observer.value!.reset()
 

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpModule } from '../http/http.module';
+import { HttpModule } from '../common/http/http.module';
 import {
   WCL_CLIENT_ID,
   WCL_CLIENT_SECRET,

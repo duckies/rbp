@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
-import { HttpService } from '../http/http.service';
+import { HttpService } from '../common/http/http.service';
 import {
   EncounterQuery,
   ReportQuery,
@@ -14,7 +14,6 @@ import { RoleType } from './interfaces/role-type.enum';
 export class WarcraftLogsService {
   constructor(private readonly http: HttpService) {
     http.setLimits({
-      autoStart: true,
       interval: 3600000,
       intervalCap: 3600,
     });
@@ -136,8 +135,6 @@ export class WarcraftLogsService {
         }
       }`,
     });
-
-    console.log(resp);
 
     return resp?.data?.worldData?.zone;
   }

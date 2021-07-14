@@ -25,9 +25,8 @@ export class CreateRaidDto {
   @IsString()
   background?: string;
 
-  @IsOptional()
   @IsNumber()
-  progress?: number;
+  progress!: number;
 
   @IsOptional()
   @IsString()

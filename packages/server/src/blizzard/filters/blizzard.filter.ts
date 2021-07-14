@@ -11,12 +11,9 @@ export class BlizzardFilter implements ExceptionFilter {
     const response = ctx.getResponse();
 
     if (
-      exception.config &&
-      exception.config.url &&
-      (exception.config.url.includes('blizzard.com') || exception.config.url.includes('battle.net'))
+      exception.config?.url?.includes('blizzard.com') ||
+      exception.config.url.includes('battle.net')
     ) {
-      // console.error(exception);
-
       return response.status(exception.response.status).send({
         timestamp: new Date().toISOString(),
         path: exception.config.url,

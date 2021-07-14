@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { template } from '../../../app.utils';
-import { HttpService } from '../../../http/http.service';
+import { HttpService } from '../../../common/http/http.service';
 import { BlizzardService } from '../../blizzard.service';
 import { FindCharacterDto } from '../../dto/find-character.dto';
 import { AssetType } from '../../enums/asset-type.enum';

@@ -21,27 +21,23 @@ export enum CommandParamtypes {
  *
  * @param property optional property to select within the role
  */
-export const RoleMention: (
-  property?: string,
-) => ParameterDecorator = createCommandParamDecorator(CommandParamtypes.ROLE);
+export const RoleMention: (property?: string) => ParameterDecorator =
+  createCommandParamDecorator(CommandParamtypes.ROLE);
 
-export const UserMention: (
-  property?: string,
-) => ParameterDecorator = createCommandParamDecorator(CommandParamtypes.MEMBER);
+export const UserMention: (property?: string) => ParameterDecorator =
+  createCommandParamDecorator(CommandParamtypes.MEMBER);
 
-export const ChannelMention: (
-  property?: string,
-) => ParameterDecorator = createCommandParamDecorator(
-  CommandParamtypes.CHANNEL,
-);
+export const ChannelMention: (property?: string) => ParameterDecorator =
+  createCommandParamDecorator(CommandParamtypes.CHANNEL);
 
 function createCommandParamDecorator(paramtype: CommandParamtypes) {
-  return (property?: string): ParameterDecorator => (target, key, index) => {
-    const metadata =
-      Reflect.getOwnMetadata(DISCORD_COMMAND_ARGS, target, key) || [];
+  return (property?: string): ParameterDecorator =>
+    (target, key, index) => {
+      const metadata =
+        Reflect.getOwnMetadata(DISCORD_COMMAND_ARGS, target, key) || [];
 
-    metadata.push({ paramtype, index, property });
+      metadata.push({ paramtype, index, property });
 
-    Reflect.defineMetadata(DISCORD_COMMAND_ARGS, metadata, target, key);
-  };
+      Reflect.defineMetadata(DISCORD_COMMAND_ARGS, metadata, target, key);
+    };
 }

@@ -7,7 +7,6 @@ import {
   Property,
 } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import { EnumArray } from '../../config/types/enum-array.type';
 import { Form } from '../form/form.entity';
 import { FieldType } from './enums/field-type.enum';
 import { FileTypes } from './enums/file-types.enum';
@@ -41,7 +40,7 @@ export class FormQuestion extends BaseEntity<FormQuestion, 'id'> {
   @Enum(() => FieldType)
   type!: FieldType;
 
-  @Property({ type: EnumArray, nullable: true })
+  @Enum({ items: () => FileTypes, array: true, nullable: true })
   fileTypes?: FileTypes[];
 
   @Property()

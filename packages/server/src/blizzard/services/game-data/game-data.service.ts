@@ -1,10 +1,9 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { template } from '../../../app.utils';
-import { BlizzardAsset } from '../../entities/blizzard-asset.entity';
-import { HttpService } from '../../../http/http.service';
+import { HttpService } from '../../../common/http/http.service';
 import { BlizzardService } from '../../blizzard.service';
+import { Asset } from '../../entities/asset.entity';
 import { PlayableClassMedia } from '../../entities/playable-class-media.entity';
 import { PlayableClass } from '../../entities/playable-class.entity';
 import { PlayableSpecializationMedia } from '../../entities/playable-specialization-media.entity';
@@ -90,15 +89,13 @@ export type GameDataReturnType = {
 @Injectable()
 export class GameDataService {
   constructor(
-    @InjectRepository(BlizzardAsset)
-    private readonly assetRepository: EntityRepository<BlizzardAsset>,
     private readonly blizzardService: BlizzardService,
     private readonly http: HttpService,
     private readonly em: EntityManager,
   ) {}
 
   async getGameItemMedia(id: number) {
-    let asset = await this.em.findOne(BlizzardAsset, {
+    let asset = await this.em.findOne(Asset, {
       id,
       type: AssetType.Icon,
     });
@@ -107,7 +104,7 @@ export class GameDataService {
       const data = await this.getGameData(GameDataEndpoint.ItemMedia, id);
 
       await this.em
-        .createQueryBuilder(BlizzardAsset)
+        .createQueryBuilder(Asset)
         .insert({ id, type: AssetType.Icon, value: data.assets[0].value })
         .onConflict()
         .ignore()

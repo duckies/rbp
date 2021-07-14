@@ -8,7 +8,7 @@ import {
   Property,
 } from '@mikro-orm/core';
 import { Roles } from '../app.roles';
-import { Article } from '../article/article.entity';
+import { Post } from '../post/post.entity';
 import { FileUpload } from '../file/file.entity';
 import { FormComment } from '../form-comment/form-comment.entity';
 import { FormSubmission } from '../form-submission/form-submission.entity';
@@ -70,8 +70,8 @@ export class User extends BaseEntity<User, 'id'> {
     return `/images/avatars/default/${this.id % 10}.jpg`;
   }
 
-  @OneToMany(() => Article, (a) => a.author, { hidden: true })
-  articles = new Collection<Article>(this);
+  @OneToMany(() => Post, (a) => a.author, { hidden: true })
+  posts = new Collection<Post>(this);
 
   @OneToMany(() => FormSubmission, (submission) => submission.author, {
     hidden: true,

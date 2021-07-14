@@ -6,7 +6,7 @@ import { FileModule } from '../file/file.module';
 import { FormCharacterModule } from '../form-character/form-character.module';
 import { FormQuestion } from '../form-question/question.entity';
 import { FormQuestionService } from '../form-question/question.service';
-import { RaiderIOModule } from '../raiderIO/raiderIO.module';
+import { RaiderIOModule } from '../raider.io/raiderIO.module';
 import { SubmissionController } from './form-submission.controller';
 import { FormSubmission } from './form-submission.entity';
 import { FormSubmissionQueue } from './form-submission.queue';

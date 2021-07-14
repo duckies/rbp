@@ -1,27 +1,27 @@
 import {
+  Collection,
   Entity,
   Enum,
+  OneToMany,
   PrimaryKey,
+  PrimaryKeyType,
   Property,
-  WrappedEntity,
 } from '@mikro-orm/core';
-import { DecimalType } from '../../config/types/decimal.type';
+import { RaidNight } from '../raid-night/raid-night.entity';
 import { Expansion } from './enums/expansion.enum';
 
 @Entity()
 export class Raid {
-  constructor(slug: string) {
-    this.slug = slug;
-  }
-
   @PrimaryKey()
-  id!: number;
+  slug!: string;
+
+  [PrimaryKeyType]: string;
+
+  @Property({ nullable: true, unique: true })
+  zoneId?: number;
 
   @Property({ nullable: true })
   name?: string;
-
-  @Property({ unique: true })
-  slug!: string;
 
   @Enum({ items: () => Expansion, nullable: true })
   expansion?: Expansion;
@@ -29,19 +29,19 @@ export class Raid {
   @Property({ nullable: true })
   background?: string;
 
-  @Property({ type: DecimalType })
+  @Property({ columnType: 'decimal', default: 0 })
   progress!: number;
 
-  @Property()
+  @Property({ default: 'Normal' })
   difficulty!: string;
 
-  @Property()
+  @Property({ default: 0 })
   world!: number;
 
-  @Property()
+  @Property({ default: 0 })
   region!: number;
 
-  @Property()
+  @Property({ default: 0 })
   realm!: number;
 
   @Property()
@@ -73,7 +73,7 @@ export class Raid {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
-}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Raid extends WrappedEntity<Raid, 'id'> {}
+  @OneToMany(() => RaidNight, 'raid', { eager: true })
+  raidNights = new Collection<RaidNight>(this);
+}

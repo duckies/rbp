@@ -1,16 +1,16 @@
+import { Post } from '@/interfaces/entities.interface'
 import { defineStore } from 'pinia'
-import { Article } from '@/interfaces/entities.interface'
 
 export const useBlog = defineStore({
   id: 'blog',
   state: () => ({
-    posts: [] as Article[],
+    posts: [] as Post[],
   }),
   actions: {
     async getPosts() {
-      const [articles] = await this.$nuxt.$axios.$get('/article')
+      const [posts] = await this.$nuxt.$axios.$get('/post')
 
-      this.posts = articles
+      this.posts = posts
     },
   },
 })

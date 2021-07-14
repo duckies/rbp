@@ -5,8 +5,8 @@ import {
   OneToOne,
   Property,
 } from '@mikro-orm/core';
-import { RaidIdentity } from '../attendance/entities/raid-identity.entity';
-import { CharacterHistory } from '../character-history/character-history.entity';
+import { CharacterHistory } from '../guild-character-history/character-history.entity';
+import { RaidIdentity } from '../raid-identity/raid-identity.entity';
 import { Character } from './character.base.entity';
 import { TorghastWings } from './interfaces/torghast-wings.interface';
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import PQueue from 'p-queue';
-import { HttpService } from '../http/http.service';
+import { HttpService } from '../common/http/http.service';
 
 @Injectable()
 export class BlizzardService {

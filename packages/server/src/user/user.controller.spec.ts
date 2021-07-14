@@ -27,7 +27,9 @@ describe.only('User Controller', () => {
     it('should return an array of users', async () => {
       const users = [new User()];
 
-      jest.spyOn(userService, 'findAll').mockResolvedValueOnce({ result: users, total: 1 });
+      jest
+        .spyOn(userService, 'findAll')
+        .mockResolvedValueOnce({ result: users, total: 1 });
 
       expect(await userController.findAll(null)).toBe(users);
     });

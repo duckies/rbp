@@ -1,6 +1,5 @@
 {
   "language": "ts",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
-  "deleteOurDir": true
+  "sourceRoot": "src"
 }

@@ -70,8 +70,9 @@ export class SubmissionController {
   @Auth()
   @Delete('file/:id')
   deleteFile(@Usr() user: User, @Param('id') id: number) {
-    const canDeleteAny = this.ac.can(user.roles).deleteAny('file-upload')
-      .granted;
+    const canDeleteAny = this.ac
+      .can(user.roles)
+      .deleteAny('file-upload').granted;
 
     return this.fileService.delete(id, canDeleteAny ? undefined : user);
   }
@@ -95,24 +96,28 @@ export class SubmissionController {
   findFirstByStatus(@Param() { status }: FindFormSubmissionByStatusDto) {
     return this.submissionService.findOneOrFail(
       { status },
-      ['form', 'author', 'characters'],
-      { id: QueryOrder.DESC },
+      {
+        populate: ['form', 'author', 'characters'],
+        orderBy: { id: QueryOrder.DESC },
+      },
     );
   }
 
   @Get(':id')
   findOne(@Param() { id }: FindFormSubmissionDto) {
-    return this.submissionService.findOneOrFail(id, true);
+    return this.submissionService.findOneOrFail(id, { populate: true });
   }
 
   @Get()
   findAll(@Query() { limit, offset, status }: FindAllFormSubmissionsDto) {
     return this.submissionService.findAll(
       { status },
-      ['author', 'characters', 'characters.class'],
-      { id: QueryOrder.DESC },
-      limit,
-      offset,
+      {
+        populate: ['author', 'characters.class'],
+        orderBy: { id: QueryOrder.DESC },
+        limit,
+        offset,
+      },
     );
   }
 
@@ -123,8 +128,9 @@ export class SubmissionController {
     @Usr() user: User,
     @Body() updateFormSubmissionDto: UpdateFormSubmissionDto,
   ) {
-    const canUpdateAny = this.ac.can(user.roles).updateAny('form-submission')
-      .granted;
+    const canUpdateAny = this.ac
+      .can(user.roles)
+      .updateAny('form-submission').granted;
 
     return this.submissionService.update(
       id,

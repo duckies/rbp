@@ -2,7 +2,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { BlizzardModule } from '../blizzard/blizzard.module';
-import { RaiderIOModule } from '../raiderIO/raiderIO.module';
+import { RaiderIOModule } from '../raider.io/raiderIO.module';
 import { WarcraftLogsModule } from '../warcraftlogs/warcraftlogs.module';
 import { FormCharacterController } from './form-character.controller';
 import { FormCharacter } from './form-character.entity';

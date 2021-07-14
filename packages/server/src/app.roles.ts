@@ -16,6 +16,8 @@ export const accessControl = new AccessControl();
 
 accessControl
   .grant(Roles.Guest)
+  .readAny('raid-identity')
+  .readAny('raid-night')
   .updateOwn('user', ['nickname', 'avatar'])
   .updateOwn('form-submission')
   .deleteOwn('user')
@@ -41,6 +43,12 @@ accessControl
   .deleteAny('question')
   .updateAny('form-submission')
   .deleteAny('form-submission')
+  .createAny('raid-identity')
+  .updateAny('raid-identity')
+  .deleteAny('raid-identity')
+  .createAny('raid-night')
+  .updateAny('raid-night')
+  .deleteAny('raid-night')
   .grant(Roles.OfficerAlt)
   .extend(Roles.Officer)
   .grant(Roles.GuildMaster)

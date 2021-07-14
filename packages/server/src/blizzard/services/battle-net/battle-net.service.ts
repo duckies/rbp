@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '../../../http/http.service';
+import { HttpService } from '../../../common/http/http.service';
 
 @Injectable()
 export class BattleNetService {

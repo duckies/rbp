@@ -24,36 +24,30 @@ export class SlideController {
 
   @Auth('slide', 'create:any')
   @Post()
-  create(@Body() createSlideDto: CreateSlideDto): Promise<Slide> {
+  create(@Body() createSlideDto: CreateSlideDto) {
     return this.slideService.create(createSlideDto);
   }
 
   @Get()
   @CacheTTL(600)
-  findAll(
-    @Query('take') take?: number,
-    @Query('skip') skip?: number,
-  ): Promise<Slide[]> {
-    return this.slideService.findAll(take, skip);
+  findAll(@Query('limit') limit?: number, @Query('offset') offset?: number) {
+    return this.slideService.findAll({}, { limit, offset });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number): Promise<Slide> {
+  findOne(@Param('id') id: number) {
     return this.slideService.findOne(id);
   }
 
   @Auth('slide', 'update:any')
   @Put(':id')
-  update(
-    @Param('id') id: number,
-    @Body() updateSlideDto: UpdateSlideDto,
-  ): Promise<Slide> {
+  update(@Param('id') id: number, @Body() updateSlideDto: UpdateSlideDto) {
     return this.slideService.update(id, updateSlideDto);
   }
 
   @Auth('slide', 'delete:any')
   @Delete(':id')
-  delete(@Param('id') id: number): Promise<Slide> {
+  delete(@Param('id') id: number) {
     return this.slideService.delete(id);
   }
 }
