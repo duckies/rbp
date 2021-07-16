@@ -4,15 +4,15 @@ import { Character, KeyNameId, Links } from '../shared-profile.interface';
 export interface CharacterSpecializationsSummary {
   _links: Links;
   specializations: SpecializationMeta[];
-  active_specialization: KeyNameId;
+  active_specialization?: KeyNameId;
   character: Character;
 }
 
 export interface SpecializationMeta {
-  specialization: KeyNameId;
-  talents: TalentMeta[];
+  specialization?: KeyNameId;
+  talents?: TalentMeta[];
   glyphs?: KeyNameId[];
-  pvp_talent_slots: PvPTalent[];
+  pvp_talent_slots?: PvPTalent[];
 }
 
 export interface TalentMeta {

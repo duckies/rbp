@@ -63,8 +63,8 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
   @ManyToOne(() => PlayableClass, { eager: true })
   class!: PlayableClass;
 
-  @ManyToOne(() => PlayableSpecialization, { eager: true })
-  specialization!: PlayableSpecialization;
+  @ManyToOne(() => PlayableSpecialization, { eager: true, nullable: true })
+  specialization?: PlayableSpecialization;
 
   @Property({ nullable: true })
   gender?: string;
@@ -191,10 +191,13 @@ export abstract class Character extends BaseEntity<Character, 'id'> {
     data: ProfileAPI.CharacterSpecializationsSummary,
     em: EntityManager,
   ) {
-    this.specialization = em.getReference(
-      PlayableSpecialization,
-      data.active_specialization.id,
-    );
+    // Characters without a selected spec have no useful data.
+    if (data.active_specialization) {
+      this.specialization = em.getReference(
+        PlayableSpecialization,
+        data.active_specialization.id,
+      );
+    }
   }
 
   setCharacterRaidEncounterSummary(data: ProfileAPI.CharacterRaids) {
