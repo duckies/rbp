@@ -8,7 +8,6 @@ import {
   Module,
   OnModuleInit,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Client, ClientOptions } from 'discord.js';
 import { FormSubmissionModule } from '../form-submission/form-submission.module';
 import { TwitchModule } from '../twitch/twitch.module';
@@ -48,6 +47,7 @@ import { SettingsPlugin } from './plugins/settings.plugin';
 import { TwitchPlugin } from './plugins/twitch/twitch.plugin';
 import { WarcraftLogsPlugin } from './plugins/warcraftlogs/warcraftlogs.plugin';
 import { WelcomerPlugin } from './plugins/welcomer.plugin';
+import { ConfigService } from '../config/config.service';
 
 @Module({
   imports: [
@@ -159,7 +159,7 @@ export class DiscordModule implements OnModuleInit {
    */
   private initialize() {
     // Don't initialize the Discord bot during testing.
-    if (this.config.get('NODE_ENV') === 'test') return;
+    if (this.config.NODE_ENV === 'test') return;
 
     this.client.on('message', this.handler.handle.bind(this.handler));
 
@@ -179,6 +179,6 @@ export class DiscordModule implements OnModuleInit {
       }
     });
 
-    this.client.login(this.config.get('DISCORD_BOT_TOKEN'));
+    this.client.login(this.config.DISCORD.BOT.TOKEN);
   }
 }

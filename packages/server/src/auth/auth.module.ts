@@ -5,7 +5,6 @@ import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AccessControlGuard } from './guards/access-control.guard';
-import { BlizzardStrategy } from './strategies/blizzard.strategy';
 import { DiscordStrategy } from './strategies/discord.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
@@ -19,7 +18,6 @@ const AccessControlProvider = {
   imports: [UserModule],
   providers: [
     JwtStrategy,
-    BlizzardStrategy,
     DiscordStrategy,
     AuthService,
     AccessControlGuard,
@@ -29,7 +27,6 @@ const AccessControlProvider = {
   exports: [
     AuthService,
     JwtStrategy,
-    BlizzardStrategy,
     AccessControlGuard,
     AccessControlProvider,
   ],

@@ -8,7 +8,6 @@ import {
   Processor,
 } from '@nestjs/bull';
 import { HttpException, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
@@ -29,19 +28,11 @@ export class CharacterQueue {
     region: Region.US,
   };
 
-  private minLVL: number;
-
   constructor(
     private readonly characterService: CharacterService,
     private readonly profileService: ProfileService,
-    private readonly config: ConfigService,
     private readonly orm: MikroORM,
-  ) {
-    this.minLVL = Math.max(
-      this.config.get<number>('MINIMUM_CHARACTER_LEVEL'),
-      10,
-    );
-  }
+  ) {}
 
   @Process({ name: 'update-guild-members', concurrency: 1 })
   @UseRequestContext()
@@ -49,7 +40,7 @@ export class CharacterQueue {
     try {
       const [characters, roster] = await Promise.all([
         this.orm.em.find(GuildCharacter, {}),
-        this.profileService.getGuildRoster(this.findGuildDTO, this.minLVL),
+        this.profileService.getGuildRoster(this.findGuildDTO, 10),
       ]);
 
       const results: CharacterUpdateResult = {
@@ -103,7 +94,7 @@ export class CharacterQueue {
               results.success++;
             } catch (error) {
               if (!(error instanceof HttpException)) {
-                console.error('ERRROR', error);
+                console.error(error);
               }
 
               if (error instanceof HttpException) {

@@ -1,11 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '../common/http/http.module';
-import {
-  WCL_CLIENT_ID,
-  WCL_CLIENT_SECRET,
-  WCL_TOKEN_URL,
-} from './warcraftlogs.constants';
+import { ConfigService } from '../config/config.service';
 import { WarcraftLogsService } from './warcraftlogs.service';
 
 @Module({
@@ -18,9 +13,9 @@ import { WarcraftLogsService } from './warcraftlogs.service';
         },
         oauth: {
           name: 'WarcraftLogs',
-          clientId: config.get(WCL_CLIENT_ID),
-          clientSecret: config.get(WCL_CLIENT_SECRET),
-          tokenUrl: config.get(WCL_TOKEN_URL),
+          clientId: config.WARCRAFTLOGS.CLIENT_ID,
+          clientSecret: config.WARCRAFTLOGS.SECRET_KEY,
+          tokenUrl: 'https://www.warcraftlogs.com/oauth/token',
         },
       }),
     }),

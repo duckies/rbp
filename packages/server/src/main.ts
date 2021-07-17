@@ -1,12 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { ConfigService } from './config/config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config: ConfigService = app.get(ConfigService);
+  const config = app.get(ConfigService);
 
   /**
    * Whitelist all arguments so they must be described in a DTO.
@@ -30,7 +30,7 @@ async function bootstrap() {
    */
   app.enableShutdownHooks();
 
-  await app.listen(config.get('PORT'));
+  await app.listen(config.PORT);
 }
 
 bootstrap();

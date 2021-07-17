@@ -1,6 +1,5 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Asset } from './entities/asset.entity';
 import { HttpModule } from '../common/http/http.module';
 import { BlizzardService } from './blizzard.service';
@@ -13,6 +12,7 @@ import { GameDataController } from './services/game-data/game-data.controller';
 import { GameDataService } from './services/game-data/game-data.service';
 import { ProfileController } from './services/profile/profile.controller';
 import { ProfileService } from './services/profile/profile.service';
+import { ConfigService } from '../config/config.service';
 
 @Module({
   imports: [
@@ -28,9 +28,9 @@ import { ProfileService } from './services/profile/profile.service';
       useFactory: (config: ConfigService) => ({
         axios: { baseURL: 'https://us.api.blizzard.com' },
         oauth: {
-          name: 'Battle.net',
-          clientId: config.get('BLIZZARD_CLIENTID'),
-          clientSecret: config.get('BLIZZARD_SECRET'),
+          name: 'Blizzard',
+          clientId: config.BLIZZARD.CLIENT_ID,
+          clientSecret: config.BLIZZARD.SECRET_KEY,
           tokenUrl: 'https://us.battle.net/oauth/token',
         },
       }),

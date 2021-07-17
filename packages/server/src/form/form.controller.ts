@@ -25,12 +25,12 @@ export class FormController {
 
   @Get()
   findAll() {
-    return this.formService.findAll();
+    return this.formService.findAll({});
   }
 
   @Get(':id')
-  findOne(@Param() { id }: FindFormDto) {
-    return this.formService.findOne(id);
+  findOneOrFail(@Param() { id }: FindFormDto) {
+    return this.formService.findOneOrFail(id);
   }
 
   @Auth('form', 'update:any')

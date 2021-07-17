@@ -6,8 +6,8 @@ import {
   Processor,
 } from '@nestjs/bull';
 import { HttpService, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
+import { ConfigService } from '../config/config.service';
 import { FormSubmission } from './form-submission.entity';
 import { DiscordWebhook } from './interfaces/discord-webhook.interface';
 
@@ -51,7 +51,7 @@ export class FormSubmissionQueue {
         {
           title,
           color,
-          url: `${this.config.get('BASE_URL')}/applications/${job.data.id}`,
+          url: `${this.config.CLIENT_URL}/applications/${job.data.id}`,
           description: 'An application was submitted to the guild website.',
           fields: [],
           timestamp: job.data.createdAt,
@@ -158,12 +158,9 @@ export class FormSubmissionQueue {
       value: `[Armory](http://www.worldofwarcraft.com/en-us/character/us/${main.realm}/${main.name}) | [Raider.IO](https://www.raider.io/characters/us/${main.realm}/${main.name}) | [WarcraftLogs](https://www.warcraftlogs.com/character/us/${main.realm}/${main.name})`,
     });
 
-    console.log(this.config.get('DISCORD_WEBHOOK'), data);
     const resp = await this.http
-      .post(this.config.get('DISCORD_WEBHOOK'), data)
+      .post(this.config.DISCORD.WEBHOOK, data)
       .toPromise();
-
-    console.log(resp);
   }
 
   @OnQueueError()

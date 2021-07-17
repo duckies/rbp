@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { sign } from 'jsonwebtoken';
+import { ConfigService } from '../config/config.service';
 import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { JWTPayload } from './dto/jwt.dto';
@@ -39,7 +39,7 @@ export class AuthService {
   }
 
   signToken(user: User) {
-    return sign({ id: user.id }, this.config.get('JWT_SECRET'));
+    return sign({ id: user.id }, this.config.SECRET);
   }
 
   async validateDiscordLogin(

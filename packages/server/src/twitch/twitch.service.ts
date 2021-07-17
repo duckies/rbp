@@ -6,7 +6,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   TWITCH_AUTH_URL,
   TWITCH_CLIENT_ID,
@@ -14,6 +13,7 @@ import {
   TWITCH_STREAM_ENDPOINT,
   TWITCH_USER_ENDPOINT,
 } from '../app.constants';
+import { ConfigService } from '../config/config.service';
 import { TwitchGame } from './interfaces/game.interface';
 import { TwitchStream } from './interfaces/stream.interface';
 import { TwitchToken } from './interfaces/token.interface';
@@ -98,7 +98,7 @@ export class TwitchService {
       return this.http
         .get<T>(url, {
           headers: {
-            'Client-ID': this.config.get(TWITCH_CLIENT_ID),
+            'Client-ID': this.config.TWITCH.CLIENT_ID,
             Authorization: `Bearer ${await this.getToken()}`,
           },
           params,
@@ -128,8 +128,8 @@ export class TwitchService {
         await this.http
           .post(TWITCH_AUTH_URL, null, {
             params: {
-              client_id: this.config.get('TWITCH_CLIENT_ID'),
-              client_secret: this.config.get('TWITCH_SECRET_KEY'),
+              client_id: this.config.TWITCH.CLIENT_ID,
+              client_secret: this.config.TWITCH.SECRET_KEY,
               grant_type: 'client_credentials',
             },
           })

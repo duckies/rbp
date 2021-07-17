@@ -1,13 +1,13 @@
-import Joi from '@hapi/joi';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { ScheduleModule } from '@nestjs/schedule';
 import path from 'path';
 import MikroOrmConfig from '../mikro-orm.config';
 import { AuthModule } from './auth/auth.module';
 import { BlizzardModule } from './blizzard/blizzard.module';
+import { ConfigModule } from './config/config.module';
+import { configSchema } from './config/config.schema';
 import { DiscordModule } from './discord/discord.module';
 import { FormCharacterModule } from './form-character/form-character.module';
 import { FormSubmissionModule } from './form-submission/form-submission.module';
@@ -21,11 +21,6 @@ import { RaidModule } from './raid/raid.module';
 import { RaiderIOModule } from './raider.io/raiderIO.module';
 import { SlideModule } from './slide/slide.module';
 import { UserModule } from './user/user.module';
-import {
-  WCL_CLIENT_ID,
-  WCL_CLIENT_SECRET,
-  WCL_TOKEN_URL,
-} from './warcraftlogs/warcraftlogs.constants';
 import { WarcraftLogsModule } from './warcraftlogs/warcraftlogs.module';
 
 @Module({
@@ -33,36 +28,13 @@ import { WarcraftLogsModule } from './warcraftlogs/warcraftlogs.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: path.resolve(__dirname, '../backend.env'),
-      validationSchema: Joi.object({
-        NODE_ENV: Joi.string()
-          .valid('development', 'production', 'test')
-          .default('development'),
-        PORT: Joi.number().default(3000),
-        JWT_SECRET: Joi.string().default('testing'),
-        BLIZZARD_CLIENTID: Joi.string().required(),
-        BLIZZARD_SECRET: Joi.string().required(),
-        BLIZZARD_CALLBACK: Joi.string().required(),
-        MINIMUM_CHARACTER_LEVEL: Joi.number().default(10),
-        CODECOV_TOKEN: Joi.string(),
-        DISCORD_CLIENT_ID: Joi.string().required(),
-        DISCORD_SECRET: Joi.string().required(),
-        DISCORD_WEBHOOK: Joi.string().required(),
-        DISCORD_CALLBACK: Joi.string().default(
-          'http://localhost:3030/callback',
-        ),
-        TWITCH_CLIENT_ID: Joi.string().required(),
-        TWITCH_SECRET_KEY: Joi.string().required(),
-        BASE_URL: Joi.string().default('http://localhost:3030/'),
-        [WCL_CLIENT_ID]: Joi.string().required(),
-        [WCL_CLIENT_SECRET]: Joi.string().required(),
-        [WCL_TOKEN_URL]: Joi.string().required(),
-      }),
+      validationSchema: configSchema,
     }),
+    MikroOrmModule.forRoot(MikroOrmConfig),
     WarcraftLogsModule,
     PassportModule.register({
       defaultStrategy: 'blizzard',
     }),
-    MikroOrmModule.forRoot(MikroOrmConfig),
     DiscordModule.forRoot({
       partials: ['REACTION', 'CHANNEL', 'MESSAGE', 'USER', 'GUILD_MEMBER'],
       ws: {

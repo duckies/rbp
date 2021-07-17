@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Guild, Message } from 'discord.js';
 import { DISCORD_PREFIX } from '../app.constants';
+import { ConfigService } from '../config/config.service';
 import { CommandParamtypes } from './decorators/mention.decorator';
 import { Context } from './discord.context';
 import { CommandMeta } from './discord.decorators';
@@ -26,7 +26,7 @@ export class DiscordHandler {
     private readonly settings: SettingsPlugin,
     config: ConfigService,
   ) {
-    this.prefix = config.get(DISCORD_PREFIX);
+    this.prefix = config.DISCORD.BOT.PREFIX;
   }
 
   /**

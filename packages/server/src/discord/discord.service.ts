@@ -1,9 +1,9 @@
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Client } from 'discord.js';
 import { DISCORD_PREFIX } from '../app.constants';
+import { ConfigService } from '../config/config.service';
 import { PluginConfig } from './discord-config.class';
 import { DiscordConfig } from './discord-plugin.entity';
 import {
@@ -41,10 +41,10 @@ export class DiscordService {
   constructor(
     @InjectRepository(DiscordConfig)
     private readonly pluginRepository: EntityRepository<DiscordConfig>,
-    private readonly config: ConfigService,
+    config: ConfigService,
     @InjectClient() public readonly client: Client,
   ) {
-    this.prefix = config.get(DISCORD_PREFIX);
+    this.prefix = config.DISCORD.BOT.PREFIX;
   }
 
   /**

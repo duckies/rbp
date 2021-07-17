@@ -1,22 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-discord';
+import { ConfigService } from '../../config/config.service';
 import { AuthService, DiscordProfile } from '../auth.service';
-import { BlizzardStrategy } from './blizzard.strategy';
 
 @Injectable()
 export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
-  private readonly logger: Logger = new Logger(BlizzardStrategy.name);
-
   constructor(
     private readonly authService: AuthService,
     config: ConfigService,
   ) {
     super({
-      clientID: config.get('DISCORD_CLIENT_ID'),
-      clientSecret: config.get('DISCORD_SECRET'),
-      callbackURL: config.get('DISCORD_CALLBACK'),
+      clientID: config.DISCORD.CLIENT_ID,
+      clientSecret: config.DISCORD.SECRET_KEY,
+      callbackURL: config.DISCORD.CALLBACK,
       scope: ['identify'],
     });
   }

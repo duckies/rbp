@@ -1,5 +1,5 @@
-import { EntityRepository } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { FilterQuery, FindOptions } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
@@ -7,10 +7,7 @@ import { Form } from './form.entity';
 
 @Injectable()
 export class FormService {
-  constructor(
-    @InjectRepository(Form)
-    private readonly formRepository: EntityRepository<Form>,
-  ) {}
+  constructor(private readonly em: EntityManager) {}
 
   /**
    * Creates a new form.
@@ -18,9 +15,9 @@ export class FormService {
    * @param createFormDto properties for the form
    */
   async create(createFormDto: CreateFormDto) {
-    const form = this.formRepository.create(createFormDto);
+    const form = this.em.create(Form, createFormDto);
 
-    await this.formRepository.persistAndFlush(form);
+    await this.em.persist(form).flush();
 
     return form;
   }
@@ -28,17 +25,15 @@ export class FormService {
   /**
    * Finds all forms.
    */
-  async findAll() {
-    return this.formRepository.findAll();
+  async findAll(where: FilterQuery<Form>, options?: FindOptions<Form>) {
+    return this.em.findAndCount(Form, where, options);
   }
 
   /**
-   * Finds a form by its id.
-   *
-   * @param id id of the form
+   * Find a form by its id.
    */
-  async findOne(id: number) {
-    return this.formRepository.findOneOrFail(id);
+  async findOneOrFail(id: number) {
+    return this.em.findOneOrFail(Form, id);
   }
 
   /**
@@ -48,11 +43,11 @@ export class FormService {
    * @param updateFormDto properties to update
    */
   async update(id: number, updateFormDto: UpdateFormDto) {
-    const form = await this.formRepository.findOneOrFail(id);
+    const form = await this.em.findOneOrFail(Form, id);
 
     form.assign(updateFormDto);
 
-    await this.formRepository.flush();
+    await this.em.flush();
 
     return form;
   }
@@ -63,11 +58,9 @@ export class FormService {
    * @param id Form id
    */
   async delete(id: number) {
-    const form = await this.formRepository.findOneOrFail(id);
+    const form = await this.em.findOneOrFail(Form, id);
 
-    this.formRepository.remove(form);
-
-    await this.formRepository.flush();
+    await this.em.remove(form).flush();
 
     return form;
   }

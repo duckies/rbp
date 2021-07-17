@@ -6,9 +6,9 @@ import {
   Processor,
 } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Job } from 'bull';
 import { MessageEmbed } from 'discord.js';
+import { ConfigService } from '../config/config.service';
 import { FormSubmissionStatus } from '../form-submission/enums/form-submission-status.enum';
 import { FormSubmission } from '../form-submission/form-submission.entity';
 import { SubmissionService } from '../form-submission/form-submission.service';
@@ -19,7 +19,6 @@ export class DiscordQueue {
   private readonly logger = new Logger(DiscordQueue.name);
 
   constructor(
-    private readonly submissionService: SubmissionService,
     private readonly discord: DiscordService,
     private readonly config: ConfigService,
   ) {}
@@ -40,9 +39,7 @@ export class DiscordQueue {
     );
     embed.addField(
       'Links',
-      `[Application](${this.config.get('BASE_URL')}/applications/${
-        job.data.id
-      })`,
+      `[Application](${this.config.CLIENT_URL}/applications/${job.data.id})`,
     );
 
     await member.send(embed);

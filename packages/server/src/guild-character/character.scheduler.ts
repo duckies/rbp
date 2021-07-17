@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { UseRequestContext } from '@mikro-orm/nestjs';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, Timeout } from '@nestjs/schedule';
 import { EVERY_TEN_MINUTES } from '../app.constants';
 import { FindGuildDto } from '../blizzard/dto/find-guild.dto';
 import { RealmSlug } from '../blizzard/enums/realm.enum';
@@ -25,8 +25,8 @@ export class CharacterScheduler {
     private readonly characterService: CharacterService,
   ) {}
 
-  // @Timeout(500)
-  @Cron(EVERY_TEN_MINUTES)
+  @Timeout(500)
+  // @Cron(EVERY_TEN_MINUTES)
   @UseRequestContext()
   private async updateGuildMembers() {
     const results = {
@@ -44,11 +44,11 @@ export class CharacterScheduler {
       this.profileService.getGuildRoster(this.dto),
     ]);
 
-    if (characters.status !== 'fulfilled') {
+    if (characters.status === 'rejected') {
       throw new Error('Unable to retrieve local characters');
     }
 
-    if (roster.status !== 'fulfilled') {
+    if (roster.status === 'rejected') {
       throw new Error('Unable to retrieve guild roster');
     }
 
@@ -56,7 +56,10 @@ export class CharacterScheduler {
       roster.value.data.members.map(async (member) => {
         let isNew = false;
         let character = characters.value.find(
-          (c) => c.id === member.character.id,
+          (c) =>
+            c.name === member.character.name &&
+            c.realm === member.character.realm.slug &&
+            c.region === this.dto.region,
         );
 
         if (!character) {
@@ -64,7 +67,7 @@ export class CharacterScheduler {
           character = new GuildCharacter(
             member.character.name,
             member.character.realm.slug,
-            Region.US,
+            this.dto.region,
           );
         }
 

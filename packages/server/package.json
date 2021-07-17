@@ -49,6 +49,7 @@
     "discord.js": "12.5.3",
     "dotenv": "10.0.0",
     "ffmpeg-static": "4.4.0",
+    "joi": "^17.4.1",
     "lodash": "4.17.21",
     "moment": "2.29.1",
     "multer": "1.4.2",
@@ -65,7 +66,6 @@
     "ytdl-core": "4.8.2"
   },
   "devDependencies": {
-    "@types/passport-oauth2": "1.4.10",
     "@nestjs/testing": "^7",
     "@types/bull": "3.15.2",
     "@types/express": "4.17.13",
@@ -75,6 +75,7 @@
     "@types/multer": "1.4.7",
     "@types/node": "16.3.1",
     "@types/passport-discord": "0.1.4",
+    "@types/passport-oauth2": "1.4.10",
     "@types/rc": "1.1.0",
     "@types/socket.io": "3.0.2",
     "@types/supertest": "2.0.11",

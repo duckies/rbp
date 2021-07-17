@@ -7,7 +7,6 @@ import {
 import { EntityManager, EntityRepository } from '@mikro-orm/knex';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { FindCharacterDto } from '../blizzard/dto/find-character.dto';
 import { ProfileService } from '../blizzard/services/profile/profile.service';
 import { RaiderIOCharacterFields } from '../raider.io/dto/char-fields.dto';
@@ -16,18 +15,15 @@ import { GuildCharacter } from './character.entity';
 
 @Injectable()
 export class CharacterService {
-  private readonly minCharacterLevel: number;
+  private readonly minCharacterLevel = 10;
 
   constructor(
     @InjectRepository(GuildCharacter)
     private readonly characterRepository: EntityRepository<GuildCharacter>,
     private readonly em: EntityManager,
     private readonly profileService: ProfileService,
-    private readonly config: ConfigService,
     private readonly raiderIOService: RaiderIOService,
-  ) {
-    this.minCharacterLevel = config.get<number>('MINIMUM_CHARACTER_LEVEL');
-  }
+  ) {}
 
   /**
    * Creates a new guild member and populates them with basic information.

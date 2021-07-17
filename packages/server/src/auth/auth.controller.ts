@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Usr } from '../user/user.decorator';
 import { User } from '../user/user.entity';
@@ -17,23 +17,6 @@ export class AuthController {
   @UseGuards(AuthGuard('discord'))
   @Get('/discord/callback')
   discordCallback(@Usr() user: User): { user: User; token: string } {
-    const token = this.authService.signToken(user);
-
-    return {
-      user,
-      token,
-    };
-  }
-
-  @UseGuards(AuthGuard('blizzard'))
-  @Get('blizzard/login')
-  blizzardLogin(@Usr() user: User): User {
-    return user;
-  }
-
-  @UseGuards(AuthGuard('blizzard'))
-  @Post('blizzard/callback')
-  blizzardCallback(@Usr() user: User): { user: User; token: string } {
     const token = this.authService.signToken(user);
 
     return {
