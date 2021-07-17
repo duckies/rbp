@@ -22,7 +22,6 @@
   "dependencies": {
     "@discordjs/opus": "0.5.3",
     "@golevelup/nestjs-discovery": "2.3.1",
-    "@hapi/joi": "17.1.1",
     "@mikro-orm/cli": "4.5.7",
     "@mikro-orm/core": "4.5.7",
     "@mikro-orm/knex": "4.5.7",
