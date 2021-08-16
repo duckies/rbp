@@ -3,30 +3,34 @@
     <v-card-title class="question-title">{{ question.question }}</v-card-title>
 
     <v-card-text>
-      <ValidationProvider v-slot="{ errors }" :rules="rules">
+      <template v-if="readOnly">
+        <FormResponse v-model="data" />
+      </template>
+
+      <template v-else>
         <Component
           :is="question.type"
           v-model="data"
-          :errors="errors"
-          :question="question"
-          :read-only="readOnly"
+          :rules="rules"
+          :hint="question.hint"
+          :label="question.label"
+          :required="question.required"
         />
-      </ValidationProvider>
+      </template>
     </v-card-text>
   </v-card>
 </template>
 
 <script lang="ts">
 import { useSubmission } from '@/stores'
-import { ValidationProvider } from 'vee-validate'
 import {
   computed,
   defineComponent,
   PropType,
   set,
 } from '@nuxtjs/composition-api'
-import TextInput from '@/components/form/TextInput.vue'
-import TextArea from '@/components/form/TextArea.vue'
+import TextInput from '@/components/inputs/TextField.vue'
+import TextArea from '@/components/inputs/TextArea.vue'
 import Checkbox from '@/components/form/Checkbox.vue'
 import Select from '@/components/form/Select.vue'
 import { FormQuestion } from '~/interfaces/entities.interface'
@@ -36,7 +40,12 @@ export interface QuestionRules {
 }
 
 export default defineComponent({
-  components: { TextArea, TextInput, Checkbox, Select, ValidationProvider },
+  components: {
+    TextArea,
+    TextInput,
+    Checkbox,
+    Select,
+  },
   props: {
     question: {
       type: Object as PropType<FormQuestion>,
@@ -64,8 +73,8 @@ export default defineComponent({
     })
 
     return {
-      rules,
       data,
+      rules,
     }
   },
 })

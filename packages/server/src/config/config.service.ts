@@ -63,4 +63,11 @@ export class ConfigService {
       SECRET_KEY: this.internalConfig.TWITCH_SECRET_KEY,
     };
   }
+
+  get SENTRY() {
+    return {
+      DSN: this.internalConfig.SENTRY_DSN,
+      ENVIRONMENT: this.internalConfig.SENTRY_ENVIRONMENT,
+    };
+  }
 }

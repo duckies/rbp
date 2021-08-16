@@ -32,8 +32,8 @@ export const configSchema = Joi.object({
   PORT: Joi.number().default(3000),
   JWT_SECRET: Joi.string().default('testing'),
   CLIENT_URL: Joi.string().default('http://localhost:9000'),
-  BLIZZARD_CLIENTID: Joi.string().required(),
-  BLIZZARD_SECRET: Joi.string().required(),
+  BLIZZARD_CLIENT_ID: Joi.string().required(),
+  BLIZZARD_SECRET_KEY: Joi.string().required(),
   BLIZZARD_CALLBACK: Joi.string().required(),
   MINIMUM_CHARACTER_LEVEL: Joi.number().default(10),
   CODECOV_TOKEN: Joi.string(),
@@ -49,4 +49,6 @@ export const configSchema = Joi.object({
   WCL_CLIENT_ID: Joi.string().required(),
   WCL_CLIENT_SECRET: Joi.string().required(),
   WCL_TOKEN_URL: Joi.string().required(),
+  SENTRY_DSN: Joi.string().optional(),
+  SENTRY_ENVIRONMENT: Joi.string().optional(),
 });

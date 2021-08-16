@@ -25,8 +25,8 @@ export class CharacterScheduler {
     private readonly characterService: CharacterService,
   ) {}
 
-  @Timeout(500)
-  // @Cron(EVERY_TEN_MINUTES)
+  // @Timeout(500)
+  @Cron(EVERY_TEN_MINUTES)
   @UseRequestContext()
   private async updateGuildMembers() {
     const results = {

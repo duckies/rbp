@@ -8,7 +8,9 @@ export const useSlides = defineStore({
   }),
   actions: {
     async findAll() {
-      this.slides = await this.$nuxt.$axios.$get<Slide[]>('/slide')
+      const [slides] = await this.$nuxt.$axios.$get<[Slide[], number]>('/slide')
+
+      this.slides = slides
     },
   },
 })

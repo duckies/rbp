@@ -1,0 +1,26 @@
+{
+  "name": "@rbp/http",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/http.js",
+      "import": "./dist/http.es.js"
+    }
+  },
+  "main": "./dist/http.js",
+  "module": "./dist/http.es.js",
+  "types": "./dist/http.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "watch": "tsc -p tsconfig.build.json -w"
+  },
+  "dependencies": {
+    "got": "12.0.0-beta.1"
+  },
+  "devDependencies": {
+    "siroc": "^0.14.0",
+    "typescript": "4.3.5"
+  }
+}

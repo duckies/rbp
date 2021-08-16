@@ -35,7 +35,7 @@
           </v-col>
 
           <v-col>
-            <v-text-field v-model="name" label="Name" outlined />
+            <v-text-field v-model="name" label="Name" outlined dense />
           </v-col>
 
           <v-col cols="auto">

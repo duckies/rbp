@@ -8,6 +8,10 @@
     "start": "nuxt start",
     "lint": "eslint --ext .ts,.js,.vue ."
   },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
   "dependencies": {
     "@nuxtjs/axios": "5.13.6",
     "@nuxtjs/composition-api": "0.24.7",
@@ -41,12 +45,9 @@
     "eslint-plugin-nuxt": "2.0.0",
     "eslint-plugin-prettier": "3.4.0",
     "fibers": "5.0.0",
+    "nuxt-vite": "^0.1.1",
     "prettier": "2.3.1",
     "sass": "1.32.13",
     "sass-loader": "10.2.0"
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
   }
 }

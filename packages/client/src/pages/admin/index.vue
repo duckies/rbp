@@ -1,19 +1,14 @@
 <template>
-  <v-app dark>
-    <Navigation />
-
-    <v-main class="pa-0">
-      <Nuxt />
-    </v-main>
-
-    <FooterNav />
-  </v-app>
+  <h1>Admin yay</h1>
 </template>
 
 <script lang="ts">
 import { defineComponent } from '@nuxtjs/composition-api'
 
 export default defineComponent({
-  middleware: 'admin',
+  layout: 'admin',
+  setup() {
+    return {}
+  },
 })
 </script>

@@ -12,6 +12,20 @@
           </template>
 
           <v-list dense nav>
+            <DialogCreateRaidNight>
+              <template #activator="{ on, attrs }">
+                <v-list-item link v-bind="attrs" v-on="on">
+                  <v-list-item-icon>
+                    <v-icon>mdi-calendar</v-icon>
+                  </v-list-item-icon>
+
+                  <v-list-item-content>
+                    <v-list-item-title>Add Night</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </DialogCreateRaidNight>
+
             <DialogCreateIdentityStatus>
               <template #activator="{ on, attrs }">
                 <v-list-item link v-bind="attrs" v-on="on">
@@ -58,6 +72,7 @@
             v-model="selections"
             :items="raids"
             :headers="headers"
+            mobile-breakpoint="0"
             show-select
           >
             <template #[`item.name`]="{ item }">
@@ -126,6 +141,21 @@ export default defineComponent({
     const selections = ref<Row[]>([])
 
     const sort = ref<'Role' | 'iLvl'>('Role')
+
+    /**
+     * Raids are Sundays and Mondays from 10:00pm to 2:00am
+     */
+    // const getNextRaidNight = (date: Date) => {
+    //   // Sunday at 10:00pm
+    //   const sunday = new Date(
+    //     date.getFullYear(),
+    //     date.getMonth(),
+    //     date.getDate(),
+    //     22,
+    //     0,
+    //     0
+    //   )
+    // }
 
     const headers = computed(() => [
       {

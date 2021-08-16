@@ -106,7 +106,7 @@ export class GameDataService {
       await this.em
         .createQueryBuilder(Asset)
         .insert({ id, type: AssetType.Icon, value: data.assets[0].value })
-        .onConflict()
+        .onConflict(['id', 'type'])
         .ignore()
         .execute();
 

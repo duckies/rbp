@@ -82,7 +82,6 @@ export class FormCharacterService {
         RaiderIOCharacterFields.MYTHIC_PLUS_BEST_RUNS,
         RaiderIOCharacterFields.MYTHIC_PLUS_SCORES_BY_CURRENT_AND_PREVIOUS_SEASON,
       ]),
-
       this.warcraftLogsService.getCharacterRankings(dto, null, RoleType.DPS),
       this.warcraftLogsService.getCharacterRankings(dto, null, RoleType.Healer),
       this.warcraftLogsService.getCharacterRankings(dto, null, RoleType.Tank),

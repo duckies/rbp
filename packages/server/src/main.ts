@@ -1,36 +1,53 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
-import { ConfigService } from './config/config.service';
+import { AppModule } from './app.module.js';
+import { ConfigService } from './config/config.service.js';
+import Sentry from '@sentry/node';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config = app.get(ConfigService);
+  // const config = app.get(ConfigService);
+
+  await app.listen(3000);
 
   /**
-   * Whitelist all arguments so they must be described in a DTO.
-   * ForbidNonWhitelisted to not allow requests with extraneous information.
+   * Initialize Sentry error reporting.
    */
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
+  // if (config.SENTRY.DSN) {
+  //   Sentry.init({
+  //     dsn: config.SENTRY.DSN,
+  //     environment: config.SENTRY.ENVIRONMENT,
+  //     integrations: [
+  //       // enable HTTP calls tracing
+  //       new Sentry.Integrations.Http({ tracing: true }),
+  //     ],
+  //   });
+  // }
 
-  /**
-   * Allows for external communication as this is an API-based backend.
-   */
-  app.enableCors();
+  // /**
+  //  * Whitelist all arguments so they must be described in a DTO.
+  //  * ForbidNonWhitelisted to not allow requests with extraneous information.
+  //  */
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     transform: true,
+  //     whitelist: true,
+  //     forbidNonWhitelisted: true,
+  //   }),
+  // );
 
-  /**
-   * Instructs NestJS to listen to shutdown signals.
-   */
-  app.enableShutdownHooks();
+  // /**
+  //  * Allows for external communication as this is an API-based backend.
+  //  */
+  // app.enableCors();
 
-  await app.listen(config.PORT);
+  // /**
+  //  * Instructs NestJS to listen to shutdown signals.
+  //  */
+  // app.enableShutdownHooks();
+
+  // await app.listen(config.PORT);
 }
 
 bootstrap();

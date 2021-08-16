@@ -1,6 +1,6 @@
 <template>
   <ValidationProvider v-slot="{ errors }" :rules="rules">
-    <v-text-field
+    <v-textarea
       v-model="data"
       :error-messages="errors"
       :hide-details="'hide-details' in $attrs ? $attrs['hide-details'] : 'auto'"
@@ -18,7 +18,7 @@
       <template v-for="(_, slotName) in $slots" #[slotName]>
         <slot :name="slotName" />
       </template>
-    </v-text-field>
+    </v-textarea>
   </ValidationProvider>
 </template>
 
@@ -43,12 +43,8 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const data = computed({
-      get() {
-        return props.value
-      },
-      set(value) {
-        emit('input', value)
-      },
+      get: () => props.value,
+      set: (value) => emit('input', value),
     })
 
     return {

@@ -1,5 +1,5 @@
 <template>
-  <p class="text">{{ text }}</p>
+  <p class="text">{{ value }}</p>
 </template>
 
 <script lang="ts">
@@ -7,7 +7,7 @@ import { defineComponent } from '@nuxtjs/composition-api'
 
 export default defineComponent({
   props: {
-    text: {
+    value: {
       type: String,
       required: true,
     },

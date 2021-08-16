@@ -227,66 +227,6 @@ export default defineComponent({
 })
 </script>
 
-<!-- <script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component'
-import { formatRelative } from 'date-fns'
-import { Avatars } from '~/store/user'
-import {
-  FormCharacter,
-  FormQuestion,
-  FormSubmission,
-  User,
-} from '~/interfaces/entities.interface'
-
-export default class Applications extends Vue {
-  get pagination() {
-    return this.$accessor.submission.pagination
-  }
-
-  defaultingClassBlur(character?: FormCharacter): object {
-    const classObj = {}
-
-    if (character?.class.id) {
-      Object.assign(classObj, {
-        [`class-blur-bg-${character.class.id}`]: true,
-      })
-    }
-
-    return classObj
-  }
-
-  defaultingClassBorderColor(
-    baseClass: string,
-    character?: FormCharacter
-  ): object {
-    const classObj = {
-      [baseClass]: true,
-    }
-
-    if (character?.class.id) {
-      Object.assign(classObj, {
-        [`class-border-${character.class.id}`]: true,
-      })
-    }
-
-    return classObj
-  }
-
-  async paginate(step: number): Promise<void> {
-    this.$accessor.submission.setPaginationCurrent(
-      this.pagination.page_current + step
-    )
-
-    await this.$accessor.submission.getSubmissions({
-      limit: this.pagination.page_size,
-      offset: (this.pagination.page_current - 1) * this.pagination.page_size,
-      status: this.statusCategory,
-    })
-  }
-}
-</script> -->
-
 <style lang="scss" scoped>
 .discord-notif:hover::before {
   transform: scale3d(1.2);

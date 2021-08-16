@@ -59,6 +59,7 @@ export class OAuthStrategy {
 
       return this.token;
     } catch (error) {
+      console.log(error);
       this.token = null;
       this.buffer.flush(error);
       this.buffer.unlock();
